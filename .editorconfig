@@ -7,4 +7,8 @@ trim_trailing_whitespace = true
 charset = utf-8
 
 [*.{c, h}]
-indent_style = tab
+indent_style = space
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
