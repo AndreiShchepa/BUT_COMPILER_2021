@@ -1,6 +1,6 @@
 /**
  * Project: Compiler IFJ21
- * @file symtab.h
+ * @file symtable.h
  *
  * @brief Contain functions declaration and data types representing
  * a symbol table and working with it using hash table

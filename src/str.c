@@ -1,7 +1,7 @@
 /**
  * Project: Compiler IFJ21
  *
- * @file
+ * @file str.c
  *
  * @brief Implement functions representing a dynamic string
  *
