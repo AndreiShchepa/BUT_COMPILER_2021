@@ -54,6 +54,8 @@ htab_item_t *symtab_find(const htab_t *table, const char *key) {
 htab_item_t *symtab_add(htab_t *table) {
 	(void)table;
 	// must be completed
+
+    return NULL;
 }
 
 void symtab_free(htab_t *table) {
