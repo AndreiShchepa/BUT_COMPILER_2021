@@ -9,4 +9,6 @@ ADD_EXECUTABLE(compiler
     src/compiler.c
     src/str.c src/str.h
     src/symtable.c src/symtable.h
-    src/debug.h)
+    src/debug.h
+    src/scaner.c src/scaner.h
+    src/error.h)
