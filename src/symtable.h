@@ -7,6 +7,9 @@
  * @author Andrei Shchapaniak <xshcha00>
  */
 
+#ifndef _SYMTABLE_H
+#define _SYMTABLE_H
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -57,3 +60,5 @@ htab_item_t *symtab_add(htab_t *table);
  * @brief Table destructor
  */
 void symtab_free(htab_t *table);
+
+#endif // _SYMTABLE_H

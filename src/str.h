@@ -7,10 +7,10 @@
  * @author Andrei Shchapaniak <xshcha00>
  */
 
-#include <stdbool.h>
-
 #ifndef _STR_H
 #define _STR_H
+
+#include <stdbool.h>
 
 typedef struct string {
 	char* str;

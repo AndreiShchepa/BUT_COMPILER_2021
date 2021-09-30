@@ -1,3 +1,6 @@
+#ifndef _DEBUG_H
+#define _DEBUG_H
+
 #include <assert.h>
 #include <stdio.h>
 
@@ -15,3 +18,5 @@
 } while(0)
 
 #define debug_assert(cond) assert((cond))
+
+#endif // _DEBUG_H
