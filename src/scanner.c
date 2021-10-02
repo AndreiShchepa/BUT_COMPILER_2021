@@ -1,7 +1,7 @@
 /**
  * Project: Compiler IFJ21
  *
- * @file str.h
+ * @file scanner.c
  *
  * @brief Implement functions representing DFA and working with them.
  *        There is also keyword recognizing from token.
@@ -14,7 +14,7 @@
 #include <ctype.h>
 #include "str.h"
 #include "error.h"
-#include "scaner.h"
+#include "scanner.h"
 
 #define PUSH_CHAR() ret = str_add_char(&token->attr.id, (char)ch); \
                     if (!ret) { \

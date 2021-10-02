@@ -7,7 +7,7 @@
  */
 
 #include <stdio.h>
-#include "scaner.h"
+#include "scanner.h"
 
 int main() {
     FILE *f = stdin;

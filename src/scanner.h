@@ -1,7 +1,7 @@
 /**
  * Project: Compiler IFJ21
  *
- * @file str.h
+ * @file scanner.h
  *
  * @brief Contain functions declaration and data types representing
  *        tokens, DFA, states, keywords.
@@ -9,8 +9,8 @@
  * @author Andrei Shchapaniak <xshcha00>
  */
 
-#ifndef _SCANER_H
-#define _SCANER_H
+#ifndef _SCANNER_H
+#define _SCANNER_H
 
 #include <stdint.h>
 #include "str.h"
@@ -146,4 +146,4 @@ int scan_other_lexem(token_t *token);
  */
 int get_next_token(token_t *token);
 
-#endif // _SCANER_H
+#endif // _SCANNER_H
