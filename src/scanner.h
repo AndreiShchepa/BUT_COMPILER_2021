@@ -14,6 +14,8 @@
 
 #include <stdint.h>
 #include "str.h"
+#define COUNT_KEYWORDS 12
+
 #define LETTERS_CASE case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': \
                      case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': \
                      case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z': case 'a': \
@@ -94,10 +96,16 @@ typedef union token_attr {
 
 typedef struct token {
     token_type_t type;
+    keywords_t keyword;
     token_attr_t attr;
 } token_t;
 
 void set_source_file(FILE *f);
+
+/*
+ * @brief recognize if identifier is one of the keywords
+ */
+void recognize_keyword(token_t *token);
 
 /*
  * @brief handle tokens that start with {_, a-z, A-Z}

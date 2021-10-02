@@ -33,6 +33,21 @@ void set_source_file(FILE *file) {
     f = file;
 }
 
+void recognize_keyword(token_t *token) {
+        if      (!str_cmp_const_str(&token->attr.id, "do"))       token->keyword = KW_DO;
+        else if (!str_cmp_const_str(&token->attr.id, "global"))   token->keyword = KW_GLOBAL;
+        else if (!str_cmp_const_str(&token->attr.id, "require"))  token->keyword = KW_REQUIRE;
+        else if (!str_cmp_const_str(&token->attr.id, "else"))     token->keyword = KW_ELSE;
+        else if (!str_cmp_const_str(&token->attr.id, "if"))       token->keyword = KW_IF;
+        else if (!str_cmp_const_str(&token->attr.id, "return"))   token->keyword = KW_RETURN;
+        else if (!str_cmp_const_str(&token->attr.id, "end"))      token->keyword = KW_END;
+        else if (!str_cmp_const_str(&token->attr.id, "local"))    token->keyword = KW_LOCAL;
+        else if (!str_cmp_const_str(&token->attr.id, "then"))     token->keyword = KW_THEN;
+        else if (!str_cmp_const_str(&token->attr.id, "function")) token->keyword = KW_FUNCTION;
+        else if (!str_cmp_const_str(&token->attr.id, "nil"))      token->keyword = KW_NIL;
+        else if (!str_cmp_const_str(&token->attr.id, "while"))    token->keyword = KW_WHILE;
+}
+
 int scan_id(token_t *token) {
     state = START;
     flag = false;
