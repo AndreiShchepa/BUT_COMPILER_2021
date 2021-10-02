@@ -450,6 +450,7 @@ int scan_comment_or_sub(token_t *token) {
                 break;
             case C3:
                 str_clear(&token->attr.id);
+                ungetc(ch, f);
 
                 return NO_ERR;
             case C4:
@@ -497,6 +498,7 @@ int scan_comment_or_sub(token_t *token) {
 
                 break;
             case C7:
+                str_clear(&token->attr.id);
 
                 return NO_ERR;
             default:
@@ -774,12 +776,12 @@ int get_next_token(token_t *token) {
     int err;
     str_clear(&token->attr.id);
 
-skip_whitespace:
+skip:
     ch = fgetc(f);
 
     switch (ch) {
         case '\t': case ' ':
-            goto skip_whitespace;
+            goto skip;
         case '_': LETTERS_CASE:
             ungetc(ch, f);
             err = scan_id(token);
@@ -799,6 +801,9 @@ skip_whitespace:
         case '-':
             ungetc(ch, f);
             err = scan_comment_or_sub(token);
+            if ((!str_cmp_const_str(&token->attr.id, "")) && err == NO_ERR) {
+                goto skip;
+            }
             break;
         case '.':
             ungetc(ch, f);
