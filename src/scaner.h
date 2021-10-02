@@ -17,8 +17,8 @@ typedef enum states {
     START,
     I1,
     N1, N2, N3, N4, N5, N6,
-    S1, S2, S3, S4, S5, S6, S7, S8,
-    C1, C2, C3, C4, C5, C6,
+    S1, S2, S3, S4, S5, S6, S7, S8, S9,
+    C1, C2, C3, C4, C5, C6, C7,
     D1, D2,
     B1, B2,
     R1, R2, R3, R4, R5, R6, R7, R8

@@ -27,6 +27,7 @@ int scan_id(FILE* f, token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
+                    // START {_, a-z, A-Z} -> I1
                     case '_': LETTERS_CASE:
                         state = I1;
                         PUSH_CHAR();
@@ -38,6 +39,7 @@ int scan_id(FILE* f, token_t *token) {
                 break;
             case I1:
                 switch (ch) {
+                    // I1 {_, a-z, A-Z, 0-9} -> I1
                     case '_': LETTERS_CASE: case '0': DIGITS_CASE:
                         state = I1;
                         PUSH_CHAR();
@@ -69,6 +71,7 @@ int scan_number(FILE *f, token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
+                    // START {0-9} -> N1
                     case '0': DIGITS_CASE:
                         state = N1;
                         PUSH_CHAR();
@@ -80,15 +83,18 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N1:
                 switch (ch) {
+                    // N1 {0-9} -> N1
                     case '0': DIGITS_CASE:
                         state = N1;
                         PUSH_CHAR();
                         break;
+                    // N1 {.} -> N3
                     case '.':
                         state = N3;
                         float_num = true;
                         PUSH_CHAR();
                         break;
+                    // N1 {E, e} -> N2
                     case 'E': case 'e':
                         state = N2;
                         PUSH_CHAR();
@@ -101,10 +107,12 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N2:
                 switch (ch) {
+                    // N2 {-, +} -> N5
                     case '-': case '+':
                         state = N5;
                         PUSH_CHAR();
                         break;
+                    // N2 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
                         PUSH_CHAR();
@@ -116,6 +124,7 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N3:
                 switch (ch) {
+                    // N3 {0-9} -> N4
                     case '0': DIGITS_CASE:
                         state = N4;
                         PUSH_CHAR();
@@ -127,10 +136,12 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N4:
                 switch (ch) {
+                    // N4 {0-9} -> N4
                     case '0': DIGITS_CASE:
                         state = N4;
                         PUSH_CHAR();
                         break;
+                    // N4 {E, e} -> N2
                     case 'E': case 'e':
                         state = N2;
                         PUSH_CHAR();
@@ -143,6 +154,7 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N5:
                 switch (ch) {
+                    // N5 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
                         PUSH_CHAR();
@@ -154,6 +166,7 @@ int scan_number(FILE *f, token_t *token) {
                 break;
             case N6:
                 switch (ch) {
+                    // N6 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
                         PUSH_CHAR();
@@ -184,6 +197,7 @@ int scan_string(FILE *f, token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
+                    // START {"} -> S1
                     case '\"':
                         state = S1;
                         PUSH_CHAR();
@@ -195,34 +209,46 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S1:
                 switch (ch) {
+                    // S1 {"} -> S9
                     case '\"':
-                        ACCEPT_LEXEM();
+                        state = S9;
+                        PUSH_CHAR();
                         break;
+                    // S1 {\} -> S2
                     case '\\':
                         state = S2;
                         PUSH_CHAR();
                         break;
+                    // S1 {ch >= 32 && ch != \ && ch != "} -> S1
                     default:
-                        state = S1;
-                        PUSH_CHAR();
-                        break;
+                        if (ch >= 32) {
+                            state = S1;
+                            PUSH_CHAR();
+                            break;
+                        }
+
+                        return SCANER_ERR;
                 }
 
                 break;
             case S2:
                 switch (ch) {
+                    // S2 {n, t, \, "} -> S1
                     case 'n': case 't': case '\"': case '\\':
                         state = S1;
                         PUSH_CHAR();
                         break;
+                    // S2 {0} -> S3
                     case '0':
                         state = S3;
                         PUSH_CHAR();
                         break;
+                    // S2 {1} -> S4
                     case '1':
                         state = S4;
                         PUSH_CHAR();
                         break;
+                    // S2 {2} -> S5
                     case '2':
                         state = S5;
                         PUSH_CHAR();
@@ -234,10 +260,12 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S3:
                 switch (ch) {
+                    // S3 {0} -> S6
                     case '0':
                         state = S6;
                         PUSH_CHAR();
                         break;
+                    // S3 {1-9} -> S7
                     DIGITS_CASE:
                         state = S7;
                         PUSH_CHAR();
@@ -249,6 +277,7 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S4:
                 switch (ch) {
+                    // S4 {0-9} -> S7
                     case '0': DIGITS_CASE:
                         state = S7;
                         PUSH_CHAR();
@@ -260,10 +289,12 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S5:
                 switch (ch) {
+                    // S5 {0-4} -> S7
                     case '0': case '1': case '2': case '3': case '4':
                         state = S7;
                         PUSH_CHAR();
                         break;
+                    // S5 {5} -> S8
                     case '5':
                         state = S8;
                         PUSH_CHAR();
@@ -275,6 +306,7 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S6:
                 switch (ch) {
+                    // S6 {1-9} -> S1
                     DIGITS_CASE:
                         state = S1;
                         PUSH_CHAR();
@@ -286,6 +318,7 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S7:
                 switch (ch) {
+                    // S7 {0-9} -> S1
                     case '0': DIGITS_CASE:
                         state = S1;
                         PUSH_CHAR();
@@ -297,6 +330,7 @@ int scan_string(FILE *f, token_t *token) {
                 break;
             case S8:
                 switch (ch) {
+                    // S8 {0-5} -> S1
                     case '0': case '1': case '2': case '3': case '4': case '5':
                         state = S1;
                         PUSH_CHAR();
@@ -305,6 +339,9 @@ int scan_string(FILE *f, token_t *token) {
                         return SCANER_ERR;
                 }
 
+                break;
+            case S9:
+                ACCEPT_LEXEM();
                 break;
             default:
                 return SCANER_ERR;
@@ -326,6 +363,7 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
+                    // START {-} -> C1
                     case '-':
                         state = C1;
                         PUSH_CHAR();
@@ -337,6 +375,7 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
                 break;
             case C1:
                 switch (ch) {
+                    // C1 {-} -> C2
                     case '-':
                         state = C2;
                         break;
@@ -348,12 +387,14 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
                 break;
             case C2:
                 switch (ch) {
+                    // C2 {[} -> C4
                     case '[':
+                        state = C4;
+                        break;
+                    // C2 {\n} -> C3
+                    case '\n':
                         state = C3;
                         break;
-                    case '\n':
-                        str_clear(&token->attr.id);
-                        return NO_ERR;
                     default:
                         state = C2;
                         break;
@@ -361,19 +402,18 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
 
                 break;
             case C3:
-                switch (ch) {
-                    case '[':
-                        state = C4;
-                        break;
-                    default:
-                        return SCANER_ERR;
-                }
+                str_clear(&token->attr.id);
 
-                break;
+                return NO_ERR;
             case C4:
                 switch (ch) {
-                    case ']':
+                    // C4 {[} -> C5
+                    case '[':
                         state = C5;
+                        break;
+                    // C4 {\n} -> C3
+                    case '\n':
+                        state = C3;
                         break;
                     default:
                         state = C4;
@@ -383,15 +423,31 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
                 break;
             case C5:
                 switch (ch) {
+                    // C5 {]} -> C6
                     case ']':
                         state = C6;
                         return NO_ERR;
                     default:
-                        return SCANER_ERR;
-
+                        state =C5;
+                        break;
                 }
 
                 break;
+            case C6:
+                switch (ch) {
+                    // C6 {]} -> C7
+                    case ']':
+                        state = C7;
+                        break;
+                    default:
+                        state = C5;
+                        break;
+                }
+
+                break;
+            case C7:
+
+                return NO_ERR;
             default:
                 return SCANER_ERR;
         }
@@ -412,20 +468,22 @@ int scan_relate_op(FILE *f, token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
+                    // START {<} -> R1
                     case '<':
                         state = R1;
                         PUSH_CHAR();
-                        token->type = T_LT;
                         break;
+                    // START {>} -> R3
                     case '>':
                         state = R3;
                         PUSH_CHAR();
-                        token->type = T_GT;
                         break;
+                    // START {=} -> R5
                     case '=':
                         state = R5;
                         PUSH_CHAR();
                         break;
+                    // START {~} -> R7
                     case '~':
                         state = R7;
                         PUSH_CHAR();
@@ -437,62 +495,67 @@ int scan_relate_op(FILE *f, token_t *token) {
                 break;
             case R1:
                 switch (ch) {
+                    // R1 {=} -> R2
                     case '=':
                         state = R2;
                         PUSH_CHAR();
-                        token->type = T_LE;
                         break;
                     default:
                         ACCEPT_LEXEM();
+                        token->type = T_LT;
                         break;
                 }
 
                 break;
             case R2:
                 ACCEPT_LEXEM();
+                token->type = T_LE;
 
                 break;
             case R3:
                 switch (ch) {
+                    // R3 {=} -> R4
                     case '=':
                         state = R4;
                         PUSH_CHAR();
-                        token->type = T_GE;
                         break;
                     default:
                         ACCEPT_LEXEM();
+                        token->type = T_GT;
                         break;
                 }
 
                 break;
             case R4:
                 ACCEPT_LEXEM();
+                token->type = T_GE;
 
                 break;
             case R5:
                 switch (ch) {
+                    // R5 {=} -> R6
                     case '=':
                         state = R6;
                         PUSH_CHAR();
-                        token->type = T_EQ;
                         break;
                     default:
-                        token->type = T_ASSIGN;
                         ACCEPT_LEXEM();
+                        token->type = T_ASSIGN;
                         break;
                 }
 
                 break;
             case R6:
                 ACCEPT_LEXEM();
+                token->type = T_EQ;
 
                 break;
             case R7:
                 switch (ch) {
+                    // R7 {=} -> R8
                     case '=':
                         state = R8;
                         PUSH_CHAR();
-                        token->type = T_NEQ;
                         break;
                     default:
                         return SCANER_ERR;
@@ -501,6 +564,7 @@ int scan_relate_op(FILE *f, token_t *token) {
                 break;
             case R8:
                 ACCEPT_LEXEM();
+                token->type = T_NEQ;
 
                 break;
             default:
@@ -521,6 +585,7 @@ int scan_concat(FILE *f, token_t *token) {
         switch(START) {
             case START:
                 switch (ch) {
+                    // START {.} -> D1
                     case '.':
                         state = D1;
                         PUSH_CHAR();
@@ -532,6 +597,7 @@ int scan_concat(FILE *f, token_t *token) {
                 break;
             case D1:
                 switch (ch) {
+                    // D1 {.} -> D2
                     case '.':
                         state = D2;
                         PUSH_CHAR();
@@ -566,6 +632,7 @@ int scan_div(FILE *f, token_t *token) {
         switch(START) {
             case START:
                 switch (ch) {
+                    // START {/} -> B1
                     case '/':
                         state = B1;
                         PUSH_CHAR();
@@ -577,6 +644,7 @@ int scan_div(FILE *f, token_t *token) {
                 break;
             case B1:
                 switch (ch) {
+                    // B1 {/} -> B2
                     case '/':
                         state = B2;
                         PUSH_CHAR();
