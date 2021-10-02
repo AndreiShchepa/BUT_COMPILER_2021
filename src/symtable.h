@@ -1,9 +1,11 @@
 /**
  * Project: Compiler IFJ21
+ *
  * @file symtable.h
  *
  * @brief Contain functions declaration and data types representing
- * a symbol table and working with it using hash table
+ *        a symbol table and working with it using hash table.
+ *
  * @author Andrei Shchapaniak <xshcha00>
  */
 
@@ -46,7 +48,7 @@ bool symtab_init(htab_t *table);
  * @brief Find the item int the table that matches the key
  * @param table - symbol table
  * @param key - key for searching item
- * @return On sucess pointer to item, otherwise NULL
+ * @return On success pointer to item, otherwise NULL
  */
 htab_item_t *symtab_find(const htab_t *table, const char *key);
 

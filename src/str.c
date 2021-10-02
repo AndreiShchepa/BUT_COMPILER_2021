@@ -3,7 +3,7 @@
  *
  * @file str.c
  *
- * @brief Implement functions representing a dynamic string
+ * @brief Implement functions representing a dynamic string.
  *
  * @author Andrei Shchapaniak <xshcha00>
  */

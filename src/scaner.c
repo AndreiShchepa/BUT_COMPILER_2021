@@ -1,3 +1,15 @@
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file str.h
+ *
+ * @brief Implement functions representing DFA and working with them.
+ *        There is also keyword recognizing from token.
+ *
+ * @author Andrei Shchapaniak <xshcha00>
+ */
+
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
@@ -16,8 +28,9 @@
 int ch;
 states_t state;
 bool ret, flag;
+FILE *f = stdin;
 
-int scan_id(FILE* f, token_t *token) {
+int scan_id(token_t *token) {
     state = START;
     flag = false;
 
@@ -60,7 +73,7 @@ int scan_id(FILE* f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_number(FILE *f, token_t *token) {
+int scan_number(token_t *token) {
     state = START;
     flag = false;
     bool float_num = false;
@@ -187,7 +200,7 @@ int scan_number(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_string(FILE *f, token_t *token) {
+int scan_string(token_t *token) {
     state = START;
     flag = false;
 
@@ -353,7 +366,7 @@ int scan_string(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_comment_or_sub(FILE *f, token_t *token) {
+int scan_comment_or_sub(token_t *token) {
     state = START;
     flag = false;
 
@@ -458,7 +471,7 @@ int scan_comment_or_sub(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_relate_op(FILE *f, token_t *token) {
+int scan_relate_op(token_t *token) {
     state = START;
     flag = false;
 
@@ -575,7 +588,7 @@ int scan_relate_op(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_concat(FILE *f, token_t *token) {
+int scan_concat(token_t *token) {
     state = START;
     flag = false;
 
@@ -621,7 +634,7 @@ int scan_concat(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_div(FILE *f, token_t *token) {
+int scan_div(token_t *token) {
     state = START;
     flag = false;
     bool div_int = false;
@@ -670,7 +683,7 @@ int scan_div(FILE *f, token_t *token) {
     return NO_ERR;
 }
 
-int scan_other_lexem(FILE *f, token_t *token) {
+int scan_other_lexem(token_t *token) {
     ch = fgetc(f);
 
     switch (ch) {
@@ -719,7 +732,6 @@ int scan_other_lexem(FILE *f, token_t *token) {
 
 int get_next_token(token_t *token) {
     int err;
-    FILE *f = stdin;
     str_clear(&token->attr.id);
 
 skip_whitespace:

@@ -1,3 +1,11 @@
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file error.h
+ *
+ * @author Andrei Shchapaniak <xshcha00>
+ */
+
 #ifndef _ERROR_H
 #define _ERROR_H
 

@@ -1,9 +1,11 @@
 /**
  * Project: Compiler IFJ21
+ *
  * @file str.h
  *
  * @brief Contain functions declaration and data types representing
- * a dynamic string and working with it
+ *        a dynamic string and working with it.
+ *
  * @author Andrei Shchapaniak <xshcha00>
  */
 

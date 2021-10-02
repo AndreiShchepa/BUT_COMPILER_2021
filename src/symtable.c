@@ -3,7 +3,7 @@
  *
  * @file symtab.c
  *
- * @brief Implement functions representing a symbol table using hash table
+ * @brief Implement functions representing a symbol table using hash table.
  *
  * @author Andrei Shchapaniak <xshcha00>
  */

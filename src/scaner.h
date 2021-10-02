@@ -1,3 +1,14 @@
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file str.h
+ *
+ * @brief Contain functions declaration and data types representing
+ *        tokens, DFA, states, keywords.
+ *
+ * @author Andrei Shchapaniak <xshcha00>
+ */
+
 #ifndef _SCANER_H
 #define _SCANER_H
 
@@ -14,14 +25,19 @@
                     case '7': case '8': case '9'
 
 typedef enum states {
-    START,
-    I1,
-    N1, N2, N3, N4, N5, N6,
-    S1, S2, S3, S4, S5, S6, S7, S8, S9,
-    C1, C2, C3, C4, C5, C6, C7,
-    D1, D2,
-    B1, B2,
-    R1, R2, R3, R4, R5, R6, R7, R8
+    START,                  // state  for starting
+    I1,                     // state  for identifier scanning
+    N1, N2, N3, N4, N5, N6, // states for number scanning
+
+    S1, S2, S3, S4, S5, S6, // states for string scanning
+                S7, S8, S9,
+
+    C1, C2, C3, C4, C5, C6, // states for comments scanning
+                        C7,
+    D1, D2,                 // states for concatinating scanning
+    B1, B2,                 // states for division scannnig
+    R1, R2, R3, R4, R5, R6, // states for relations operators scanning
+                    R7, R8
 } states_t;
 
 typedef enum keywords {
@@ -80,20 +96,51 @@ typedef struct token {
     token_attr_t attr;
 } token_t;
 
-int scan_id(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {_, a-z, A-Z}
+ */
+int scan_id(token_t *token);
 
-int scan_number(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {0-9}
+ */
+int scan_number(token_t *token);
 
-int scan_string(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {"}
+ */
+int scan_string(token_t *token);
 
-int scan_comment_or_sub(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {-}
+ */
+int scan_comment_or_sub(token_t *token);
 
-int scan_relate_op(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {<, >, ~, =}
+ */
+int scan_relate_op(token_t *token);
 
-int scan_concat(FILE *f, token_t *token);
+/*
+ * @brief handle token that start with {.}
+ */
+int scan_concat(token_t *token);
 
-int scan_div(FILE *f, token_t *token);
+/*
+ * @brief handle tokens that start with {/}
+ */
+int scan_div(token_t *token);
 
-int scan_other_lexem(FILE *f, token_t *token);
+/*
+ * @brief handle another tokens that contain only one symbol
+ */
+int scan_other_lexem(token_t *token);
+
+/*
+ * @brief main function of scanner, which scans tokens
+ *
+ * @return On success NO_ERR, otherwise SCANER_ERR
+ */
+int get_next_token(token_t *token);
 
 #endif // _SCANER_H
