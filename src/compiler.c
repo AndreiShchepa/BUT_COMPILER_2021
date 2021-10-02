@@ -7,10 +7,11 @@
  */
 
 #include <stdio.h>
+#include "scaner.h"
 
-int main(int argc, const char **argv) {
-	(void)argc;
-	(void)argv;
+int main() {
+    FILE *f = stdin;
+    set_source_file(f);
 
 	return 0;
 }

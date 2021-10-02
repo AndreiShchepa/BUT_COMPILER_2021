@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#include <stdint.h>
 #include "str.h"
 #include "error.h"
 #include "scaner.h"
@@ -28,7 +27,11 @@
 int ch;
 states_t state;
 bool ret, flag;
-FILE *f = stdin;
+FILE *f;
+
+void set_source_file(FILE *file) {
+    f = file;
+}
 
 int scan_id(token_t *token) {
     state = START;
@@ -742,35 +745,35 @@ skip_whitespace:
             goto skip_whitespace;
         case '_': LETTERS_CASE:
             ungetc(ch, f);
-            err = scan_id(f, token);
+            err = scan_id(token);
             break;
         case '0': DIGITS_CASE:
             ungetc(ch, f);
-            err = scan_number(f, token);
+            err = scan_number(token);
             break;
         case '>': case '<': case '=': case '~':
             ungetc(ch, f);
-            err = scan_relate_op(f, token);
+            err = scan_relate_op(token);
             break;
         case '\"':
             ungetc(ch, f);
-            err = scan_string(f, token);
+            err = scan_string(token);
             break;
         case '-':
             ungetc(ch, f);
-            err = scan_comment_or_sub(f, token);
+            err = scan_comment_or_sub(token);
             break;
         case '.':
             ungetc(ch, f);
-            err = scan_concat(f, token);
+            err = scan_concat(token);
             break;
         case '/':
             ungetc(ch, f);
-            err = scan_div(f, token);
+            err = scan_div(token);
             break;
         default:
             ungetc(ch, f);
-            err = scan_other_lexem(f, token);
+            err = scan_other_lexem(token);
             break;
     }
 

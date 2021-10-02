@@ -12,6 +12,7 @@
 #ifndef _SCANER_H
 #define _SCANER_H
 
+#include <stdint.h>
 #include "str.h"
 #define LETTERS_CASE case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': \
                      case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': \
@@ -95,6 +96,8 @@ typedef struct token {
     token_type_t type;
     token_attr_t attr;
 } token_t;
+
+void set_source_file(FILE *f);
 
 /*
  * @brief handle tokens that start with {_, a-z, A-Z}
