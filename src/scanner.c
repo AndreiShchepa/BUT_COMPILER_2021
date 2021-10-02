@@ -16,7 +16,7 @@
 #include "error.h"
 #include "scanner.h"
 
-#define PUSH_CHAR() ret = str_add_char(&token->attr.id, (char)ch); \
+#define PUSH_CHAR(sym) ret = str_add_char(&token->attr.id, (char)(sym)); \
                     if (!ret) { \
                         return INTERNAL_ERR; \
                     }
@@ -61,10 +61,10 @@ int scan_id(token_t *token) {
                     // START {_, a-z, A-Z} -> I1
                     case '_': LETTERS_CASE:
                         state = I1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -73,7 +73,7 @@ int scan_id(token_t *token) {
                     // I1 {_, a-z, A-Z, 0-9} -> I1
                     case '_': LETTERS_CASE: case '0': DIGITS_CASE:
                         state = I1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -82,7 +82,7 @@ int scan_id(token_t *token) {
 
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
         }
     }
 
@@ -105,10 +105,10 @@ int scan_number(token_t *token) {
                     // START {0-9} -> N1
                     case '0': DIGITS_CASE:
                         state = N1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -117,18 +117,18 @@ int scan_number(token_t *token) {
                     // N1 {0-9} -> N1
                     case '0': DIGITS_CASE:
                         state = N1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // N1 {.} -> N3
                     case '.':
                         state = N3;
                         float_num = true;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // N1 {E, e} -> N2
                     case 'E': case 'e':
                         state = N2;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -141,15 +141,15 @@ int scan_number(token_t *token) {
                     // N2 {-, +} -> N5
                     case '-': case '+':
                         state = N5;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // N2 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -158,10 +158,10 @@ int scan_number(token_t *token) {
                     // N3 {0-9} -> N4
                     case '0': DIGITS_CASE:
                         state = N4;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -170,12 +170,12 @@ int scan_number(token_t *token) {
                     // N4 {0-9} -> N4
                     case '0': DIGITS_CASE:
                         state = N4;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // N4 {E, e} -> N2
                     case 'E': case 'e':
                         state = N2;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -188,10 +188,10 @@ int scan_number(token_t *token) {
                     // N5 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -200,7 +200,7 @@ int scan_number(token_t *token) {
                     // N6 {0-9} -> N6
                     case '0': DIGITS_CASE:
                         state = N6;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -209,7 +209,7 @@ int scan_number(token_t *token) {
 
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
         }
     }
 
@@ -221,6 +221,7 @@ int scan_number(token_t *token) {
 int scan_string(token_t *token) {
     state = START;
     flag = false;
+    uint8_t symbol = 0;
 
     while (!flag) {
         ch = fgetc(f);
@@ -231,10 +232,9 @@ int scan_string(token_t *token) {
                     // START {"} -> S1
                     case '\"':
                         state = S1;
-                        PUSH_CHAR();
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -243,49 +243,59 @@ int scan_string(token_t *token) {
                     // S1 {"} -> S9
                     case '\"':
                         state = S9;
-                        PUSH_CHAR();
                         break;
                     // S1 {\} -> S2
                     case '\\':
                         state = S2;
-                        PUSH_CHAR();
+                        //PUSH_CHAR();
                         break;
                     // S1 {ch >= 32 && ch != \ && ch != "} -> S1
                     default:
                         if (ch >= 32) {
                             state = S1;
-                            PUSH_CHAR();
+                            PUSH_CHAR(ch);
                             break;
                         }
 
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
             case S2:
                 switch (ch) {
                     // S2 {n, t, \, "} -> S1
-                    case 'n': case 't': case '\"': case '\\':
+                    case 'n':
+                        ch = 10;
+                        goto state;
+                    case 't':
+                        ch = 9;
+                        goto state;
+                    case '\"':
+                        ch = 34;
+                        goto state;
+                    case '\\':
+                        ch = 92;
+state:
                         state = S1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // S2 {0} -> S3
                     case '0':
                         state = S3;
-                        PUSH_CHAR();
+                        symbol = 0;
                         break;
                     // S2 {1} -> S4
                     case '1':
                         state = S4;
-                        PUSH_CHAR();
+                        symbol = 100;
                         break;
                     // S2 {2} -> S5
                     case '2':
                         state = S5;
-                        PUSH_CHAR();
+                        symbol = 200;
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -294,15 +304,15 @@ int scan_string(token_t *token) {
                     // S3 {0} -> S6
                     case '0':
                         state = S6;
-                        PUSH_CHAR();
+                        symbol = 0;
                         break;
                     // S3 {1-9} -> S7
                     DIGITS_CASE:
                         state = S7;
-                        PUSH_CHAR();
+                        symbol += (10 * (ch - 48));
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -311,10 +321,10 @@ int scan_string(token_t *token) {
                     // S4 {0-9} -> S7
                     case '0': DIGITS_CASE:
                         state = S7;
-                        PUSH_CHAR();
+                        symbol += (10 * (ch - 48));
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -323,15 +333,15 @@ int scan_string(token_t *token) {
                     // S5 {0-4} -> S7
                     case '0': case '1': case '2': case '3': case '4':
                         state = S7;
-                        PUSH_CHAR();
+                        symbol += (10 * (ch - 48));
                         break;
                     // S5 {5} -> S8
                     case '5':
                         state = S8;
-                        PUSH_CHAR();
+                        symbol += (10 * (ch - 48));
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -340,10 +350,12 @@ int scan_string(token_t *token) {
                     // S6 {1-9} -> S1
                     DIGITS_CASE:
                         state = S1;
-                        PUSH_CHAR();
+                        symbol += (ch - 48);
+                        PUSH_CHAR(symbol);
+                        symbol = 0;
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -352,10 +364,12 @@ int scan_string(token_t *token) {
                     // S7 {0-9} -> S1
                     case '0': DIGITS_CASE:
                         state = S1;
-                        PUSH_CHAR();
+                        symbol += (ch - 48);
+                        PUSH_CHAR(symbol);
+                        symbol = 0;
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -364,10 +378,12 @@ int scan_string(token_t *token) {
                     // S8 {0-5} -> S1
                     case '0': case '1': case '2': case '3': case '4': case '5':
                         state = S1;
-                        PUSH_CHAR();
+                        symbol += (ch - 48);
+                        PUSH_CHAR(symbol);
+                        symbol = 0;
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -375,7 +391,7 @@ int scan_string(token_t *token) {
                 ACCEPT_LEXEM();
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
         }
     }
 
@@ -397,10 +413,10 @@ int scan_comment_or_sub(token_t *token) {
                     // START {-} -> C1
                     case '-':
                         state = C1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -457,7 +473,9 @@ int scan_comment_or_sub(token_t *token) {
                     // C5 {]} -> C6
                     case ']':
                         state = C6;
-                        return NO_ERR;
+                        break;
+                    case EOF:
+                        return SCANNER_ERR;
                     default:
                         state =C5;
                         break;
@@ -470,6 +488,8 @@ int scan_comment_or_sub(token_t *token) {
                     case ']':
                         state = C7;
                         break;
+                    case EOF:
+                        return SCANNER_ERR;
                     default:
                         state = C5;
                         break;
@@ -480,7 +500,7 @@ int scan_comment_or_sub(token_t *token) {
 
                 return NO_ERR;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
         }
     }
 
@@ -502,25 +522,25 @@ int scan_relate_op(token_t *token) {
                     // START {<} -> R1
                     case '<':
                         state = R1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // START {>} -> R3
                     case '>':
                         state = R3;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // START {=} -> R5
                     case '=':
                         state = R5;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     // START {~} -> R7
                     case '~':
                         state = R7;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -529,7 +549,7 @@ int scan_relate_op(token_t *token) {
                     // R1 {=} -> R2
                     case '=':
                         state = R2;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -548,7 +568,7 @@ int scan_relate_op(token_t *token) {
                     // R3 {=} -> R4
                     case '=':
                         state = R4;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -567,7 +587,7 @@ int scan_relate_op(token_t *token) {
                     // R5 {=} -> R6
                     case '=':
                         state = R6;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
                         ACCEPT_LEXEM();
@@ -586,10 +606,10 @@ int scan_relate_op(token_t *token) {
                     // R7 {=} -> R8
                     case '=':
                         state = R8;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -599,7 +619,7 @@ int scan_relate_op(token_t *token) {
 
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
         }
     }
 
@@ -619,10 +639,10 @@ int scan_concat(token_t *token) {
                     // START {.} -> D1
                     case '.':
                         state = D1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -631,10 +651,10 @@ int scan_concat(token_t *token) {
                     // D1 {.} -> D2
                     case '.':
                         state = D2;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -643,7 +663,7 @@ int scan_concat(token_t *token) {
 
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
             }
     }
 
@@ -666,10 +686,10 @@ int scan_div(token_t *token) {
                     // START {/} -> B1
                     case '/':
                         state = B1;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         break;
                     default:
-                        return SCANER_ERR;
+                        return SCANNER_ERR;
                 }
 
                 break;
@@ -678,7 +698,7 @@ int scan_div(token_t *token) {
                     // B1 {/} -> B2
                     case '/':
                         state = B2;
-                        PUSH_CHAR();
+                        PUSH_CHAR(ch);
                         div_int = true;
                         break;
                     default:
@@ -692,7 +712,7 @@ int scan_div(token_t *token) {
 
                 break;
             default:
-                return SCANER_ERR;
+                return SCANNER_ERR;
             }
     }
 
@@ -742,8 +762,10 @@ int scan_other_lexem(token_t *token) {
             token->type = T_EOF;
             break;
         default:
-            return SCANER_ERR;
+            return SCANNER_ERR;
         }
+
+        PUSH_CHAR(ch);
 
     return NO_ERR;
 }

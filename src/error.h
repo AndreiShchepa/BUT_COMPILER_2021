@@ -10,7 +10,7 @@
 #define _ERROR_H
 
 #define NO_ERR 0
-#define SCANER_ERR 1
+#define SCANNER_ERR 1
 #define PARSER_ERR 2
 #define SEM_DEF_ERR 3
 #define SEM_TYPE_COMPAT_ERR 4

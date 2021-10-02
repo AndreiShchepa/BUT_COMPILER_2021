@@ -150,7 +150,7 @@ int scan_other_lexem(token_t *token);
 /*
  * @brief main function of scanner, which scans tokens
  *
- * @return On success NO_ERR, otherwise SCANER_ERR
+ * @return On success NO_ERR, otherwise SCANNER_ERR
  */
 int get_next_token(token_t *token);
 
