@@ -112,7 +112,7 @@ int str_cmp_const_str(const string_t *s1, const char *s2) {
 	return strcmp(s1->str, s2);
 }
 
-char *str_get(const string_t *s) {
+char *str_get_str(const string_t *s) {
 	return s->str;
 }
 

@@ -613,7 +613,7 @@ int scan_concat(token_t *token) {
     while (!flag) {
         ch = fgetc(f);
 
-        switch(START) {
+        switch(state) {
             case START:
                 switch (ch) {
                     // START {.} -> D1
@@ -660,7 +660,7 @@ int scan_div(token_t *token) {
     while (!flag) {
         ch = fgetc(f);
 
-        switch(START) {
+        switch(state) {
             case START:
                 switch (ch) {
                     // START {/} -> B1
