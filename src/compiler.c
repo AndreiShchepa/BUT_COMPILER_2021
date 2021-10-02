@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include "scanner.h"
+#include "error.h"
 #include "str.h"
 
 int main() {
@@ -19,19 +20,13 @@ int main() {
     int err;
 
     do {
-        str_clear(&token.attr.id);
         err = get_next_token(&token);
-        if (token.type == T_EOL) {
-            printf("token = EOL, err_code = %d\n", err);
-        }
-        else if (token.type == T_EOF) {
-            printf("token = EOF, err_code = %d\n", err);
-        }
-        else {
-            printf("token = %s, err code = %d\n", str_get_str(&token.attr.id), err);
+        if (err == SCANNER_ERR) {
+            fprintf(stderr, "\nError in scanner, wrong token\n");
         }
     } while (token.type != T_EOF);
 
     str_free(&token.attr.id);
+    fprintf(stderr, "\nNo error in scanner\n");
 	return 0;
 }
