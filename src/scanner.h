@@ -77,15 +77,12 @@ typedef enum token_type {
     T_NEQ,
     T_LENGTH,
     T_ASSIGN,
-    T_L_CURL_BR,
-    T_R_CURL_BR,
     T_L_ROUND_BR,
     T_R_ROUND_BR,
     T_STRING,
     T_COMMA,
     T_SEMICOLON,
     T_CONCAT,
-    T_EOL
 } token_type_t;
 
 typedef union token_attr {

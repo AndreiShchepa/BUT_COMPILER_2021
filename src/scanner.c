@@ -727,9 +727,6 @@ int scan_other_lexem(token_t *token) {
     ch = fgetc(f);
 
     switch (ch) {
-        case '\n':
-            token->type = T_EOL;
-            break;
         case '+':
             token->type = T_PLUS;
             break;
@@ -744,12 +741,6 @@ int scan_other_lexem(token_t *token) {
             break;
         case ')':
             token->type = T_R_ROUND_BR;
-            break;
-        case '{':
-            token->type = T_L_CURL_BR;
-            break;
-        case '}':
-            token->type = T_R_CURL_BR;
             break;
         case ',':
             token->type = T_COMMA;
@@ -780,7 +771,7 @@ skip:
     ch = fgetc(f);
 
     switch (ch) {
-        case '\t': case ' ':
+        case '\t': case ' ': case '\n':
             goto skip;
         case '_': LETTERS_CASE:
             ungetc(ch, f);
