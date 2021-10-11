@@ -7,26 +7,28 @@
  */
 
 #include <stdio.h>
-#include "scanner.h"
+#include "parser.h"
 #include "error.h"
 #include "str.h"
 
 int main() {
-    FILE *f = stdin;
-    set_source_file(f);
+    int ret;
 
-    token_t token;
-    str_init(&token.attr.id, 20);
-    int err;
+    ret = parser();
 
-    do {
-        err = get_next_token(&token);
-        if (err == SCANNER_ERR) {
-            fprintf(stderr, "\nError in scanner, wrong token\n");
+    if (ret == NO_ERR) {
+        printf("All good\n");
+    }
+    else {
+        if (ret == INTERNAL_ERR) {
+            printf("Internal err\n");
         }
-    } while (token.type != T_EOF);
-
-    str_free(&token.attr.id);
-    fprintf(stderr, "\nNo error in scanner\n");
+        else if (ret == SCANNER_ERR) {
+            printf("Scanner err\n");
+        }
+        else {
+            printf("Parser err\n");
+        }
+    }
 	return 0;
 }

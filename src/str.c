@@ -35,7 +35,7 @@ void str_free(string_t *s) {
 
 void str_clear(string_t *s) {
 	if (s) {
-		memset(s->str, 0, s->length);
+		memset(s->str, 0, s->alloc_size);
 		s->length = 0;
 	}
 }

@@ -11,4 +11,5 @@ ADD_EXECUTABLE(compiler
     src/symtable.c src/symtable.h
     src/debug.h
     src/scanner.c src/scanner.h
-    src/error.h)
+    src/error.h
+    src/parser.h src/parser.c)
