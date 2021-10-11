@@ -745,8 +745,8 @@ int scan_other_lexem(token_t *token) {
         case ',':
             token->type = T_COMMA;
             break;
-        case ';':
-            token->type = T_SEMICOLON;
+        case ':':
+            token->type = T_COLON;
             break;
         case '#':
             token->type = T_LENGTH;

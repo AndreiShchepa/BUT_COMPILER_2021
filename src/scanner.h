@@ -81,7 +81,7 @@ typedef enum token_type {
     T_R_ROUND_BR,
     T_STRING,
     T_COMMA,
-    T_SEMICOLON,
+    T_COLON,
     T_CONCAT,
 } token_type_t;
 
