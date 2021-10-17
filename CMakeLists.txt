@@ -50,8 +50,10 @@ add_executable(
         ${scanner_t}
         ./tests/scannerTests.cpp
         ./src/scanner.c
-        ./src/scanner.h
+        ./src/str.c
+        ./src/error.h
 )
+
 target_link_libraries( ${scanner_t} gtest_main )
 
 include(GoogleTest)
