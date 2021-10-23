@@ -1,6 +1,10 @@
 *.o
 *.out
 *.DS_Store
+*.txt
+*.cache
+compile_commands.json
+tags
 .idea
 build/
 cmake-build-debug/
