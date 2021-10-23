@@ -41,15 +41,15 @@ protected:
     }
 
     void tokenTestNoErr(std::string expectedTokenStr, int TYPE){
-        EXPECT_EQ(NO_ERR, get_next_token(&token)) << expectedTokenStr;
+        EXPECT_EQ(NO_ERR, get_next_token(&token)) << "ExpectedTokenStr has value: " << expectedTokenStr;
         std::string tokenStr = token.attr.id.str;
-        EXPECT_TRUE(tokenStr == expectedTokenStr)  << tokenStr << " == "  << expectedTokenStr;
-        EXPECT_EQ(TYPE, token.type) << "tokenStr has value: " << tokenStr;
+        EXPECT_TRUE(tokenStr == expectedTokenStr)  << "tokenStr != expectedTokenStr: "  << tokenStr << " != "  << expectedTokenStr;
+        EXPECT_EQ(TYPE, token.type) << "TokenStr has value: " << tokenStr;
     }
 
     void tokenTestErr(std::string buffer) {
         createBuffer(buffer);
-        EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << buffer;
+        EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << "This token should be incorrect: " << buffer;
         closeBuffer();
     }
 };
