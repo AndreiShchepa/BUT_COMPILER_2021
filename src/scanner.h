@@ -31,6 +31,7 @@ typedef enum states {
     START,                  // state  for starting
     I1,                     // state  for identifier scanning
     N1, N2, N3, N4, N5, N6, // states for number scanning
+                        N7,
 
     S1, S2, S3, S4, S5, S6, // states for string scanning
                 S7, S8, S9,
@@ -88,7 +89,7 @@ typedef enum token_type {
     T_CONCAT,
 } token_type_t;
 
-typedef union token_attr {
+typedef struct token_attr {
     string_t id;
     uint64_t num_i;
     double num_f;
