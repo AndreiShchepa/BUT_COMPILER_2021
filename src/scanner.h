@@ -46,15 +46,18 @@ typedef enum states {
 typedef enum keywords {
     KW_DO,
     KW_GLOBAL,
-    KW_REQUIRE,
+    KW_NUMBER,
     KW_ELSE,
     KW_IF,
-    KW_RETURN,
+    KW_REQUIRE,
     KW_END,
-    KW_LOCAL,
-    KW_THEN,
+    KW_INTEGER,
+    KW_RETURN,
     KW_FUNCTION,
+    KW_LOCAL,
+    KW_STRING,
     KW_NIL,
+    KW_THEN,
     KW_WHILE
 } keywords_t;
 
