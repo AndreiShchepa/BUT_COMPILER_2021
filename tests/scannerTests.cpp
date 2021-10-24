@@ -15,6 +15,35 @@ extern "C" {
 #include "../src/error.h"
 }
 
+#define tokenTestNoErr(expectedTokenStr,expectedType) \
+    EXPECT_EQ(NO_ERR, get_next_token(&token)) << "ExpectedTokenStr has value: " << expectedTokenStr; \
+    tokenStr = token.attr.id.str; \
+    EXPECT_TRUE(tokenStr == expectedTokenStr) \
+                        << "tokenStr != expectedTokenStr: " << tokenStr << " != " << expectedTokenStr; \
+    EXPECT_EQ(expectedType, token.type) << "TokenStr has value: " << tokenStr;
+
+#define tokenTestNoErrKw(expectedTokenStr, expectedType, expectedKw) \
+    EXPECT_EQ(NO_ERR, get_next_token(&token)) << "ExpectedTokenStr has value: " << expectedTokenStr; \
+    tokenStr = token.attr.id.str; \
+    EXPECT_TRUE(tokenStr == expectedTokenStr) \
+                        << "tokenStr != expectedTokenStr: " << tokenStr << " != " << expectedTokenStr; \
+    EXPECT_EQ(expectedType, token.type) << "TokenStr has value: " << tokenStr; \
+    EXPECT_EQ(expectedKw, token.keyword) << "TokenStr has value: " << tokenStr;
+
+#define tokenTestNoErrNumber(expectedType, nInt, nFloat) \
+    EXPECT_EQ(NO_ERR, get_next_token(&token)); \
+    if(expectedType == T_INT){ \
+        EXPECT_EQ(nInt, token.attr.num_i); \
+    } else{ \
+        EXPECT_EQ(nFloat, token.attr.num_f);   \
+    } \
+    EXPECT_EQ(expectedType, token.type);
+
+#define tokenTestErr(buffer) \
+    createBuffer(buffer); \
+    EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << "This token should be incorrect: " << buffer; \
+    closeBuffer();
+
 class Token : public ::testing::Test {
 protected:
     token_t token;
@@ -41,57 +70,40 @@ protected:
         set_source_file(stream);
     }
 
-    void testingPrint() {
-        for (int c = 0; c != EOF; c = fgetc(stream))
-            printf("%c", c);
-    }
-
     void closeBuffer() {
         stdin = old_stdin;
         fclose(stream);
     }
-
-    void tokenTestNoErr(std::string expectedTokenStr, int TYPE) {
-        EXPECT_EQ(NO_ERR, get_next_token(&token)) << "ExpectedTokenStr has value: " << expectedTokenStr;
-        std::string tokenStr = token.attr.id.str;
-        EXPECT_TRUE(tokenStr == expectedTokenStr)
-                            << "tokenStr != expectedTokenStr: " << tokenStr << " != " << expectedTokenStr;
-        EXPECT_EQ(TYPE, token.type) << "TokenStr has value: " << tokenStr;
-    }
-
-    void tokenTestErr(std::string buffer) {
-        createBuffer(buffer);
-        EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << "This token should be incorrect: " << buffer;
-        closeBuffer();
-    }
 };
 
 TEST_F(Token, Integer) {
+    std::string tokenStr;
     createBuffer("0      1  -0 0999 012345678910");
-    tokenTestNoErr("0", T_INT);
-    tokenTestNoErr("1", T_INT);
+    tokenTestNoErrNumber(T_INT, 0, 0.0)
+    tokenTestNoErrNumber(T_INT, 1, 0.0)
     tokenTestNoErr("-", T_MINUS);
-    tokenTestNoErr("0", T_INT);
-    tokenTestNoErr("0999", T_INT);
-    tokenTestNoErr("012345678910", T_INT);
-    tokenTestErr("001");
+    tokenTestNoErrNumber(T_INT, 0, 0.0)
+    tokenTestNoErrNumber(T_INT, 999, 0.0)
+    tokenTestNoErrNumber(T_INT, 12345678910, 0.0)
+    tokenTestErr("001")
+    closeBuffer();
 }
 
-#if 1
-
 TEST_F(Token, Double) {
-    createBuffer("1.0 0.45 9.88 0.001 0001.001 -1.5e+07 +0.04E-00014 3.4e0 3.4e3");
-    tokenTestNoErr("1.0", T_FLOAT);
-    tokenTestNoErr("0.45", T_FLOAT);
-    tokenTestNoErr("9.88", T_FLOAT);
-    tokenTestNoErr("0.001", T_FLOAT);
-    tokenTestNoErr("0001.001", T_FLOAT);
-    tokenTestNoErr("-", T_MINUS);
-    tokenTestNoErr("1.5e+07", T_FLOAT);
-    tokenTestNoErr("+", T_PLUS);
-    tokenTestNoErr("0.04E-00014", T_FLOAT);
-    tokenTestNoErr("3.4e0", T_FLOAT);
-    tokenTestNoErr("3.4e3", T_FLOAT);
+    std::string tokenStr;
+    createBuffer("1.0 0.45 9.88 0.001 0001.00100 -1.5e+07 +0.04E-00014 3.4e0 3.4e3");
+    tokenTestNoErrNumber(T_FLOAT, 0, 1.0)
+    tokenTestNoErrNumber(T_FLOAT, 0, 0.45)
+    tokenTestNoErrNumber(T_FLOAT, 0, 9.88)
+    tokenTestNoErrNumber(T_FLOAT, 0,0.001)
+    tokenTestNoErrNumber(T_FLOAT, 0, 1.001)
+    tokenTestNoErr("-", T_MINUS)
+    tokenTestNoErrNumber(T_FLOAT, 0, 15000000.0)
+    tokenTestNoErr("+", T_PLUS)
+    tokenTestNoErrNumber(T_FLOAT, 0, 0.0000000000000004)
+    tokenTestNoErrNumber(T_FLOAT, 0, 3.4)
+    tokenTestNoErrNumber(T_FLOAT, 0, 3400.0)
+    closeBuffer();
 
     tokenTestErr("3.4e");
     tokenTestErr("3.4e");
@@ -100,7 +112,8 @@ TEST_F(Token, Double) {
     tokenTestErr("0.04E-+0003");
 }
 
-TEST_F(Token, string) { // I cut next part of lexem after err - ("hello \a world") is  ("hello \a)
+TEST_F(Token, string) {
+    std::string tokenStr;
     createBuffer(R"("Hello' World"
                  "Printing some numbers: 0 1 33 3.e10"
                  "Using escape sequences: \" \n \t \\ "
@@ -116,22 +129,25 @@ TEST_F(Token, string) { // I cut next part of lexem after err - ("hello \a world
 }
 
 TEST_F(Token, Keywords) {
+    std::string tokenStr;
     createBuffer("do global require else if return end local then function nil while");
-    tokenTestNoErr("do", T_ID);
-    tokenTestNoErr("global", T_ID);
-    tokenTestNoErr("require", T_ID);
-    tokenTestNoErr("else", T_ID);
-    tokenTestNoErr("if", T_ID);
-    tokenTestNoErr("return", T_ID);
-    tokenTestNoErr("end", T_ID);
-    tokenTestNoErr("local", T_ID);
-    tokenTestNoErr("then", T_ID);
-    tokenTestNoErr("function", T_ID);
-    tokenTestNoErr("nil", T_ID);
-    tokenTestNoErr("while", T_ID);
+    tokenTestNoErrKw("do", T_KEYWORD, KW_DO);
+    tokenTestNoErrKw("global", T_KEYWORD,KW_GLOBAL);
+    tokenTestNoErrKw("require", T_KEYWORD, KW_REQUIRE);
+    tokenTestNoErrKw("else", T_KEYWORD,KW_ELSE);
+    tokenTestNoErrKw("if", T_KEYWORD, KW_IF);
+    tokenTestNoErrKw("return", T_KEYWORD, KW_RETURN);
+    tokenTestNoErrKw("end", T_KEYWORD, KW_END);
+    tokenTestNoErrKw("local", T_KEYWORD, KW_LOCAL);
+    tokenTestNoErrKw("then", T_KEYWORD, KW_THEN);
+    tokenTestNoErrKw("function", T_KEYWORD, KW_FUNCTION);
+    tokenTestNoErrKw("nil", T_KEYWORD, KW_NIL);
+    tokenTestNoErrKw("while", T_KEYWORD, KW_WHILE);
+    closeBuffer();
 }
 
 TEST_F(Token, Operators) {
+    std::string tokenStr;
     createBuffer("opr1 <<opr2+opr3..opr4<==>=opr5*///-==~= #\"x\\nz\"");
     tokenTestNoErr("opr1", T_ID);
     tokenTestNoErr("<", T_LT);
@@ -153,29 +169,31 @@ TEST_F(Token, Operators) {
     tokenTestNoErr("~=", T_NEQ);
     tokenTestNoErr("#", T_LENGTH);
     tokenTestNoErr("x\nz", T_STRING);
+    closeBuffer();
 }
 
 TEST_F(Token, Functions) {
-    createBuffer("global foo : function(string) : string end");
-    tokenTestNoErr("global", T_ID);
-    tokenTestNoErr("foo", T_ID);
-    tokenTestNoErr(":", T_COLON);
-    tokenTestNoErr("function", T_ID);
-    tokenTestNoErr("(", T_L_ROUND_BR);
-    tokenTestNoErr("string", T_ID);
-    tokenTestNoErr(")", T_R_ROUND_BR);
-    tokenTestNoErr(":", T_COLON);
-    tokenTestNoErr("string", T_ID);
-    tokenTestNoErr("end", T_ID);
+    std::string tokenStr;
+    createBuffer("global foo : function(string) : integer end");
+    tokenTestNoErrKw("global", T_KEYWORD, KW_GLOBAL)
+    tokenTestNoErr("foo", T_ID)
+    tokenTestNoErr(":", T_COLON)
+    tokenTestNoErrKw("function", T_KEYWORD, KW_FUNCTION)
+    tokenTestNoErr("(", T_L_ROUND_BR)
+    tokenTestNoErrKw("string", T_KEYWORD, KW_STRING)
+    tokenTestNoErr(")", T_R_ROUND_BR)
+    tokenTestNoErr(":", T_COLON)
+    tokenTestNoErrKw("integer", T_KEYWORD, KW_INTEGER)
+    tokenTestNoErrKw("end", T_KEYWORD, KW_END)
+    closeBuffer();
 }
 
 TEST_F(Token, Comment) {
-    // testing strings
     const std::string line_comment1 = "100 -- this is line comment\n";
     const std::string block_comment1 = R"(100 --[[comment
-toto je komentar]])";
+    this is comment]])";
     const std::string block_comment2 = R"(--[[comment
-toto je komentar]])";
+    this is comment]])";
 
     createBuffer(line_comment1);
     EXPECT_FALSE(get_next_token(&token));
@@ -197,6 +215,3 @@ toto je komentar]])";
     EXPECT_TRUE(token.type == T_EOF); // comment
     closeBuffer();
 }
-
-#endif
-
