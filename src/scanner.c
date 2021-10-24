@@ -137,6 +137,12 @@ int scan_number(token_t *token) {
                         state = N2;
                         PUSH_CHAR(ch);
                         break;
+                    case '.':
+                    // N1 {.} -> N3
+                        state = N3;
+                        float_num = true;
+                        PUSH_CHAR(ch);
+                        break;
                     default:
                         ACCEPT_LEXEM();
                         break;
