@@ -89,7 +89,7 @@ typedef enum token_type {
     T_CONCAT,
 } token_type_t;
 
-typedef struct token_attr {
+typedef union token_attr {
     string_t id;
     uint64_t num_i;
     double num_f;
