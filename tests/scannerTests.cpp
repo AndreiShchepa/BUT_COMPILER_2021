@@ -85,17 +85,17 @@ TEST_F(Token, Integer) {
 TEST_F(Token, Double) {
     std::string tokenStr;
     createBuffer("1.0 0.45 9.88 0.001 0001.00100 -1.5e+07 +0.04E-00014 3.4e0 3.4e3");
-    tokenTestNoErrNumber(T_FLOAT, 0, 1.0)
-    tokenTestNoErrNumber(T_FLOAT, 0, 0.45)
-    tokenTestNoErrNumber(T_FLOAT, 0, 9.88)
-    tokenTestNoErrNumber(T_FLOAT, 0,0.001)
-    tokenTestNoErrNumber(T_FLOAT, 0, 1.001)
+    tokenTestNoErrNumber(T_FLOAT, 0, 1.0f)
+    tokenTestNoErrNumber(T_FLOAT, 0, 0.45f)
+    tokenTestNoErrNumber(T_FLOAT, 0, 9.88f)
+    tokenTestNoErrNumber(T_FLOAT, 0,0.001f)
+    tokenTestNoErrNumber(T_FLOAT, 0, 1.001f)
     tokenTestNoErr("-", T_MINUS)
-    tokenTestNoErrNumber(T_FLOAT, 0, 15000000.0)
+    tokenTestNoErrNumber(T_FLOAT, 0, 15000000.0f)
     tokenTestNoErr("+", T_PLUS)
-    tokenTestNoErrNumber(T_FLOAT, 0, 0.0000000000000004)
-    tokenTestNoErrNumber(T_FLOAT, 0, 3.4)
-    tokenTestNoErrNumber(T_FLOAT, 0, 3400.0)
+    tokenTestNoErrNumber(T_FLOAT, 0, 0.0000000000000004f)
+    tokenTestNoErrNumber(T_FLOAT, 0, 3.4f)
+    tokenTestNoErrNumber(T_FLOAT, 0, 3400.0f)
 
     tokenTestErr("3.4e");
     tokenTestErr("3.4e");
