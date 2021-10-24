@@ -31,6 +31,7 @@ typedef enum states {
     START,                  // state  for starting
     I1,                     // state  for identifier scanning
     N1, N2, N3, N4, N5, N6, // states for number scanning
+                        N7,
 
     S1, S2, S3, S4, S5, S6, // states for string scanning
                 S7, S8, S9,
@@ -46,15 +47,18 @@ typedef enum states {
 typedef enum keywords {
     KW_DO,
     KW_GLOBAL,
-    KW_REQUIRE,
+    KW_NUMBER,
     KW_ELSE,
     KW_IF,
-    KW_RETURN,
+    KW_REQUIRE,
     KW_END,
-    KW_LOCAL,
-    KW_THEN,
+    KW_INTEGER,
+    KW_RETURN,
     KW_FUNCTION,
+    KW_LOCAL,
+    KW_STRING,
     KW_NIL,
+    KW_THEN,
     KW_WHILE
 } keywords_t;
 

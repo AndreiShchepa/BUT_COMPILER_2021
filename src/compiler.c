@@ -20,9 +20,10 @@ int main() {
     int err;
 
     do {
+        str_clear(&token.attr.id);
         err = get_next_token(&token);
         if (err == SCANNER_ERR) {
-            fprintf(stderr, "\nError in scanner, wrong token\n");
+            fprintf(stderr, "\nError in scanner, wrong token %s\n", token.attr.id.str);
         }
     } while (token.type != T_EOF);
 
