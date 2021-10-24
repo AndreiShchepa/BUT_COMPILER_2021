@@ -41,8 +41,7 @@ extern "C" {
 
 #define tokenTestErr(buffer) \
     createBuffer(buffer); \
-    EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << "This token should be incorrect: " << buffer; \
-    closeBuffer();
+    EXPECT_EQ(SCANNER_ERR, get_next_token(&token)) << "This token should be incorrect: " << buffer;
 
 class Token : public ::testing::Test {
 protected:
@@ -69,11 +68,6 @@ protected:
             FAIL();
         set_source_file(stream);
     }
-
-    void closeBuffer() {
-        stdin = old_stdin;
-        fclose(stream);
-    }
 };
 
 TEST_F(Token, Integer) {
@@ -86,7 +80,6 @@ TEST_F(Token, Integer) {
     tokenTestNoErrNumber(T_INT, 999, 0.0)
     tokenTestNoErrNumber(T_INT, 12345678910, 0.0)
     tokenTestErr("001")
-    closeBuffer();
 }
 
 TEST_F(Token, Double) {
@@ -103,7 +96,6 @@ TEST_F(Token, Double) {
     tokenTestNoErrNumber(T_FLOAT, 0, 0.0000000000000004)
     tokenTestNoErrNumber(T_FLOAT, 0, 3.4)
     tokenTestNoErrNumber(T_FLOAT, 0, 3400.0)
-    closeBuffer();
 
     tokenTestErr("3.4e");
     tokenTestErr("3.4e");
@@ -143,7 +135,6 @@ TEST_F(Token, Keywords) {
     tokenTestNoErrKw("function", T_KEYWORD, KW_FUNCTION);
     tokenTestNoErrKw("nil", T_KEYWORD, KW_NIL);
     tokenTestNoErrKw("while", T_KEYWORD, KW_WHILE);
-    closeBuffer();
 }
 
 TEST_F(Token, Operators) {
@@ -169,7 +160,6 @@ TEST_F(Token, Operators) {
     tokenTestNoErr("~=", T_NEQ);
     tokenTestNoErr("#", T_LENGTH);
     tokenTestNoErr("x\nz", T_STRING);
-    closeBuffer();
 }
 
 TEST_F(Token, Functions) {
@@ -185,7 +175,6 @@ TEST_F(Token, Functions) {
     tokenTestNoErr(":", T_COLON)
     tokenTestNoErrKw("integer", T_KEYWORD, KW_INTEGER)
     tokenTestNoErrKw("end", T_KEYWORD, KW_END)
-    closeBuffer();
 }
 
 TEST_F(Token, Comment) {
@@ -200,18 +189,15 @@ TEST_F(Token, Comment) {
     EXPECT_TRUE(token.type == T_INT);
     EXPECT_FALSE(get_next_token(&token));
     EXPECT_TRUE(token.type == T_EOF);
-    closeBuffer();
 
     createBuffer(block_comment1);
     EXPECT_FALSE(get_next_token(&token)); // 100
     EXPECT_TRUE(token.type == T_INT);
     EXPECT_FALSE(get_next_token(&token)); // comment
     EXPECT_TRUE(token.type == T_EOF); // comment
-    closeBuffer();
 
     createBuffer(block_comment2);
     EXPECT_FALSE(get_next_token(&token)); // 100
     EXPECT_FALSE(get_next_token(&token)); // comment
     EXPECT_TRUE(token.type == T_EOF); // comment
-    closeBuffer();
 }
