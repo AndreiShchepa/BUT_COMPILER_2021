@@ -814,6 +814,8 @@ int scan_other_lexem(token_t *token) {
 int get_next_token(token_t *token) {
     int err;
     str_clear(&token->attr.id);
+    token->keyword = KW_NONE;
+    token->type = T_NONE;
 
 skip:
     ch = fgetc(f);
