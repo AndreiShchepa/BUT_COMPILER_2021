@@ -8,4 +8,5 @@ chmod +x start.sh
 
 ## List of params and their meaning
 RULES   - enable rules printing from parser
+
 SCANNER - run only scanner

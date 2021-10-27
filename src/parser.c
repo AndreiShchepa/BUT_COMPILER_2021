@@ -1,41 +1,22 @@
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file parser.c
+ *
+ * @brief Implement functions representing DFA and working with them.
+ *        There is also keyword recognizing from token.
+ *
+ * @author Andrei Shchapaniak <xshcha00>
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
-#include "scanner.h"
 #include "error.h"
 #include "str.h"
 
 token_t token;
 int err;
-
-#ifdef DEBUG_RULES
-    #define print_rule(s) printf("%s\n", (s))
-#else
-    #define print_rule(s)
-#endif
-
-#define NEXT_TOKEN() \
-        err = get_next_token(&token); \
-        if (err != NO_ERR) { \
-            return false; \
-        }
-
-#define EXPECTED_TOKEN(cond) \
-        if (!(cond)) { \
-            return false; \
-        }
-
-#define NEXT_NONTERM(nonterm, ret) \
-        (ret) = (nonterm)(); \
-        if (!(ret)) { \
-            return false; \
-        }
-
-#define FIRST_TOKEN() \
-        err = get_next_token(&token); \
-        if (err != NO_ERR) { \
-            return err; \
-        }
 
 bool prog() {
     bool ret;
