@@ -18,6 +18,7 @@
 token_t token;
 int err;
 static bool ret;
+htab_t *h_table;
 
 bool prog() {
     if (token.keyword == KW_REQUIRE) {
@@ -440,6 +441,12 @@ int parser() {
         return INTERNAL_ERR;
     }
 
+    h_table = symtab_init();
+    if (!ret) {
+        str_free(&token.attr.id);
+        return INTERNAL_ERR;
+    }
+
     FIRST_TOKEN();
     ret = prog();
 
@@ -448,6 +455,7 @@ int parser() {
     }
 
     str_free(&token.attr.id);
+    symtab_free(h_table);
 
     return err;
 }

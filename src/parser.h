@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include "scanner.h"
+#include "symtable.h"
 
 // If you want to see all rules, which are used for process your program
 // Pass RULES to cmake or read README.md
@@ -58,6 +59,7 @@
 
 extern token_t token;
 extern int err;
+extern htab_t *h_table;
 
 /*
  * @brief process all rules start with nonterminal <prog>
