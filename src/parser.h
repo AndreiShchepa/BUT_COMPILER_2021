@@ -23,7 +23,7 @@ bool vars();
 
 bool type_expr();
 
-bool type_expr_others();
+bool other_exp();
 
 bool type_returns();
 

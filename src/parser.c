@@ -15,7 +15,7 @@ int err;
         }
 
 #define EXPECTED_TOKEN(cond) \
-        if ((cond)) { \
+        if (!(cond)) { \
             return false; \
         }
 
@@ -44,21 +44,21 @@ bool prog() {
         printf("2.  <prog> -> global id : function ( <type_params> ) <type_returns> <prog>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_ID);
+        EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_COLON);
+        EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.keyword != KW_FUNCTION);
+        EXPECTED_TOKEN(token.keyword == KW_FUNCTION);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_L_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type_params, ret);
 
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns, ret);
@@ -70,22 +70,22 @@ bool prog() {
                 " <return_type> end <prog>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_ID);
+        EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_L_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(params, ret);
 
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns, ret);
 
         NEXT_NONTERM(statement, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_END);
+        EXPECTED_TOKEN(token.keyword == KW_END);
         NEXT_TOKEN();
 
         return prog();
@@ -94,12 +94,12 @@ bool prog() {
         printf("4.  <prog> -> id ( <args> ) <prog>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_L_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(args, ret);
 
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
 
         return prog();
@@ -116,10 +116,10 @@ bool prog() {
 bool prolog() {
     printf("6.  <prolog> -> require T_STRING\n");
 
-    EXPECTED_TOKEN(token.keyword != KW_REQUIRE);
+    EXPECTED_TOKEN(token.keyword == KW_REQUIRE);
 
     NEXT_TOKEN();
-    EXPECTED_TOKEN(str_cmp_const_str(&token.attr.id, "ifj21") || token.type != T_STRING);
+    EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
 
     NEXT_TOKEN();
 
@@ -163,17 +163,17 @@ bool statement() {
         NEXT_TOKEN();
         NEXT_NONTERM(expression, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_THEN);
+        EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_ELSE);
+        EXPECTED_TOKEN(token.keyword == KW_ELSE);
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_END);
+        EXPECTED_TOKEN(token.keyword == KW_END);
 
         NEXT_TOKEN();
         return statement();
@@ -185,24 +185,24 @@ bool statement() {
         NEXT_TOKEN();
         NEXT_NONTERM(expression, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_DO);
+        EXPECTED_TOKEN(token.keyword == KW_DO);
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement, ret);
 
-        EXPECTED_TOKEN(token.keyword != KW_END);
+        EXPECTED_TOKEN(token.keyword == KW_END);
 
         NEXT_TOKEN();
         return statement();
     }
     else if (token.keyword == KW_LOCAL) {
-        printf("13. <statement> -> local id_num : <type> <def_var> <statement>\n");
+        printf("13. <statement> -> local id_var : <type> <def_var> <statement>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_ID);
+        EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_COLON);
+        EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type, ret);
@@ -212,10 +212,12 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
-        printf("15. <statement> -> return <type_expr> <statement>\n");
+        printf("15. <statement> -> return <expression> <other_exp>\n");
         NEXT_TOKEN();
 
-        NEXT_NONTERM(type_expr, ret);
+        NEXT_NONTERM(expression, ret);
+
+        NEXT_NONTERM(other_exp, ret);
 
         return statement();
     }
@@ -242,7 +244,7 @@ bool work_var() {
 
         NEXT_NONTERM(args, ret);
 
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
     }
@@ -254,59 +256,19 @@ bool work_var() {
     return true;
 }
 
-bool expression() {
-    NEXT_TOKEN();
-    return true;
-}
-
-bool def_var() {
-    if (token.type == T_ASSIGN) {
-        printf("19. <def_var> -> = <init_assign>\n");
-
-        NEXT_TOKEN();
-        return init_assign();
-    }
-
-    printf("20. <def_var> -> e\n");
-    return true;
-}
-
-bool init_assign() {
-    bool ret;
-
-    if (token.type == T_ID) {
-        printf("21. <init_assign> -> id_func ( <args> )\n");
-
-        NEXT_TOKEN();
-
-        EXPECTED_TOKEN(token.type != T_L_ROUND_BR);
-
-        NEXT_TOKEN();
-        NEXT_NONTERM(args, ret);
-
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
-
-        NEXT_TOKEN();
-        return true;
-    }
-
-    printf("22. <init_assign> -> <expression>\n");
-    return expression();
-}
-
 bool vars() {
     if (token.type == T_COMMA) {
-        printf("23. <vars> -> , id_num <vars>\n");
+        printf("19. <vars> -> , id_var <vars>\n");
 
         NEXT_TOKEN();
 
-        EXPECTED_TOKEN(token.type != T_ID);
+        EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
         return vars();
     }
     else if (token.type == T_ASSIGN) {
-        printf("24. <vars> -> , <vars>\n");
+        printf("20. <vars> -> = <type_expr>\n");
 
         NEXT_TOKEN();
 
@@ -319,36 +281,79 @@ bool vars() {
 bool type_expr() {
     bool ret;
 
-    if (token.type == T_ID) { // if var isnt func
-        printf("25. <type_expr> -> id ( <args> ) <type_expr_others>\n");
+    if (token.type == T_ID) { // if var func
+        printf("21. <type_expr> -> id_func ( <args> )\n");
         NEXT_TOKEN();
 
-        EXPECTED_TOKEN(token.type != T_L_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
         NEXT_NONTERM(args, ret);
 
-        EXPECTED_TOKEN(token.type != T_R_ROUND_BR);
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
 
-        return type_expr_others();
+        return true;
     }
 
-    printf("26. <type_expr> -> <expression> <type_expr_others>\n");
+    printf("22. <type_expr> -> <expression> <other_exp>\n");
     NEXT_NONTERM(expression, ret);
-    return type_expr_others();
+    return other_exp();
 }
 
-bool type_expr_others() {
-    if (token.type == T_COMMA) {
-        printf("27. <type_expr_others> -> , <type_expr>\n");
-        NEXT_TOKEN();
+bool other_exp() {
+    bool ret;
 
-        return type_expr();
+    if (token.type == T_COMMA) {
+        printf("23. <other_exp> -> , <expression> <other_exp>\n");
+        NEXT_TOKEN();
+        NEXT_NONTERM(expression, ret);
+
+        return other_exp();
     }
 
-    printf("28. <type_expr_others> -> e\n");
+    printf("24. <other_exp> -> e\n");
+    return true;
+}
+
+bool def_var() {
+    if (token.type == T_ASSIGN) {
+        printf("25. <def_var> -> = <init_assign>\n");
+
+        NEXT_TOKEN();
+        return init_assign();
+    }
+
+    printf("26. <def_var> -> e\n");
+    return true;
+}
+
+bool init_assign() {
+    bool ret;
+
+    if (token.type == T_ID) {
+        printf("27. <init_assign> -> id_func ( <args> )\n");
+
+        NEXT_TOKEN();
+
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
+
+        NEXT_TOKEN();
+        NEXT_NONTERM(args, ret);
+
+        EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
+
+        NEXT_TOKEN();
+        return true;
+    }
+
+    printf("28. <init_assign> -> <expression>\n");
+    return expression();
+}
+
+bool expression() {
+    NEXT_TOKEN();
     return true;
 }
 
@@ -391,7 +396,7 @@ bool params() {
         printf("34. <params> -> id : <type> <other_params>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_COLON);
+        EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type, ret);
@@ -410,10 +415,10 @@ bool other_params() {
         printf("35. <other_params> -> , id : <type> <other_params>\n");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_ID);
+        EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type != T_COLON);
+        EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
         NEXT_NONTERM(type, ret);
