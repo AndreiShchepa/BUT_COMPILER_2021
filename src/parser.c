@@ -3,28 +3,27 @@
  *
  * @file parser.c
  *
- * @brief Implement functions representing DFA and working with them.
- *        There is also keyword recognizing from token.
+ * @brief Implement functions processing rules for syntax analysis
  *
  * @author Andrei Shchapaniak <xshcha00>
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "expressions.h"
 #include "parser.h"
 #include "error.h"
 #include "str.h"
 
 token_t token;
 int err;
+static bool ret;
 
 bool prog() {
-    bool ret;
-
     if (token.keyword == KW_REQUIRE) {
         print_rule("1.  <prog> -> <prolog> <prog>");
 
-        NEXT_NONTERM(prolog, ret);
+        NEXT_NONTERM(prolog);
         return prog();
     }
     else if (token.keyword == KW_GLOBAL) {
@@ -43,12 +42,12 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type_params, ret);
+        NEXT_NONTERM(type_params);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type_returns, ret);
+        NEXT_NONTERM(type_returns);
 
         return prog();
     }
@@ -63,18 +62,18 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(params, ret);
+        NEXT_NONTERM(params);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type_returns, ret);
+        NEXT_NONTERM(type_returns);
 
-        NEXT_NONTERM(statement, ret);
+        NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
-        NEXT_TOKEN();
 
+        NEXT_TOKEN();
         return prog();
     }
     else if (token.type == T_ID) {
@@ -84,11 +83,11 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(args, ret);
+        NEXT_NONTERM(args);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-        NEXT_TOKEN();
 
+        NEXT_TOKEN();
         return prog();
     }
     else if (token.type == T_EOF) {
@@ -109,13 +108,11 @@ bool prolog() {
     EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
 
     NEXT_TOKEN();
-
     return true;
 }
 
 bool type() {
     if (token.type == T_KEYWORD) {
-
         if (token.keyword == KW_INTEGER) {
             print_rule("7.  <type> -> integer");
         }
@@ -141,24 +138,22 @@ bool type() {
 }
 
 bool statement() {
-    bool ret;
-
     if (token.keyword == KW_IF) {
         print_rule("11. <statement> -> if <expression> then <statement> else <statement>"
                 " end <statement>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression, ret);
+        NEXT_NONTERM(expression);
 
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement, ret);
+        NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement, ret);
+        NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -170,12 +165,12 @@ bool statement() {
                 " end <statement>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression, ret);
+        NEXT_NONTERM(expression);
 
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement, ret);
+        NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -192,19 +187,19 @@ bool statement() {
         EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type, ret);
+        NEXT_NONTERM(type);
 
-        NEXT_NONTERM(def_var, ret);
+        NEXT_NONTERM(def_var);
 
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
         print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
+
         NEXT_TOKEN();
+        NEXT_NONTERM(expression);
 
-        NEXT_NONTERM(expression, ret);
-
-        NEXT_NONTERM(other_exp, ret);
+        NEXT_NONTERM(other_exp);
 
         return statement();
     }
@@ -212,8 +207,7 @@ bool statement() {
         print_rule("14. <statement> -> id <work_var> <statement>");
 
         NEXT_TOKEN();
-
-        NEXT_NONTERM(work_var, ret);
+        NEXT_NONTERM(work_var);
 
         return statement();
     }
@@ -223,13 +217,11 @@ bool statement() {
 }
 
 bool work_var() {
-    bool ret;
-
     if (token.type == T_L_ROUND_BR) {
         print_rule("17. <work_var> -> ( <args> )");
-        NEXT_TOKEN();
 
-        NEXT_NONTERM(args, ret);
+        NEXT_TOKEN();
+        NEXT_NONTERM(args);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
@@ -248,7 +240,6 @@ bool vars() {
         print_rule("19. <vars> -> , id_var <vars>");
 
         NEXT_TOKEN();
-
         EXPECTED_TOKEN(token.type == T_ID);
 
         NEXT_TOKEN();
@@ -258,7 +249,6 @@ bool vars() {
         print_rule("20. <vars> -> = <type_expr>");
 
         NEXT_TOKEN();
-
         return type_expr();
     }
 
@@ -266,36 +256,33 @@ bool vars() {
 }
 
 bool type_expr() {
-    bool ret;
-
-    if (token.type == T_ID) { // if var func
+    if (token.type == T_ID) {
         print_rule("21. <type_expr> -> id_func ( <args> )");
-        NEXT_TOKEN();
 
+        NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(args, ret);
+        NEXT_NONTERM(args);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         NEXT_TOKEN();
-
         return true;
     }
 
     print_rule("22. <type_expr> -> <expression> <other_exp>");
-    NEXT_NONTERM(expression, ret);
+
+    NEXT_NONTERM(expression);
     return other_exp();
 }
 
 bool other_exp() {
-    bool ret;
-
     if (token.type == T_COMMA) {
         print_rule("23. <other_exp> -> , <expression> <other_exp>");
+
         NEXT_TOKEN();
-        NEXT_NONTERM(expression, ret);
+        NEXT_NONTERM(expression);
 
         return other_exp();
     }
@@ -317,17 +304,14 @@ bool def_var() {
 }
 
 bool init_assign() {
-    bool ret;
-
     if (token.type == T_ID) {
         print_rule("27. <init_assign> -> id_func ( <args> )");
 
         NEXT_TOKEN();
-
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(args, ret);
+        NEXT_NONTERM(args);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
@@ -339,19 +323,12 @@ bool init_assign() {
     return expression();
 }
 
-bool expression() {
-    NEXT_TOKEN();
-    return true;
-}
-
 bool type_returns() {
-    bool ret;
-
     if (token.type == T_COLON) {
         print_rule("29. <type_returns> -> : <type> <other_types>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type, ret);
+        NEXT_NONTERM(type);
 
         return other_types();
     }
@@ -361,13 +338,11 @@ bool type_returns() {
 }
 
 bool other_types() {
-    bool ret;
-
     if (token.type == T_COMMA) {
         print_rule("31. <other_types> -> , <type> <other_types>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type, ret);
+        NEXT_NONTERM(type);
 
         return other_types();
     }
@@ -377,8 +352,6 @@ bool other_types() {
 }
 
 bool params() {
-    bool ret;
-
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
 
@@ -386,7 +359,7 @@ bool params() {
         EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type, ret);
+        NEXT_NONTERM(type);
 
         return other_params();
     }
@@ -396,8 +369,6 @@ bool params() {
 }
 
 bool other_params() {
-    bool ret;
-
     if (token.type == T_COMMA) {
         print_rule("35. <other_params> -> , id : <type> <other_params>");
 
@@ -408,7 +379,7 @@ bool other_params() {
         EXPECTED_TOKEN(token.type == T_COLON);
 
         NEXT_TOKEN();
-        NEXT_NONTERM(type, ret);
+        NEXT_NONTERM(type);
 
         return other_params();
     }
@@ -420,7 +391,6 @@ bool other_params() {
 bool type_params() {
     if (type()) {
         print_rule("37. <type_params> -> <type> <other_types>");
-
         return other_types();
     }
 
@@ -429,10 +399,7 @@ bool type_params() {
 }
 
 bool args() {
-    if (token.type == T_ID     ||
-        token.type == T_STRING ||
-        token.type == T_FLOAT  ||
-        token.type == T_INT)
+    if (TOKEN_ID_TERM())
     {
         print_rule("39. <args> -> id_var <other_args>");
 
@@ -450,10 +417,7 @@ bool other_args() {
 
         NEXT_TOKEN();
 
-        if (token.type == T_ID     ||
-            token.type == T_STRING ||
-            token.type == T_FLOAT  ||
-            token.type == T_INT)
+        if (TOKEN_ID_TERM())
         {
             NEXT_TOKEN();
             return other_args();
@@ -468,7 +432,6 @@ bool other_args() {
 
 int parser() {
     FILE *f = stdin;
-    bool ret;
     err = NO_ERR;
     set_source_file(f);
 

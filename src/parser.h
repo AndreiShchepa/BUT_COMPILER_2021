@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include "scanner.h"
 
-// If you want to see all rules, which are used for process you program
+// If you want to see all rules, which are used for process your program
 // Pass RULES to cmake or read README.md
 #ifdef DEBUG_RULES
     #define print_rule(s) printf("%s\n", (s))
@@ -37,9 +37,9 @@
 
 // Call function for expected nonterminal,
 // in case of error return false
-#define NEXT_NONTERM(nonterm, ret) \
-        (ret) = (nonterm)(); \
-        if (!(ret)) { \
+#define NEXT_NONTERM(nonterm) \
+        ret = (nonterm)(); \
+        if (!ret) { \
             return false; \
         }
 
@@ -50,7 +50,14 @@
             return err; \
         }
 
+// Check if type of token is id or some term
+#define TOKEN_ID_TERM() token.type == T_ID    || \
+                        token.type == T_INT   || \
+                        token.type == T_FLOAT || \
+                        token.type == T_STRING
+
 extern token_t token;
+extern int err;
 
 /*
  * @brief process all rules start with nonterminal <prog>
@@ -195,11 +202,6 @@ bool args();
  * 42. <other_args> -> e
  */
 bool other_args();
-
-/*
- * @brief DELETE AFTER IMPLEMENTATION OF expression.c/h
- */
-bool expression();
 
 /*
  * @brief get first token and start the parser

@@ -23,4 +23,5 @@ ADD_EXECUTABLE(compiler
     src/debug.h
     src/scanner.c src/scanner.h
     src/error.h
-    src/parser.h src/parser.c)
+    src/parser.h src/parser.c
+    src/expressions.c src/expressions.h)
