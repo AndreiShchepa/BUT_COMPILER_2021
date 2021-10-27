@@ -8,6 +8,12 @@
 token_t token;
 int err;
 
+#ifdef DEBUG_RULES
+    #define print_rule(s) printf("%s\n", (s))
+#else
+    #define print_rule(s)
+#endif
+
 #define NEXT_TOKEN() \
         err = get_next_token(&token); \
         if (err != NO_ERR) { \
@@ -35,13 +41,13 @@ bool prog() {
     bool ret;
 
     if (token.keyword == KW_REQUIRE) {
-        printf("1.  <prog> -> <prolog> <prog>\n");
+        print_rule("1.  <prog> -> <prolog> <prog>");
 
         NEXT_NONTERM(prolog, ret);
         return prog();
     }
     else if (token.keyword == KW_GLOBAL) {
-        printf("2.  <prog> -> global id : function ( <type_params> ) <type_returns> <prog>\n");
+        print_rule("2.  <prog> -> global id : function ( <type_params> ) <type_returns> <prog>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -66,8 +72,8 @@ bool prog() {
         return prog();
     }
     else if (token.keyword == KW_FUNCTION) {
-        printf("3.  <prog> -> function id ( <params> ) <type_returns> <statement>"
-                " <return_type> end <prog>\n");
+        print_rule("3.  <prog> -> function id ( <params> ) <type_returns> <statement>"
+                " <return_type> end <prog>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -91,7 +97,7 @@ bool prog() {
         return prog();
     }
     else if (token.type == T_ID) {
-        printf("4.  <prog> -> id ( <args> ) <prog>\n");
+        print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -105,7 +111,7 @@ bool prog() {
         return prog();
     }
     else if (token.type == T_EOF) {
-        printf("5.  <prog> -> EOF\n");
+        print_rule("5.  <prog> -> EOF");
 
         return true;
     }
@@ -114,7 +120,7 @@ bool prog() {
 }
 
 bool prolog() {
-    printf("6.  <prolog> -> require T_STRING\n");
+    print_rule("6.  <prolog> -> require term_str");
 
     EXPECTED_TOKEN(token.keyword == KW_REQUIRE);
 
@@ -130,16 +136,16 @@ bool type() {
     if (token.type == T_KEYWORD) {
 
         if (token.keyword == KW_INTEGER) {
-            printf("7.  <type> -> integer\n");
+            print_rule("7.  <type> -> integer");
         }
         else if (token.keyword == KW_NUMBER) {
-            printf("8.  <type> -> number\n");
+            print_rule("8.  <type> -> number");
         }
         else if (token.keyword == KW_STRING) {
-            printf("9.  <type> -> string\n");
+            print_rule("9.  <type> -> string");
         }
         else if (token.keyword == KW_NIL) {
-            printf("10. <type> -> nil\n");
+            print_rule("10. <type> -> nil");
         }
         else {
             return false;
@@ -157,8 +163,8 @@ bool statement() {
     bool ret;
 
     if (token.keyword == KW_IF) {
-        printf("11. <statement> -> if <expression> then <statement> else <statement>"
-                " end <statement>\n");
+        print_rule("11. <statement> -> if <expression> then <statement> else <statement>"
+                " end <statement>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression, ret);
@@ -179,8 +185,8 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_WHILE) {
-        printf("12. <statement> -> while <expression> do <statement>"
-                " end <statement>\n");
+        print_rule("12. <statement> -> while <expression> do <statement>"
+                " end <statement>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression, ret);
@@ -196,7 +202,7 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_LOCAL) {
-        printf("13. <statement> -> local id_var : <type> <def_var> <statement>\n");
+        print_rule("13. <statement> -> local id_var : <type> <def_var> <statement>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -212,7 +218,7 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
-        printf("15. <statement> -> return <expression> <other_exp>\n");
+        print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
         NEXT_TOKEN();
 
         NEXT_NONTERM(expression, ret);
@@ -222,7 +228,7 @@ bool statement() {
         return statement();
     }
     else if (token.type == T_ID) {
-        printf("14. <statement> -> id <work_var>\n");
+        print_rule("14. <statement> -> id <work_var> <statement>");
 
         NEXT_TOKEN();
 
@@ -231,7 +237,7 @@ bool statement() {
         return statement();
     }
 
-    printf("16. <statement> -> e\n");
+    print_rule("16. <statement> -> e");
     return true;
 }
 
@@ -239,7 +245,7 @@ bool work_var() {
     bool ret;
 
     if (token.type == T_L_ROUND_BR) {
-        printf("17. <work_var> -> ( <args> )\n");
+        print_rule("17. <work_var> -> ( <args> )");
         NEXT_TOKEN();
 
         NEXT_NONTERM(args, ret);
@@ -249,7 +255,7 @@ bool work_var() {
         NEXT_TOKEN();
     }
     else {
-        printf("18. <work_var> -> <vars>\n");
+        print_rule("18. <work_var> -> <vars>");
         return vars();
     }
 
@@ -258,7 +264,7 @@ bool work_var() {
 
 bool vars() {
     if (token.type == T_COMMA) {
-        printf("19. <vars> -> , id_var <vars>\n");
+        print_rule("19. <vars> -> , id_var <vars>");
 
         NEXT_TOKEN();
 
@@ -268,7 +274,7 @@ bool vars() {
         return vars();
     }
     else if (token.type == T_ASSIGN) {
-        printf("20. <vars> -> = <type_expr>\n");
+        print_rule("20. <vars> -> = <type_expr>");
 
         NEXT_TOKEN();
 
@@ -282,7 +288,7 @@ bool type_expr() {
     bool ret;
 
     if (token.type == T_ID) { // if var func
-        printf("21. <type_expr> -> id_func ( <args> )\n");
+        print_rule("21. <type_expr> -> id_func ( <args> )");
         NEXT_TOKEN();
 
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -297,7 +303,7 @@ bool type_expr() {
         return true;
     }
 
-    printf("22. <type_expr> -> <expression> <other_exp>\n");
+    print_rule("22. <type_expr> -> <expression> <other_exp>");
     NEXT_NONTERM(expression, ret);
     return other_exp();
 }
@@ -306,26 +312,26 @@ bool other_exp() {
     bool ret;
 
     if (token.type == T_COMMA) {
-        printf("23. <other_exp> -> , <expression> <other_exp>\n");
+        print_rule("23. <other_exp> -> , <expression> <other_exp>");
         NEXT_TOKEN();
         NEXT_NONTERM(expression, ret);
 
         return other_exp();
     }
 
-    printf("24. <other_exp> -> e\n");
+    print_rule("24. <other_exp> -> e");
     return true;
 }
 
 bool def_var() {
     if (token.type == T_ASSIGN) {
-        printf("25. <def_var> -> = <init_assign>\n");
+        print_rule("25. <def_var> -> = <init_assign>");
 
         NEXT_TOKEN();
         return init_assign();
     }
 
-    printf("26. <def_var> -> e\n");
+    print_rule("26. <def_var> -> e");
     return true;
 }
 
@@ -333,7 +339,7 @@ bool init_assign() {
     bool ret;
 
     if (token.type == T_ID) {
-        printf("27. <init_assign> -> id_func ( <args> )\n");
+        print_rule("27. <init_assign> -> id_func ( <args> )");
 
         NEXT_TOKEN();
 
@@ -348,7 +354,7 @@ bool init_assign() {
         return true;
     }
 
-    printf("28. <init_assign> -> <expression>\n");
+    print_rule("28. <init_assign> -> <expression>");
     return expression();
 }
 
@@ -361,7 +367,7 @@ bool type_returns() {
     bool ret;
 
     if (token.type == T_COLON) {
-        printf("29. <type_returns> -> : <type> <other_types>\n");
+        print_rule("29. <type_returns> -> : <type> <other_types>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(type, ret);
@@ -369,7 +375,7 @@ bool type_returns() {
         return other_types();
     }
 
-    printf("30. <type_returns> -> e\n");
+    print_rule("30. <type_returns> -> e");
     return true;
 }
 
@@ -377,7 +383,7 @@ bool other_types() {
     bool ret;
 
     if (token.type == T_COMMA) {
-        printf("31. <other_types> -> , <type> <other_types>\n");
+        print_rule("31. <other_types> -> , <type> <other_types>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(type, ret);
@@ -385,7 +391,7 @@ bool other_types() {
         return other_types();
     }
 
-    printf("32. <other_types> -> e\n");
+    print_rule("32. <other_types> -> e");
     return true;
 }
 
@@ -393,7 +399,7 @@ bool params() {
     bool ret;
 
     if (token.type == T_ID) {
-        printf("34. <params> -> id : <type> <other_params>\n");
+        print_rule("34. <params> -> id : <type> <other_params>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -404,7 +410,7 @@ bool params() {
         return other_params();
     }
 
-    printf("33. <params> -> e\n");
+    print_rule("33. <params> -> e");
     return true;
 }
 
@@ -412,7 +418,7 @@ bool other_params() {
     bool ret;
 
     if (token.type == T_COMMA) {
-        printf("35. <other_params> -> , id : <type> <other_params>\n");
+        print_rule("35. <other_params> -> , id : <type> <other_params>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -426,18 +432,18 @@ bool other_params() {
         return other_params();
     }
 
-    printf("36. <other_params> -> e\n");
+    print_rule("36. <other_params> -> e");
     return true;
 }
 
 bool type_params() {
     if (type()) {
-        printf("37. <type_params> -> <type> <other_types>\n");
+        print_rule("37. <type_params> -> <type> <other_types>");
 
         return other_types();
     }
 
-    printf("38. <type_params> -> e\n");
+    print_rule("38. <type_params> -> e");
     return true;
 }
 
@@ -447,19 +453,19 @@ bool args() {
         token.type == T_FLOAT  ||
         token.type == T_INT)
     {
-        printf("39. <args> -> id <other_args>\n");
+        print_rule("39. <args> -> id_var <other_args>");
 
         NEXT_TOKEN();
         return other_args();
     }
 
-    printf("40. <args> -> e\n");
+    print_rule("40. <args> -> e");
     return true;
 }
 
 bool other_args() {
     if (token.type == T_COMMA) {
-        printf("41. <other_args> -> , <arg> <other_args>\n");
+        print_rule("41. <other_args> -> , <arg> <other_args>");
 
         NEXT_TOKEN();
 
@@ -475,7 +481,7 @@ bool other_args() {
         return false;
     }
 
-    printf("42. <other_args> -> e\n");
+    print_rule("42. <other_args> -> e");
     return true;
 }
 
@@ -494,7 +500,6 @@ int parser() {
     ret = prog();
 
     if (!ret && err == NO_ERR) {
-        printf("%d\n", ret);
         err = PARSER_ERR;
     }
 

@@ -3,6 +3,22 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_C_FLAGS "-std=c99 -Wall -Wextra -Werror -g")
 
+option(DEBUG_RULES   "" OFF)
+option(DEBUG_SCANNER "" OFF)
+option(DEBUG_TOKENS  "" OFF)
+
+if (DEBUG_RULES)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_RULES")
+endif()
+
+if (DEBUG_SCANNER)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_SCANNER")
+endif()
+
+if (DEBUG_TOKENS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_TOKENS")
+endif()
+
 project(compiler)
 
 ADD_EXECUTABLE(compiler
