@@ -11,9 +11,6 @@ for i in "$@"; do
         RULES)
             set_dbg_cmake "$i"
             ;;
-        TOKENS)
-            set_dbg_cmake "$i"
-            ;;
         SCANNER)
             set_dbg_cmake "$i"
             ;;
