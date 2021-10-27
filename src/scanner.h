@@ -12,6 +12,7 @@
 #ifndef _SCANNER_H
 #define _SCANNER_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include "str.h"
 #define COUNT_KEYWORDS 12

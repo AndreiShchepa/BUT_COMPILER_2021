@@ -6,12 +6,19 @@
  *
  */
 
+#ifdef DEBUG_SCANNER
+    #include "scanner.h"
+#else
+    #include "parser.h"
+#endif
+
 #include <stdio.h>
-#include "scanner.h"
 #include "error.h"
 #include "str.h"
 
 int main() {
+
+#ifdef DEBUG_SCANNER
     FILE *f = stdin;
     set_source_file(f);
 
@@ -28,5 +35,26 @@ int main() {
 
     str_free(&token.attr.id);
     fprintf(stderr, "\nNo error in scanner\n");
+#else
+    int ret;
+
+    ret = parser();
+
+    if (ret == NO_ERR) {
+        fprintf(stderr, "\nNo error in parser\n");
+    }
+    else {
+        if (ret == INTERNAL_ERR) {
+            fprintf(stderr, "\nInternal err\n");
+        }
+        else if (ret == SCANNER_ERR) {
+            fprintf(stderr, "\nScanner err\n");
+        }
+        else {
+            fprintf(stderr, "\nParser err\n");
+        }
+    }
+#endif
+
 	return 0;
 }
