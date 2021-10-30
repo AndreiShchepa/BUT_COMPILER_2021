@@ -128,7 +128,7 @@ void DLL_InsertFirst( DLList *list, char * data ) {
     list->firstElement->data[2] = '\0';
 }
 
-int Get_Index_Of_Char( char * data){
+int Get_Index_Of_String(char * data){
     int i = 15;
     for(int j = 0; j < 17; j++){
         if(strcmp(data, Chars[j]) == 0){
@@ -139,19 +139,21 @@ int Get_Index_Of_Char( char * data){
 }
 
 bool expression() {
-    char data[3] = {")\0"};
+    char data[3] = {"i\0"};
     // todo conflicts with < char as in <i> and <=, solution, "<" = "<<"
 
     DLList list;
     DLL_Init(&list);
     DLL_InsertFirst(&list, data);
 
-    printf("%s ", list.firstElement->data);
-    printf("%c %c %s %s\n", data[0], Precedence_Table[0][0], Chars [0], Rules[0]);
-    // char c = Precedence_Table[stack_top][token->type];
+    printf("%c %s \n", data[0], Rules[0]);
+    char precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
 //    int i = 0;
-    printf("%s token = %d data = %d ich vztah = %c \n", token.attr.id.str, Get_Index_Of_Char(token.attr.id.str),
-           Get_Index_Of_Char(data),Precedence_Table[Get_Index_Of_Char(data)][Get_Index_Of_Char(token.attr.id.str)] );
-    NEXT_TOKEN();
+
+    while(TOKEN_ID_EXPRESSION()){
+        printf("%s vztah = %c \n", token.attr.id.str, precedence );
+        NEXT_TOKEN();
+    }
+
     return true;
 }

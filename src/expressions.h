@@ -33,5 +33,5 @@ void DLL_InsertFirst( DLList *, char * );
 void DLL_InsertLast( DLList *, char * );
 void DLL_GetFirst( DLList *, int * );
 void DLL_GetLast( DLList *, int * );
-int Get_Index_Of_Char( char * );
+int Get_Index_Of_String(char * );
 #endif // _EXPRESSION_H
