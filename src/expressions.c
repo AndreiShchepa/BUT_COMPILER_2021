@@ -242,7 +242,7 @@ bool expression() {
 
     while(TOKEN_ID_EXPRESSION()){
         xyz:
-        // Look what char is on top of the variable (+, -, <= etc.)
+        // Look what char is on top of the stack (+, -, <= etc.)
         DLL_Top(&list, data);
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
