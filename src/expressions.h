@@ -13,9 +13,24 @@
 
 #include <stdbool.h>
 
-/*
- *
- */
-bool expression();
 
+typedef struct DLLElement {
+    char data[3];
+    struct DLLElement *previousElement;
+    struct DLLElement *nextElement;
+} *DLLElementPtr;
+
+
+typedef struct {
+    DLLElementPtr firstElement;
+    DLLElementPtr lastElement;
+} DLList;
+
+bool expression();
+void DLL_Init( DLList * );
+void DLL_Dispose( DLList * );
+void DLL_InsertFirst( DLList *, char * );
+void DLL_InsertLast( DLList *, char * );
+void DLL_GetFirst( DLList *, int * );
+void DLL_GetLast( DLList *, int * );
 #endif // _EXPRESSION_H
