@@ -28,8 +28,10 @@ typedef struct {
 
 bool expression();
 void DLL_Init( DLList * );
-void DLL_Dispose( DLList * );
-void DLL_InsertFirst( DLList *, char * );
+void DLL_Dispose( DLLElementPtr );
+void DLL_Insert(DLList *, char *);
+bool DLL_Close(DLList *);
+void DLL_Top(DLList *, char * )
 void DLL_InsertLast( DLList *, char * );
 void DLL_GetFirst( DLList *, int * );
 void DLL_GetLast( DLList *, int * );
