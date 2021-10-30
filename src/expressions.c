@@ -75,11 +75,14 @@ char Rules[][5] = {
         {"E//E"}, {"#E"}, {"E<E"}, {"E<=E"}, {"E>E"}, {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
+// The first initialization, we create the stack and put $ as the first element of the stack
 void DLL_Init( DLList *list ) {
+    // We create the list and check for malloc
     list = malloc(sizeof(DLList));
     if(list == NULL){
         //todo Call error handler
     }
+    // We create the first element and check for malloc
     DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
     if (TempElement == NULL) {
         //todo Call error handler
@@ -94,17 +97,18 @@ void DLL_Init( DLList *list ) {
     list->firstElement->nextElement = NULL;
 
     // We add $ as the first element of stack
-    list->firstElement->data[0] = '$';
-    list->firstElement->data[1] = '\0';
+    strcpy(list->firstElement->data, "$\0");
 }
-
+// We delete everything after Element with Element included
 void DLL_Dispose( DLLElementPtr Element ) {
     if(Element == NULL){
         //todo Call error handler
         return;
     }
+
     DLLElementPtr TempElement = Element;
     DLLElementPtr DelElement;
+
     while(TempElement != NULL){
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
@@ -113,7 +117,7 @@ void DLL_Dispose( DLLElementPtr Element ) {
 }
 
 
-
+// We are inserting << with its char (+, -, <= etc.)
 void DLL_Insert(DLList *list, char * data ) {
 
     if(list == NULL){
@@ -123,7 +127,11 @@ void DLL_Insert(DLList *list, char * data ) {
     int flag = 0;
 
     DLLElementPtr find = list->lastElement;
-    //todo ak next neni empty ked najdem prvy znak znamena to ze som preskocil E inak iba pridam na vrch stacku
+    // If stack contains for example $E and data contains +, we skip to previous element until we find one of our chars(+, -, <= etc.) and
+    // connect the element in a way to create $<<E+,
+
+    // otherwise if there is no E on top of stack, for example $<<E+, we just copy our << with data, $<<E+ -> $<<E+<<(
+    // Whether there is E on top of the stack we check with int flag
     while((strcmp(find->data, "E") == 0) && find->previousElement != NULL){
         find = find->previousElement;
         flag = 1;
@@ -196,9 +204,11 @@ bool DLL_Close(DLList *list) {
             // We change << with E
             strcpy(find->data, "E\0");
             find->nextElement = NULL;
+            // We were successful in finding a rule
             return true;
         }
     }
+    // We were not successful in finding a rule
     return false;
 }
 // Returns top of the stack
@@ -211,6 +221,7 @@ void DLL_Top(DLList *list, char * data) {
 }
 
 int Get_Index_Of_String(char * data){
+    // if i remains 15 at the end of the for cycle, it means data contains not one of our chars (+, -, <= etc.) but a string or a variable
     int i = 15;
     for(int j = 0; j < 17; j++){
         if(strcmp(data, Chars[j]) == 0){
@@ -231,19 +242,38 @@ bool expression() {
 
     while(TOKEN_ID_EXPRESSION()){
         xyz:
+        // Look what char is on top of the variable (+, -, <= etc.)
         DLL_Top(&list, data);
+        // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
         if(precedence == '<'){
+            // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
                 data[0] = 'i', data[1] = '\0';
             } else {
+                // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
             }
+            // We copy the character from the token with << added infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             DLL_Insert(&list, data);
         } else if(precedence == '>'){
-            DLL_Close(&list);
+            // We find the first << from the top of the stack to the bottom and check it against the rules, if we didnt find a rule we return false as expression is wrong
+            if(!DLL_Close(&list)){
+                return false;
+            }
+            // If we found a rule, we check the precedence of the new created stack by returning to the start of the while cycle
             goto xyz;
+            // We just copy the data onto the stack
+        } else if(precedence == '='){
+            // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
+        } else if(precedence == 's'){
+            // Error
+        } else if(precedence == 'c'){
+            // Error
+        } else {
+
         }
+        // Test print
         printf("%c TOKEN = \"%s\"\n", precedence, token.attr.id.str);
         NEXT_TOKEN();
     }
