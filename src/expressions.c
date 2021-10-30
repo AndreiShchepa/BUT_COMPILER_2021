@@ -63,7 +63,7 @@ char Precedence_Table[][17] = {
 
         {"<<<<<<<<<<<<<<c<c"} // $
 };
-char Chars[][17] = {
+char Chars[][2] = {
         {"#"}, {"*"}, {"/"}, {"//"},
         {"+"}, {"-"},
         {".."}, {"<"}, {"<="}, {">"}, {">="}, {"=="}, {"~="},
@@ -72,7 +72,7 @@ char Chars[][17] = {
         {"i"},
         {"$"}
 };
-char Rules[][17] = {
+char Rules[][5] = {
         {"i"}, {"+E"}, {"(E)"}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
         {"E//E"}, {"#E"}, {"E<E"}, {"E<=E"}, {"E>E"}, {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
@@ -136,6 +136,9 @@ bool expression() {
 
     printf("%s\n", list.firstElement->data);
     printf("%c %c %s %s\n", data[0], Precedence_Table[0][0], Chars [0], Rules[0]);
+    // char c = Precedence_Table[stack_top][token->type];
+    int i = 0;
+    while()
     NEXT_TOKEN();
     return true;
 }
