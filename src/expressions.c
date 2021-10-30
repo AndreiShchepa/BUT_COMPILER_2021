@@ -19,7 +19,7 @@
 //    uint64_t num_i;
 //    double num_f;
 //} token_attr_t;
-//
+
 //typedef struct token {
 //    token_type_t type;
 //    keywords_t keyword;
@@ -63,7 +63,7 @@ char Precedence_Table[][17] = {
 
         {"<<<<<<<<<<<<<<c<c"} // $
 };
-char Chars[][2] = {
+char Chars[][3] = {
         {"#"}, {"*"}, {"/"}, {"//"},
         {"+"}, {"-"},
         {".."}, {"<"}, {"<="}, {">"}, {">="}, {"=="}, {"~="},
@@ -100,6 +100,8 @@ void DLL_Dispose( DLList *list ) {
     list->lastElement = NULL;
 }
 
+
+
 void DLL_InsertFirst( DLList *list, char * data ) {
 
     if(list == NULL){
@@ -126,19 +128,30 @@ void DLL_InsertFirst( DLList *list, char * data ) {
     list->firstElement->data[2] = '\0';
 }
 
+int Get_Index_Of_Char( char * data){
+    int i = 15;
+    for(int j = 0; j < 17; j++){
+        if(strcmp(data, Chars[j]) == 0){
+            return j;
+        }
+    }
+    return i;
+}
+
 bool expression() {
-    char data[3] = {"$\0"};
+    char data[3] = {")\0"};
     // todo conflicts with < char as in <i> and <=, solution, "<" = "<<"
 
     DLList list;
     DLL_Init(&list);
     DLL_InsertFirst(&list, data);
 
-    printf("%s\n", list.firstElement->data);
+    printf("%s ", list.firstElement->data);
     printf("%c %c %s %s\n", data[0], Precedence_Table[0][0], Chars [0], Rules[0]);
     // char c = Precedence_Table[stack_top][token->type];
-    int i = 0;
-    while()
+//    int i = 0;
+    printf("%s token = %d data = %d ich vztah = %c \n", token.attr.id.str, Get_Index_Of_Char(token.attr.id.str),
+           Get_Index_Of_Char(data),Precedence_Table[Get_Index_Of_Char(data)][Get_Index_Of_Char(token.attr.id.str)] );
     NEXT_TOKEN();
     return true;
 }
