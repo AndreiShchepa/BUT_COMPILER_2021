@@ -17,59 +17,59 @@
 #define LENGHT_OF_OPERATORS 3
 #define LENGHT_OF_RULES 5
 
-typedef struct DLLElement {
+typedef struct Element {
     char data[3];
-    struct DLLElement *previousElement;
-    struct DLLElement *nextElement;
-} *DLLElementPtr;
+    struct Element *previousElement;
+    struct Element *nextElement;
+} *ElementPtr;
 
 
 typedef struct {
-    DLLElementPtr firstElement;
-    DLLElementPtr lastElement;
-} DLList;
+    ElementPtr firstElement;
+    ElementPtr lastElement;
+} List;
 
 bool expression();
 
 /*
  * @brief The first initialization, we create the stack and put $ as the first element of the stack
  */
-DLList * Init(DLList * );
+List * Init(List * );
 
 /*
 * @brief We delete everything after Element with Element included
 */
-void Dispose(DLLElementPtr );
+void Dispose(ElementPtr );
 
 /*
 * @brief We are inserting << with its char (+, -, <= etc.)
 */
-void Insert(DLList *, char *);
+void Insert(List *, char *);
 
 /*
 * @brief We close the first part of the expression we find, for example <<E+<<i -> <<E+E
 */
-bool Close(DLList * );
+bool Close(List * );
 
 /*
 * @brief Returns top of the stack
 */
-void Top(DLList *, char * );
+void Top(List *, char * );
 
 /*
 * @brief We Copy a string on top of the stack
 */
-void Push(DLList *, char * );
+void Push(List *, char * );
 
 /*
 * @brief debug tool
 */
-void print_stack_debug(DLList * );
+void print_stack_debug(List * );
 
 /*
 * @brief We check if only thing left on stack is "$E"
 */
-bool Check_Correct_Closure(DLList * );
+bool Check_Correct_Closure(List * );
 
 /*
 * @brief Return on which index we can find our precedence rule
@@ -79,5 +79,5 @@ int Get_Index_Of_String(char * );
 /*
 * @brief Frees list amd all its elements
 */
-void Deallocate(DLList *list);
+void Deallocate(List *list);
 #endif // _EXPRESSION_H

@@ -56,15 +56,15 @@ char Rules[][LENGHT_OF_RULES] = {
         {"E//E"}, {"E#"}, {"E<E"}, {"E=<E"}, {"E>E"}, {"E=>E"}, {"E==E"}, {"E=~E"}, {"E..E"}
 };
 
-DLList * Init(DLList * list) {
+List * Init(List * list) {
     // We create the list and check for malloc
-    list = malloc(sizeof(DLList));
+    list = malloc(sizeof(List));
     if(list == NULL){
         return NULL;
     }
 
     // We create the first element and check for malloc
-    DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
+    ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         return NULL;
     }
@@ -81,13 +81,13 @@ DLList * Init(DLList * list) {
     strcpy(list->firstElement->data, "$\0");
     return list;
 }
-void Dispose(DLLElementPtr Element) {
+void Dispose(ElementPtr Element) {
     if(Element == NULL){
         return;
     }
     // We create additional Element to help us with deletion
-    DLLElementPtr TempElement = Element;
-    DLLElementPtr DelElement;
+    ElementPtr TempElement = Element;
+    ElementPtr DelElement;
     // Deleting
     while(TempElement != NULL){
         DelElement = TempElement;
@@ -95,14 +95,14 @@ void Dispose(DLLElementPtr Element) {
         free(DelElement);
     }
 }
-void Insert(DLList * list, char * data) {
+void Insert(List * list, char * data) {
 //    printf("insert: %s -> ", data);
     if(list == NULL){
         return;
     }
     int flag = 0;
 
-    DLLElementPtr find = list->lastElement;
+    ElementPtr find = list->lastElement;
     // If stack contains for example $E and data contains +, we skip to previous element until we find one of our chars(+, -, <= etc.) and
     // connect the element in a way to create $<<E+,
 
@@ -114,8 +114,8 @@ void Insert(DLList * list, char * data) {
     }
 
     // We check if malloc was successful
-    DLLElementPtr TempElement_first = malloc(sizeof(struct DLLElement));
-    DLLElementPtr TempElement_second = malloc(sizeof(struct DLLElement));
+    ElementPtr TempElement_first = malloc(sizeof(struct Element));
+    ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_first == NULL || TempElement_second == NULL) {
         Deallocate(list);
         return;
@@ -138,7 +138,7 @@ void Insert(DLList * list, char * data) {
         strcpy(TempElement_second->data, data);
     // If we found E on stack, means we are copying << before E and data after E
     } else {
-        DLLElementPtr Element_With_E = find->nextElement;
+        ElementPtr Element_With_E = find->nextElement;
 
         find->nextElement = TempElement_first;
         list->lastElement = TempElement_second;
@@ -159,14 +159,14 @@ void Insert(DLList * list, char * data) {
     }
     print_stack_debug(list);
 }
-bool Close(DLList * list) {
+bool Close(List * list) {
     if(list == NULL){
         return false;
     }
 
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
-    DLLElementPtr find = list->lastElement;
+    ElementPtr find = list->lastElement;
 
     // We copy into our array until we dont find closing <<
     while((strcmp(find->data, "<<") != 0) && find->previousElement != NULL){
@@ -190,29 +190,29 @@ bool Close(DLList * list) {
     // We were not successful in finding a rule
     return false;
 }
-void Top(DLList * list, char data[]) {
+void Top(List * list, char data[]) {
     if(list == NULL){
         return;
     }
-    DLLElementPtr find = list->lastElement;
+    ElementPtr find = list->lastElement;
     // If stack contains for example $E, we skip to previous element until we find one of our chars($, +, -, <= etc.)
     while((strcmp(find->data, "E") == 0) && find->previousElement != NULL){
         find = find->previousElement;
     }
     strcpy(data, find->data);
 }
-void Push(DLList * list, char * data) {
+void Push(List * list, char * data) {
     if(list == NULL){
         return;
     }
     // We create our new element
-    DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
+    ElementPtr TempElement = malloc(sizeof(struct Element));
     if(TempElement == NULL){
         Deallocate(list);
         return;
     }
     // We find the position of last element on the stack
-    DLLElementPtr find = list->lastElement;
+    ElementPtr find = list->lastElement;
 
     find->nextElement = TempElement;
     // Connect the chains
@@ -222,15 +222,15 @@ void Push(DLList * list, char * data) {
     // Copy onto the stack
     strcpy(TempElement->data, data);
 }
-void print_stack_debug(DLList * list){
-    DLLElementPtr PrintElement = list->firstElement;
+void print_stack_debug(List * list){
+    ElementPtr PrintElement = list->firstElement;
     while(PrintElement != NULL) {
         printf("%s", PrintElement->data);
         PrintElement = PrintElement->nextElement;
     }
     printf("\n");
 }
-bool Check_Correct_Closure(DLList * list){
+bool Check_Correct_Closure(List * list){
     if(list != NULL){
         // We just forcefully check if first element on stack is $ and the second one E
         //Todo this is very obscure way to do this, also should add if statements to check if we are not dealing with NULL pointer
@@ -250,7 +250,7 @@ int Get_Index_Of_String(char * data){
     }
     return i;
 }
-void Deallocate(DLList * list){
+void Deallocate(List * list){
     if(list != NULL){
         Dispose(list->firstElement);
         free(list);
@@ -259,7 +259,7 @@ void Deallocate(DLList * list){
 bool expression() {
     //todo     ret = INTERNAL_ERR; pridat vsade kde moze vzniknut chyba kvoli malloc
     char data[3] = {"$"};
-    DLList *list = NULL;
+    List *list = NULL;
     list = Init(list);
     char precedence;
 
