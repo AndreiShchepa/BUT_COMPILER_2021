@@ -3,9 +3,9 @@
  *
  * @file expression.h
  *
- * @brief
+ * @brief Implement functions processing the correct order of identificators in expressions
  *
- * @author
+ * @author Richard Gajdosik <xgajdo33>
  */
 
 #ifndef _EXPRESSION_H
