@@ -157,7 +157,7 @@ void Insert(DLList * list, char * data) {
         strcpy(TempElement_first->data, "<<\0");
         strcpy(TempElement_second->data, data);
     }
-//    print_stack_debug(list);
+    print_stack_debug(list);
 }
 bool Close(DLList * list) {
     if(list == NULL){
@@ -270,7 +270,7 @@ bool expression() {
         Top(list, data);
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
-//        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
+        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == INDEX_OF_IDENTIFICATOR){
@@ -287,22 +287,23 @@ bool expression() {
                 Deallocate(list);
                 return false;
             }
-//            print_stack_debug(list);
+            print_stack_debug(list);
             // If we found a rule, we check the precedence of the new created stack by returning to the start of the while cycle
             goto start;
         }
             // We just copy the data onto the stack
         else if(precedence == '='){
             Push(list, token.attr.id.str);
+            print_stack_debug(list);
         }
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         else if(precedence == 's'){
             while(Close(list)){
-//                print_stack_debug(list);
+                print_stack_debug(list);
             }
             // If we were successful in reducing the expression
             if(Check_Correct_Closure(list)){
-//                printf("Vyraz je korektny.\n");
+                printf("Vyraz je korektny.\n");
                 Deallocate(list);
                 return true;
             }
@@ -324,16 +325,16 @@ bool expression() {
         // todo ret
         return INTERNAL_ERR;
     }
-//    printf("\nwe are closing this:");
-//    print_stack_debug(list);
+    printf("\nwe are closing this:");
+    print_stack_debug(list);
 
     // We are reducing the expression by using our rules
     while(Close(list)){
-//        print_stack_debug(list);
+        print_stack_debug(list);
     }
     // If we were successful in reducing the expression
     if(Check_Correct_Closure(list)){
-//        printf("Vyraz je korektny.\n");
+        printf("Vyraz je korektny.\n");
         Deallocate(list);
         return true;
     }
