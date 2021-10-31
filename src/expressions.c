@@ -273,6 +273,10 @@ void print_stack_debug(DLList *list){
     }
     printf("\n");
 }
+void Deallocate(DLList *list){
+    DLL_Dispose( list->firstElement );
+    free(list);
+}
 bool expression() {
     // todo get rid of magic numbers
     // todo conflicts with < char as in <i> and < as in f<5, solution, "<" = "<<"
@@ -301,6 +305,7 @@ bool expression() {
         } else if(precedence == '>'){
             // We find the first << from the top of the stack to the bottom and check it against the rules, if we didnt find a rule we return false as expression is wrong
             if(!DLL_Close(list)){
+                Deallocate(list);
                 return false;
             }
             print_stack_debug(list);
@@ -319,11 +324,17 @@ bool expression() {
             if(Check_Correct_Closure(list)){
                 printf("Vyraz je korektny.\n");
             }
-            return Check_Correct_Closure(list);
-        } else if(precedence == 'c'){
-            return false;
-        } else {
 
+            if(Check_Correct_Closure(list)){
+                Deallocate(list);
+                return true;
+            }
+            Deallocate(list);
+            return false;
+            // If we found something that doesnt have correct order, for example )(
+        } else if(precedence == 'c'){
+            Deallocate(list);
+            return false;
         }
         // Test print
 //        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
@@ -338,5 +349,10 @@ bool expression() {
     if(Check_Correct_Closure(list)){
         printf("Vyraz je korektny.\n");
     }
-    return Check_Correct_Closure(list);
+    if(Check_Correct_Closure(list)){
+        Deallocate(list);
+        return true;
+    }
+    Deallocate(list);
+    return false;
 }

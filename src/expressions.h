@@ -30,10 +30,11 @@ bool expression();
 DLList * DLL_Init( DLList * );
 void DLL_Dispose( DLLElementPtr );
 void DLL_Insert(DLList *, char *);
-bool DLL_Close(DLList *);
+bool DLL_Close(DLList * );
 void DLL_Top(DLList *, char * );
 void DLL_Push(DLList *, char * );
 void print_stack_debug(DLList * );
-bool Check_Correct_Closure(DLList *);
+bool Check_Correct_Closure(DLList * );
 int Get_Index_Of_String(char * );
+void Deallocate(DLList * );
 #endif // _EXPRESSION_H

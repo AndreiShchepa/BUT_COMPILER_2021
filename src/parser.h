@@ -73,6 +73,7 @@
                               token.type == T_GE          || \
                               token.type == T_EQ          || \
                               token.type == T_NEQ         || \
+                              token.type == T_LENGTH      || \
                               token.type == T_L_ROUND_BR  || \
                               token.type == T_R_ROUND_BR  || \
                               token.type == T_CONCAT
