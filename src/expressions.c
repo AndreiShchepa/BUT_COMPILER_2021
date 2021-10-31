@@ -119,7 +119,7 @@ void DLL_Dispose( DLLElementPtr Element ) {
 }
 // We are inserting << with its char (+, -, <= etc.)
 void DLL_Insert(DLList *list, char * data ) {
-
+    printf("insert: %s -> ", data);
     if(list == NULL){
         //todo Call error handler
         return;
@@ -180,7 +180,9 @@ void DLL_Insert(DLList *list, char * data ) {
         strcpy(TempElement_first->data, "<<\0");
         strcpy(TempElement_second->data, data);
     }
+    print_stack_debug(list);
 }
+// We close the first part of the expression we find, for example <<E+<<i -> <<E+E
 bool DLL_Close(DLList *list) {
     if(list == NULL){
         //todo Call error handler
@@ -244,7 +246,12 @@ void DLL_Push(DLList *list, char * data) {
     // Copy onto the stack
     strcpy(TempElement->data, data);
 }
-
+bool Check_Correct_Closure(DLList *list){
+    if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
+        return true;
+    }
+    return false;
+}
 int Get_Index_Of_String(char * data){
     // if i remains 15 at the end of the for cycle, it means data contains not one of our chars (+, -, <= etc.) but a string or a variable
     int i = 15;
@@ -274,12 +281,10 @@ bool expression() {
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
         DLL_Top(list, data);
-//        print_stack_debug(list);
-
 
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
-//        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
+        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
@@ -295,17 +300,23 @@ bool expression() {
             if(!DLL_Close(list)){
                 return false;
             }
+            print_stack_debug(list);
             // If we found a rule, we check the precedence of the new created stack by returning to the start of the while cycle
             goto xyz;
+        }
             // We just copy the data onto the stack
-        } else if(precedence == '='){
+        else if(precedence == '='){
             DLL_Push(list, data);
+        }
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
-        } else if(precedence == 's'){
+        else if(precedence == 's'){
             while(DLL_Close(list)){
-                // keep closing expression until there is no longer a rule, when there is false returned we have $E on stack or something that is wrong
+                print_stack_debug(list);
             }
-            break;
+            if(Check_Correct_Closure(list)){
+                printf("Vyraz je korektny.\n");
+            }
+            return Check_Correct_Closure(list);
         } else if(precedence == 'c'){
             return false;
         } else {
@@ -316,6 +327,13 @@ bool expression() {
 //        print_stack_debug(list);
         NEXT_TOKEN();
     }
-//    print_stack_debug(list);
-    return true;
+    printf("\nwe are closing this:");
+    print_stack_debug(list);
+    while(DLL_Close(list)){
+        print_stack_debug(list);
+    }
+    if(Check_Correct_Closure(list)){
+        printf("Vyraz je korektny.\n");
+    }
+    return Check_Correct_Closure(list);
 }
