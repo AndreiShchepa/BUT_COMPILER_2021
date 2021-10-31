@@ -56,7 +56,6 @@ char Rules[][LENGHT_OF_RULES] = {
         {"E//E"}, {"E#"}, {"E<E"}, {"E=<E"}, {"E>E"}, {"E=>E"}, {"E==E"}, {"E=~E"}, {"E..E"}
 };
 
-// The first initialization, we create the stack and put $ as the first element of the stack
 DLList * Init(DLList * list) {
     // We create the list and check for malloc
     list = malloc(sizeof(DLList));
@@ -82,7 +81,6 @@ DLList * Init(DLList * list) {
     strcpy(list->firstElement->data, "$\0");
     return list;
 }
-// We delete everything after Element with Element included
 void Dispose(DLLElementPtr Element) {
     if(Element == NULL){
         return;
@@ -97,7 +95,6 @@ void Dispose(DLLElementPtr Element) {
         free(DelElement);
     }
 }
-// We are inserting << with its char (+, -, <= etc.)
 void Insert(DLList * list, char * data) {
     printf("insert: %s -> ", data);
     if(list == NULL){
@@ -162,7 +159,6 @@ void Insert(DLList * list, char * data) {
     }
     print_stack_debug(list);
 }
-// We close the first part of the expression we find, for example <<E+<<i -> <<E+E
 bool Close(DLList * list) {
     if(list == NULL){
         return false;
@@ -196,7 +192,6 @@ bool Close(DLList * list) {
     // We were not successful in finding a rule
     return false;
 }
-// Returns top of the stack
 void Top(DLList * list, char data[]) {
     if(list == NULL){
         return;
@@ -208,7 +203,6 @@ void Top(DLList * list, char data[]) {
     }
     strcpy(data, find->data);
 }
-// Copy a string on top of the stack
 void Push(DLList * list, char * data) {
     if(list == NULL){
         return;
@@ -228,6 +222,14 @@ void Push(DLList * list, char * data) {
     // Copy onto the stack
     strcpy(TempElement->data, data);
 }
+void print_stack_debug(DLList * list){
+    DLLElementPtr PrintElement = list->firstElement;
+    while(PrintElement != NULL) {
+        printf("%s", PrintElement->data);
+        PrintElement = PrintElement->nextElement;
+    }
+    printf("\n");
+}
 bool Check_Correct_Closure(DLList * list){
     if(list != NULL){
         if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
@@ -246,14 +248,6 @@ int Get_Index_Of_String(char * data){
     }
     return i;
 }
-void print_stack_debug(DLList * list){
-    DLLElementPtr PrintElement = list->firstElement;
-    while(PrintElement != NULL) {
-        printf("%s", PrintElement->data);
-        PrintElement = PrintElement->nextElement;
-    }
-    printf("\n");
-}
 void Deallocate(DLList * list){
     if(list != NULL){
         Dispose(list->firstElement);
@@ -265,6 +259,7 @@ bool expression() {
     DLList *list = NULL;
     list = Init(list);
     char precedence;
+
     while((TOKEN_ID_EXPRESSION()) && (list != NULL)){
         start:
         // Look what char is on top of the stack (+, -, <= etc.)
