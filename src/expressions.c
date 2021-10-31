@@ -259,15 +259,18 @@ void Deallocate(List * list){
 bool expression() {
     //todo     ret = INTERNAL_ERR; pridat vsade kde moze vzniknut chyba kvoli malloc
     char data[3] = {"$"};
-    List *list = NULL;
-    list = Init(list);
+    List *list = NULL; list = Init(list);
     char precedence;
 
     while((TOKEN_ID_EXPRESSION()) && (list != NULL)){
         start:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
-        // Check the characters precedence against the found token
+        /* Takes index of a character that is in data, for example + has index of 5 due to being 5th in Chars[] array, we find that through comparing strings Chars[] and data
+         * takes index of a character that is in token, for example i has index of 15 due to being 15th in Chars[] array, we find that through comparing strings Chars[] and token.attr.id.str
+         * now we can get precedence with command Precedence_Table[5][15] and the precedence is <, because +<i in our precedence table
+         * precedence = '<';
+        */
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
         printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
