@@ -12,7 +12,8 @@
 #define _EXPRESSION_H
 
 #include <stdbool.h>
-
+#define INDEX_OF_IDENTIFICATOR 15
+#define NUMBER_OF_OPERATORS 17
 
 typedef struct DLLElement {
     char data[3];

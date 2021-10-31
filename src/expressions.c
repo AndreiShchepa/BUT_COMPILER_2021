@@ -15,7 +15,7 @@
 #include "error.h"
 #include "expressions.h"
 
-char Precedence_Table[][17] = {
+char Precedence_Table[][NUMBER_OF_OPERATORS] = {
         {"<>>>>>>>>>>>><><>"}, // #
         {"<>>>>>>>>>>>><><>"}, // *
         {"<>>>>>>>>>>>><><>"}, // /
@@ -57,7 +57,7 @@ char Rules[][5] = {
 };
 
 // The first initialization, we create the stack and put $ as the first element of the stack
-DLList * Init(DLList *) {
+DLList * Init(DLList * list) {
     // We create the list and check for malloc
     list = malloc(sizeof(DLList));
     if(list == NULL){
@@ -83,7 +83,7 @@ DLList * Init(DLList *) {
     return list;
 }
 // We delete everything after Element with Element included
-void Dispose(DLLElementPtr) {
+void Dispose(DLLElementPtr Element) {
     if(Element == NULL){
         //todo Call error handler
         return;
@@ -99,7 +99,7 @@ void Dispose(DLLElementPtr) {
     }
 }
 // We are inserting << with its char (+, -, <= etc.)
-void Insert(DLList *, char *) {
+void Insert(DLList * list, char * data) {
     printf("insert: %s -> ", data);
     if(list == NULL){
         //todo Call error handler
@@ -164,7 +164,7 @@ void Insert(DLList *, char *) {
     print_stack_debug(list);
 }
 // We close the first part of the expression we find, for example <<E+<<i -> <<E+E
-bool Close(DLList *) {
+bool Close(DLList * list) {
     if(list == NULL){
         //todo Call error handler
         return false;
@@ -199,7 +199,7 @@ bool Close(DLList *) {
     return false;
 }
 // Returns top of the stack
-void Top(DLList *, char []) {
+void Top(DLList * list, char data[]) {
     if(list == NULL){
         //todo Call error handler
         return;
@@ -212,7 +212,7 @@ void Top(DLList *, char []) {
     strcpy(data, find->data);
 }
 // Copy a string on top of the stack
-void Push(DLList *, char *) {
+void Push(DLList * list, char * data) {
     if(list == NULL){
         //todo Call error handler
         return;
@@ -228,7 +228,7 @@ void Push(DLList *, char *) {
     // Copy onto the stack
     strcpy(TempElement->data, data);
 }
-bool Check_Correct_Closure(DLList *list){
+bool Check_Correct_Closure(DLList * list){
     if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
         return true;
     }
@@ -236,15 +236,15 @@ bool Check_Correct_Closure(DLList *list){
 }
 int Get_Index_Of_String(char * data){
     // if i remains 15 at the end of the for cycle, it means data contains not one of our chars (+, -, <= etc.) but a string or a variable
-    int i = 15;
-    for(int j = 0; j < 17; j++){
+    int i = INDEX_OF_IDENTIFICATOR;
+    for(int j = 0; j < NUMBER_OF_OPERATORS; j++){
         if(strcmp(data, Chars[j]) == 0){
             return j;
         }
     }
     return i;
 }
-void print_stack_debug(DLList *list){
+void print_stack_debug(DLList * list){
     DLLElementPtr PrintElement = list->firstElement;
     while(PrintElement != NULL) {
         printf("%s", PrintElement->data);
@@ -252,7 +252,7 @@ void print_stack_debug(DLList *list){
     }
     printf("\n");
 }
-void Deallocate(DLList *list){
+void Deallocate(DLList * list){
     Dispose(list->firstElement);
     free(list);
 }
@@ -273,7 +273,7 @@ bool expression() {
         printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
-            if(Get_Index_Of_String(token.attr.id.str) == 15){
+            if(Get_Index_Of_String(token.attr.id.str) == INDEX_OF_IDENTIFICATOR){
                 data[0] = 'i', data[1] = '\0';
             } else {
                 // else we copy the character from the token (+, -, <= etc.)
