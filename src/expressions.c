@@ -40,7 +40,7 @@ char Precedence_Table[][NUMBER_OF_OPERATORS] = {
 
         {"<<<<<<<<<<<<<<c<c"} // $
 };
-char Chars[][3] = {
+char Chars[][LENGHT_OF_OPERATORS] = {
         {"#"}, {"*"}, {"/"}, {"//"},
         {"+"}, {"-"},
         {".."}, {"<"}, {"<="}, {">"}, {">="}, {"=="}, {"~="},
@@ -51,7 +51,7 @@ char Chars[][3] = {
 };
 
 // We reversed the rules because when we copy from stack from top to bottom the expression (E) will become )E(
-char Rules[][5] = {
+char Rules[][LENGHT_OF_RULES] = {
         {"i"}, {")E("}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
         {"E//E"}, {"E#"}, {"E<E"}, {"E=<E"}, {"E>E"}, {"E=>E"}, {"E==E"}, {"E=~E"}, {"E..E"}
 };
@@ -257,8 +257,6 @@ void Deallocate(DLList * list){
     free(list);
 }
 bool expression() {
-    // todo get rid of magic numbers
-    // todo conflicts with < char as in <i> and < as in f<5, solution, "<" = "<<"
     char data[3] = {"$\0"};
     DLList *list = NULL;
     list = Init(list);

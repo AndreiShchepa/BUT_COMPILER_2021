@@ -14,6 +14,8 @@
 #include <stdbool.h>
 #define INDEX_OF_IDENTIFICATOR 15
 #define NUMBER_OF_OPERATORS 17
+#define LENGHT_OF_OPERATORS 3
+#define LENGHT_OF_RULES 5
 
 typedef struct DLLElement {
     char data[3];
