@@ -186,8 +186,7 @@ bool DLL_Close(DLList *list) {
         //todo Call error handler
         return false;
     }
-//    printf("Stack pred zatvorenim: ");
-//    print_stack_debug(list);
+
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     DLLElementPtr find = list->lastElement;
@@ -275,12 +274,12 @@ bool expression() {
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
         DLL_Top(list, data);
-        print_stack_debug(list);
+//        print_stack_debug(list);
 
 
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
-        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
+//        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
@@ -303,6 +302,9 @@ bool expression() {
             DLL_Push(list, data);
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         } else if(precedence == 's'){
+            while(DLL_Close(list)){
+                // keep closing expression until there is no longer a rule, when there is false returned we have $E on stack or something that is wrong
+            }
             break;
         } else if(precedence == 'c'){
             return false;
