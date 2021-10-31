@@ -170,11 +170,10 @@ bool Close(DLList * list) {
 
     // We copy into our array until we dont find closing <<
     while((strcmp(find->data, "<<") != 0) && find->previousElement != NULL){
-
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-
+    printf("the array we are checking aginst rules: %s\n", Array_To_Check_Against_Rules);
     // We check against rules
     for(int j = 0; j < 15; j++){
         // If we found correct rule
@@ -235,7 +234,8 @@ void print_stack_debug(DLList * list){
 bool Check_Correct_Closure(DLList * list){
     if(list != NULL){
         // We just forcefully check if first element on stack is $ and the second one E
-        if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
+        //Todo this is very obscure way to do this, also should add if statements to check if we are not dealing with NULL pointer
+        if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->firstElement->nextElement->data, "E") == 0)){
             return true;
         }
     }
