@@ -173,7 +173,6 @@ bool Close(DLList * list) {
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-    printf("the array we are checking aginst rules: %s\n", Array_To_Check_Against_Rules);
     // We check against rules
     for(int j = 0; j < 15; j++){
         // If we found correct rule
@@ -303,7 +302,7 @@ bool expression() {
             }
             // If we were successful in reducing the expression
             if(Check_Correct_Closure(list)){
-                printf("Vyraz je korektny.\n");
+                printf("Vyraz je korektny.\n\n");
                 Deallocate(list);
                 return true;
             }
@@ -325,7 +324,7 @@ bool expression() {
         // todo ret
         return INTERNAL_ERR;
     }
-    printf("\nwe are closing this:");
+    printf("we are closing this: ");
     print_stack_debug(list);
 
     // We are reducing the expression by using our rules
@@ -334,7 +333,7 @@ bool expression() {
     }
     // If we were successful in reducing the expression
     if(Check_Correct_Closure(list)){
-        printf("Vyraz je korektny.\n");
+        printf("Vyraz je korektny.\n\n");
         Deallocate(list);
         return true;
     }
