@@ -99,7 +99,6 @@ DLList * DLL_Init( DLList *list ) {
 
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$\0");
-    printf("init: %p\n", list);
     return list;
 }
 // We delete everything after Element with Element included
@@ -183,7 +182,6 @@ void DLL_Insert(DLList *list, char * data ) {
     }
 }
 bool DLL_Close(DLList *list) {
-
     if(list == NULL){
         //todo Call error handler
         return false;
@@ -191,19 +189,25 @@ bool DLL_Close(DLList *list) {
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     DLLElementPtr find = list->lastElement;
+
     // We copy into our array until we dont find closing <<
     while((strcmp(find->data, "<<") != 0) && find->previousElement != NULL){
+
         strcat(Array_To_Check_Against_Rules, find->data);
+        find = find->previousElement;
     }
+//    printf("Got here: %s ", Array_To_Check_Against_Rules);
     // We check against rules
     for(int j = 0; j < 15; j++){
         // If we found correct rule
         if(strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0){
+//            printf("found rule: %s\n", Rules[j]);
             // We delete everything after <<
             DLL_Dispose (find->nextElement);
             // We change << with E
             strcpy(find->data, "E\0");
             find->nextElement = NULL;
+            list->lastElement = find;
             // We were successful in finding a rule
             return true;
         }
@@ -217,10 +221,12 @@ void DLL_Top(DLList *list, char data[]) {
         //todo Call error handler
         return;
     }
-//    printf("data: %s ", data);
-    strcpy(data, list->lastElement->data);
-    printf("data: %s\n", list->lastElement->data);
-
+    DLLElementPtr find = list->lastElement;
+    // If stack contains for example $E, we skip to previous element until we find one of our chars($, +, -, <= etc.) and
+    while((strcmp(find->data, "E") == 0) && find->previousElement != NULL){
+        find = find->previousElement;
+    }
+    strcpy(data, find->data);
 }
 
 int Get_Index_Of_String(char * data){
@@ -236,9 +242,10 @@ int Get_Index_Of_String(char * data){
 void print_stack_debug(DLList *list){
     DLLElementPtr PrintElement = list->firstElement;
     while(PrintElement != NULL) {
-        printf("%s\n", PrintElement->data);
+        printf("%s", PrintElement->data);
         PrintElement = PrintElement->nextElement;
     }
+    printf("\n");
 }
 bool expression() {
     // todo get rid of magic numbers
@@ -251,7 +258,6 @@ bool expression() {
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
         DLL_Top(list, data);
-
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
         if(precedence == '<'){
@@ -261,12 +267,10 @@ bool expression() {
             } else {
                 // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
-                printf("data: %s\n", data);
             }
             // We copy the character from the token with << added infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             DLL_Insert(list, data);
         } else if(precedence == '>'){
-
             // We find the first << from the top of the stack to the bottom and check it against the rules, if we didnt find a rule we return false as expression is wrong
             if(!DLL_Close(list)){
                 return false;
@@ -284,9 +288,10 @@ bool expression() {
 
         }
         // Test print
-        printf("%c TOKEN = \"%s\"\n", precedence, token.attr.id.str);
+        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
+        print_stack_debug(list);
         NEXT_TOKEN();
     }
-    print_stack_debug(list);
+//    print_stack_debug(list);
     return true;
 }
