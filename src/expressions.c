@@ -14,27 +14,6 @@
 #include "parser.h"
 #include "error.h"
 #include "expressions.h"
-//typedef union token_attr {
-//    string_t id;
-//    uint64_t num_i;
-//    double num_f;
-//} token_attr_t;
-
-//typedef struct token {
-//    token_type_t type;
-//    keywords_t keyword;
-//    token_attr_t attr;
-//} token_t;
-
-//    11. <statement> → if <expression>  then <statement>  else
-//        <statement>  end <statement>
-//    12. <statement> → while <expression>  do <statement>  end
-//                <statement>
-//    15. <statement> → return <expression>  <other_exp>
-//    <statement>
-//    22. <type_expr> → <expression>  <other_exp>
-//    23. <other_exp> → , <expression> <other_exp>
-//    28. <init_assign> → <expression>
 
 char Precedence_Table[][17] = {
         {"<>>>>>>>>>>>><><>"}, // #
@@ -78,7 +57,7 @@ char Rules[][5] = {
 };
 
 // The first initialization, we create the stack and put $ as the first element of the stack
-DLList * DLL_Init( DLList *list ) {
+DLList * Init(DLList *) {
     // We create the list and check for malloc
     list = malloc(sizeof(DLList));
     if(list == NULL){
@@ -104,7 +83,7 @@ DLList * DLL_Init( DLList *list ) {
     return list;
 }
 // We delete everything after Element with Element included
-void DLL_Dispose( DLLElementPtr Element ) {
+void Dispose(DLLElementPtr) {
     if(Element == NULL){
         //todo Call error handler
         return;
@@ -120,7 +99,7 @@ void DLL_Dispose( DLLElementPtr Element ) {
     }
 }
 // We are inserting << with its char (+, -, <= etc.)
-void DLL_Insert(DLList *list, char * data ) {
+void Insert(DLList *, char *) {
     printf("insert: %s -> ", data);
     if(list == NULL){
         //todo Call error handler
@@ -185,7 +164,7 @@ void DLL_Insert(DLList *list, char * data ) {
     print_stack_debug(list);
 }
 // We close the first part of the expression we find, for example <<E+<<i -> <<E+E
-bool DLL_Close(DLList *list) {
+bool Close(DLList *) {
     if(list == NULL){
         //todo Call error handler
         return false;
@@ -207,7 +186,7 @@ bool DLL_Close(DLList *list) {
         // If we found correct rule
         if(strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0){
             // We delete everything after <<
-            DLL_Dispose (find->nextElement);
+            Dispose(find->nextElement);
             // We change << with E
             strcpy(find->data, "E\0");
             find->nextElement = NULL;
@@ -220,7 +199,7 @@ bool DLL_Close(DLList *list) {
     return false;
 }
 // Returns top of the stack
-void DLL_Top(DLList *list, char data[]) {
+void Top(DLList *, char []) {
     if(list == NULL){
         //todo Call error handler
         return;
@@ -233,7 +212,7 @@ void DLL_Top(DLList *list, char data[]) {
     strcpy(data, find->data);
 }
 // Copy a string on top of the stack
-void DLL_Push(DLList *list, char * data) {
+void Push(DLList *, char *) {
     if(list == NULL){
         //todo Call error handler
         return;
@@ -274,7 +253,7 @@ void print_stack_debug(DLList *list){
     printf("\n");
 }
 void Deallocate(DLList *list){
-    DLL_Dispose( list->firstElement );
+    Dispose(list->firstElement);
     free(list);
 }
 bool expression() {
@@ -282,12 +261,12 @@ bool expression() {
     // todo conflicts with < char as in <i> and < as in f<5, solution, "<" = "<<"
     char data[3] = {"$\0"};
     DLList *list = NULL;
-    list = DLL_Init(list);
+    list = Init(list);
     char precedence;
     while(TOKEN_ID_EXPRESSION()){
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
-        DLL_Top(list, data);
+        Top(list, data);
 
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
@@ -301,10 +280,10 @@ bool expression() {
                 strcpy(data, token.attr.id.str);
             }
             // We copy the character from the token with << added infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
-            DLL_Insert(list, data);
+            Insert(list, data);
         } else if(precedence == '>'){
             // We find the first << from the top of the stack to the bottom and check it against the rules, if we didnt find a rule we return false as expression is wrong
-            if(!DLL_Close(list)){
+            if(!Close(list)){
                 Deallocate(list);
                 return false;
             }
@@ -314,18 +293,15 @@ bool expression() {
         }
             // We just copy the data onto the stack
         else if(precedence == '='){
-            DLL_Push(list, token.attr.id.str);
+            Push(list, token.attr.id.str);
         }
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         else if(precedence == 's'){
-            while(DLL_Close(list)){
+            while(Close(list)){
                 print_stack_debug(list);
             }
             if(Check_Correct_Closure(list)){
                 printf("Vyraz je korektny.\n");
-            }
-
-            if(Check_Correct_Closure(list)){
                 Deallocate(list);
                 return true;
             }
@@ -343,13 +319,12 @@ bool expression() {
     }
     printf("\nwe are closing this:");
     print_stack_debug(list);
-    while(DLL_Close(list)){
+    while(Close(list)){
         print_stack_debug(list);
     }
+
     if(Check_Correct_Closure(list)){
         printf("Vyraz je korektny.\n");
-    }
-    if(Check_Correct_Closure(list)){
         Deallocate(list);
         return true;
     }
