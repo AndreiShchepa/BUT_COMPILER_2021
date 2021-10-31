@@ -39,5 +39,5 @@ void Push(DLList *, char * );
 void print_stack_debug(DLList * );
 bool Check_Correct_Closure(DLList * );
 int Get_Index_Of_String(char * );
-void Deallocate(DLList * );
+void Deallocate(DLList *list);
 #endif // _EXPRESSION_H

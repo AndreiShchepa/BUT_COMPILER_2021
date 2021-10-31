@@ -61,13 +61,13 @@ DLList * Init(DLList * list) {
     // We create the list and check for malloc
     list = malloc(sizeof(DLList));
     if(list == NULL){
-        //todo Call error handler
+        return NULL;
     }
 
     // We create the first element and check for malloc
     DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
     if (TempElement == NULL) {
-        //todo Call error handler
+        return NULL;
     }
 
     // Because there is only one element, its both first and last one in the List
@@ -85,7 +85,6 @@ DLList * Init(DLList * list) {
 // We delete everything after Element with Element included
 void Dispose(DLLElementPtr Element) {
     if(Element == NULL){
-        //todo Call error handler
         return;
     }
 
@@ -102,7 +101,6 @@ void Dispose(DLLElementPtr Element) {
 void Insert(DLList * list, char * data) {
     printf("insert: %s -> ", data);
     if(list == NULL){
-        //todo Call error handler
         return;
     }
     int flag = 0;
@@ -122,7 +120,8 @@ void Insert(DLList * list, char * data) {
     DLLElementPtr TempElement_first = malloc(sizeof(struct DLLElement));
     DLLElementPtr TempElement_second = malloc(sizeof(struct DLLElement));
     if (TempElement_first == NULL || TempElement_second == NULL) {
-        //todo Call error handler
+        Deallocate(list);
+        return;
     }
 
     // If we found expression character on stack without going through E
@@ -166,7 +165,6 @@ void Insert(DLList * list, char * data) {
 // We close the first part of the expression we find, for example <<E+<<i -> <<E+E
 bool Close(DLList * list) {
     if(list == NULL){
-        //todo Call error handler
         return false;
     }
 
@@ -188,7 +186,7 @@ bool Close(DLList * list) {
             // We delete everything after <<
             Dispose(find->nextElement);
             // We change << with E
-            strcpy(find->data, "E\0");
+            strcpy(find->data, "E");
             find->nextElement = NULL;
             list->lastElement = find;
             // We were successful in finding a rule
@@ -201,7 +199,6 @@ bool Close(DLList * list) {
 // Returns top of the stack
 void Top(DLList * list, char data[]) {
     if(list == NULL){
-        //todo Call error handler
         return;
     }
     DLLElementPtr find = list->lastElement;
@@ -214,10 +211,13 @@ void Top(DLList * list, char data[]) {
 // Copy a string on top of the stack
 void Push(DLList * list, char * data) {
     if(list == NULL){
-        //todo Call error handler
         return;
     }
     DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
+    if(TempElement == NULL){
+        Deallocate(list);
+        return;
+    }
     DLLElementPtr find = list->lastElement;
 
     find->nextElement = TempElement;
@@ -229,8 +229,10 @@ void Push(DLList * list, char * data) {
     strcpy(TempElement->data, data);
 }
 bool Check_Correct_Closure(DLList * list){
-    if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
-        return true;
+    if(list != NULL){
+        if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
+            return true;
+        }
     }
     return false;
 }
@@ -253,26 +255,27 @@ void print_stack_debug(DLList * list){
     printf("\n");
 }
 void Deallocate(DLList * list){
-    Dispose(list->firstElement);
-    free(list);
+    if(list != NULL){
+        Dispose(list->firstElement);
+        free(list);
+    }
 }
 bool expression() {
-    char data[3] = {"$\0"};
+    char data[3] = {"$"};
     DLList *list = NULL;
     list = Init(list);
     char precedence;
-    while(TOKEN_ID_EXPRESSION()){
-        xyz:
+    while((TOKEN_ID_EXPRESSION()) && (list != NULL)){
+        start:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
-
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
         printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == INDEX_OF_IDENTIFICATOR){
-                data[0] = 'i', data[1] = '\0';
+                strcpy(data, "i");
             } else {
                 // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
@@ -287,7 +290,7 @@ bool expression() {
             }
             print_stack_debug(list);
             // If we found a rule, we check the precedence of the new created stack by returning to the start of the while cycle
-            goto xyz;
+            goto start;
         }
             // We just copy the data onto the stack
         else if(precedence == '='){
@@ -314,6 +317,11 @@ bool expression() {
 //        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
 //        print_stack_debug(list);
         NEXT_TOKEN();
+    }
+    // If there is internal error such as failure to allocate, list will free itself which means none of the functions will do anything and eventually we will learn
+    // that if list is empty and we never did combination of return true false with deallocation of list that there was an error along the way
+    if(list == NULL){
+        return INTERNAL_ERR;
     }
     printf("\nwe are closing this:");
     print_stack_debug(list);
