@@ -76,7 +76,7 @@ char Rules[][5] = {
 };
 
 // The first initialization, we create the stack and put $ as the first element of the stack
-void DLL_Init( DLList *list ) {
+DLList * DLL_Init( DLList *list ) {
     // We create the list and check for malloc
     list = malloc(sizeof(DLList));
     if(list == NULL){
@@ -99,7 +99,8 @@ void DLL_Init( DLList *list ) {
 
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$\0");
-
+    printf("init: %p\n", list);
+    return list;
 }
 // We delete everything after Element with Element included
 void DLL_Dispose( DLLElementPtr Element ) {
@@ -232,13 +233,19 @@ int Get_Index_Of_String(char * data){
     }
     return i;
 }
-
+void print_stack_debug(DLList *list){
+    DLLElementPtr PrintElement = list->firstElement;
+    while(PrintElement != NULL) {
+        printf("%s\n", PrintElement->data);
+        PrintElement = PrintElement->nextElement;
+    }
+}
 bool expression() {
     // todo get rid of magic numbers
     // todo conflicts with < char as in <i> and < as in f<5, solution, "<" = "<<"
     char data[3] = {"$\0"};
-    DLList * list = NULL;
-    DLL_Init(list);
+    DLList *list = NULL;
+    list = DLL_Init(list);
     char precedence;
     while(TOKEN_ID_EXPRESSION()){
         xyz:
@@ -251,10 +258,10 @@ bool expression() {
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
                 data[0] = 'i', data[1] = '\0';
-
             } else {
                 // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
+                printf("data: %s\n", data);
             }
             // We copy the character from the token with << added infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             DLL_Insert(list, data);
@@ -280,6 +287,6 @@ bool expression() {
         printf("%c TOKEN = \"%s\"\n", precedence, token.attr.id.str);
         NEXT_TOKEN();
     }
-
+    print_stack_debug(list);
     return true;
 }
