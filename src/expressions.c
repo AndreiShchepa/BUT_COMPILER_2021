@@ -85,10 +85,10 @@ void Dispose(DLLElementPtr Element) {
     if(Element == NULL){
         return;
     }
-
+    // We create additional Element to help us with deletion
     DLLElementPtr TempElement = Element;
     DLLElementPtr DelElement;
-
+    // Deleting
     while(TempElement != NULL){
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
@@ -96,7 +96,7 @@ void Dispose(DLLElementPtr Element) {
     }
 }
 void Insert(DLList * list, char * data) {
-    printf("insert: %s -> ", data);
+//    printf("insert: %s -> ", data);
     if(list == NULL){
         return;
     }
@@ -197,7 +197,7 @@ void Top(DLList * list, char data[]) {
         return;
     }
     DLLElementPtr find = list->lastElement;
-    // If stack contains for example $E, we skip to previous element until we find one of our chars($, +, -, <= etc.) and
+    // If stack contains for example $E, we skip to previous element until we find one of our chars($, +, -, <= etc.)
     while((strcmp(find->data, "E") == 0) && find->previousElement != NULL){
         find = find->previousElement;
     }
@@ -207,11 +207,13 @@ void Push(DLList * list, char * data) {
     if(list == NULL){
         return;
     }
+    // We create our new element
     DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
     if(TempElement == NULL){
         Deallocate(list);
         return;
     }
+    // We find the position of last element on the stack
     DLLElementPtr find = list->lastElement;
 
     find->nextElement = TempElement;
@@ -232,6 +234,7 @@ void print_stack_debug(DLList * list){
 }
 bool Check_Correct_Closure(DLList * list){
     if(list != NULL){
+        // We just forcefully check if first element on stack is $ and the second one E
         if((strcmp(list->firstElement->data, "$") == 0) && (strcmp(list->lastElement->data, "E") == 0)){
             return true;
         }
@@ -255,6 +258,7 @@ void Deallocate(DLList * list){
     }
 }
 bool expression() {
+    //todo     ret = INTERNAL_ERR; pridat vsade kde moze vzniknut chyba kvoli malloc
     char data[3] = {"$"};
     DLList *list = NULL;
     list = Init(list);
@@ -296,6 +300,7 @@ bool expression() {
             while(Close(list)){
                 print_stack_debug(list);
             }
+            // If we were successful in reducing the expression
             if(Check_Correct_Closure(list)){
                 printf("Vyraz je korektny.\n");
                 Deallocate(list);
@@ -320,10 +325,12 @@ bool expression() {
     }
     printf("\nwe are closing this:");
     print_stack_debug(list);
+    
+    // We are reducing the expression by using our rules
     while(Close(list)){
         print_stack_debug(list);
     }
-
+    // If we were successful in reducing the expression
     if(Check_Correct_Closure(list)){
         printf("Vyraz je korektny.\n");
         Deallocate(list);
