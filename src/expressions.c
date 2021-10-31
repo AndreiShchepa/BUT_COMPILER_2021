@@ -186,6 +186,8 @@ bool DLL_Close(DLList *list) {
         //todo Call error handler
         return false;
     }
+//    printf("Stack pred zatvorenim: ");
+//    print_stack_debug(list);
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     DLLElementPtr find = list->lastElement;
@@ -196,12 +198,10 @@ bool DLL_Close(DLList *list) {
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-//    printf("Got here: %s ", Array_To_Check_Against_Rules);
     // We check against rules
     for(int j = 0; j < 15; j++){
         // If we found correct rule
         if(strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0){
-//            printf("found rule: %s\n", Rules[j]);
             // We delete everything after <<
             DLL_Dispose (find->nextElement);
             // We change << with E
@@ -227,6 +227,23 @@ void DLL_Top(DLList *list, char data[]) {
         find = find->previousElement;
     }
     strcpy(data, find->data);
+}
+// Copy a string on top of the stack
+void DLL_Push(DLList *list, char * data) {
+    if(list == NULL){
+        //todo Call error handler
+        return;
+    }
+    DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
+    DLLElementPtr find = list->lastElement;
+
+    find->nextElement = TempElement;
+    // Connect the chains
+    TempElement->previousElement = find;
+    TempElement->nextElement = NULL;
+    list->lastElement = TempElement;
+    // Copy onto the stack
+    strcpy(TempElement->data, data);
 }
 
 int Get_Index_Of_String(char * data){
@@ -258,8 +275,12 @@ bool expression() {
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
         DLL_Top(list, data);
+        print_stack_debug(list);
+
+
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
+        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
@@ -279,17 +300,18 @@ bool expression() {
             goto xyz;
             // We just copy the data onto the stack
         } else if(precedence == '='){
+            DLL_Push(list, data);
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         } else if(precedence == 's'){
             break;
         } else if(precedence == 'c'){
-            // Error
+            return false;
         } else {
 
         }
         // Test print
-        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
-        print_stack_debug(list);
+//        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
+//        print_stack_debug(list);
         NEXT_TOKEN();
     }
 //    print_stack_debug(list);

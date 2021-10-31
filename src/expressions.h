@@ -32,6 +32,7 @@ void DLL_Dispose( DLLElementPtr );
 void DLL_Insert(DLList *, char *);
 bool DLL_Close(DLList *);
 void DLL_Top(DLList *, char * );
+void DLL_Push(DLList *, char * );
 void print_stack_debug(DLList * );
 void DLL_InsertLast( DLList *, char * );
 void DLL_GetFirst( DLList *, int * );
