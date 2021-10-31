@@ -82,6 +82,7 @@ void DLL_Init( DLList *list ) {
     if(list == NULL){
         //todo Call error handler
     }
+
     // We create the first element and check for malloc
     DLLElementPtr TempElement = malloc(sizeof(struct DLLElement));
     if (TempElement == NULL) {
@@ -98,6 +99,7 @@ void DLL_Init( DLList *list ) {
 
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$\0");
+
 }
 // We delete everything after Element with Element included
 void DLL_Dispose( DLLElementPtr Element ) {
@@ -115,8 +117,6 @@ void DLL_Dispose( DLLElementPtr Element ) {
         free(DelElement);
     }
 }
-
-
 // We are inserting << with its char (+, -, <= etc.)
 void DLL_Insert(DLList *list, char * data ) {
 
@@ -181,7 +181,6 @@ void DLL_Insert(DLList *list, char * data ) {
         strcpy(TempElement_second->data, data);
     }
 }
-
 bool DLL_Close(DLList *list) {
 
     if(list == NULL){
@@ -212,12 +211,15 @@ bool DLL_Close(DLList *list) {
     return false;
 }
 // Returns top of the stack
-void DLL_Top(DLList *list, char * data) {
+void DLL_Top(DLList *list, char data[]) {
     if(list == NULL){
         //todo Call error handler
         return;
     }
+//    printf("data: %s ", data);
     strcpy(data, list->lastElement->data);
+    printf("data: %s\n", list->lastElement->data);
+
 }
 
 int Get_Index_Of_String(char * data){
@@ -235,30 +237,31 @@ bool expression() {
     // todo get rid of magic numbers
     // todo conflicts with < char as in <i> and < as in f<5, solution, "<" = "<<"
     char data[3] = {"$\0"};
-    DLList list;
-    DLL_Init(&list);
-
-    char precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
-
+    DLList * list = NULL;
+    DLL_Init(list);
+    char precedence;
     while(TOKEN_ID_EXPRESSION()){
         xyz:
         // Look what char is on top of the stack (+, -, <= etc.)
-        DLL_Top(&list, data);
+        DLL_Top(list, data);
+
         // Check the characters precedence against the found token
         precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
         if(precedence == '<'){
             // If token is a variable or a string we put i on the stack instead of copying the whole name of the variable or whole string
             if(Get_Index_Of_String(token.attr.id.str) == 15){
                 data[0] = 'i', data[1] = '\0';
+
             } else {
                 // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
             }
             // We copy the character from the token with << added infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
-            DLL_Insert(&list, data);
+            DLL_Insert(list, data);
         } else if(precedence == '>'){
+
             // We find the first << from the top of the stack to the bottom and check it against the rules, if we didnt find a rule we return false as expression is wrong
-            if(!DLL_Close(&list)){
+            if(!DLL_Close(list)){
                 return false;
             }
             // If we found a rule, we check the precedence of the new created stack by returning to the start of the while cycle
@@ -267,7 +270,7 @@ bool expression() {
         } else if(precedence == '='){
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         } else if(precedence == 's'){
-            // Error
+            break;
         } else if(precedence == 'c'){
             // Error
         } else {
