@@ -70,9 +70,11 @@ char Chars[][3] = {
         {"i"},
         {"$"}
 };
+
+// We reversed the rules because when we copy from stack from top to bottom the expression (E) will become )E(
 char Rules[][5] = {
-        {"i"}, {"(E)"}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
-        {"E//E"}, {"#E"}, {"E<E"}, {"E<=E"}, {"E>E"}, {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
+        {"i"}, {")E("}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
+        {"E//E"}, {"E#"}, {"E<E"}, {"E=<E"}, {"E>E"}, {"E=>E"}, {"E==E"}, {"E=~E"}, {"E..E"}
 };
 
 // The first initialization, we create the stack and put $ as the first element of the stack
@@ -199,6 +201,7 @@ bool DLL_Close(DLList *list) {
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
+
     // We check against rules
     for(int j = 0; j < 15; j++){
         // If we found correct rule
@@ -306,7 +309,7 @@ bool expression() {
         }
             // We just copy the data onto the stack
         else if(precedence == '='){
-            DLL_Push(list, data);
+            DLL_Push(list, token.attr.id.str);
         }
             // Special incident with finding identificator after identificator, which means the expression has ended and we close our stack and check against the rules
         else if(precedence == 's'){
