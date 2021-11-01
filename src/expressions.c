@@ -316,9 +316,6 @@ bool expression() {
             Deallocate(list);
             return false;
         }
-        // Test print
-//        printf("Precedence: %c%c TOKEN = \"%s\"\n", precedence, precedence, token.attr.id.str);
-//        print_stack_debug(list);
         NEXT_TOKEN();
     }
     // If there is internal error such as failure to allocate, list will free itself which means none of the functions will do anything and eventually we will learn
