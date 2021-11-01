@@ -256,6 +256,8 @@ void Deallocate(List * list){
         free(list);
     }
 }
+
+// To get rid of test prints comment all printfs and callings of print_stack_debug(); in expression();
 bool expression() {
     //todo     ret = INTERNAL_ERR; pridat vsade kde moze vzniknut chyba kvoli malloc
     char data[3] = {"$"};
