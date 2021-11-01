@@ -53,7 +53,7 @@ char Chars[][LENGHT_OF_OPERATORS] = {
 // We reversed the rules because when we copy from stack from top to bottom the expression (E) will become )E(
 char Rules[][LENGHT_OF_RULES] = {
         {"i"}, {")E("}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
-        {"E//E"}, {"E#"}, {"E<E"}, {"E=<E"}, {"E>E"}, {"E=>E"}, {"E==E"}, {"E=~E"}, {"E..E"}
+        {"E//E"}, {"E#"}, {"E<E"}, {"E<=E"}, {"E>E"}, {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
 List * Init(List * list) {
