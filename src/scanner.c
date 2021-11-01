@@ -12,14 +12,17 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "str.h"
 #include "error.h"
 #include "scanner.h"
 
+#define NUMBER_OF_KEYWORDS 15
+
 #define PUSH_CHAR(sym) ret = str_add_char(&token->attr.id, (char)(sym)); \
-                    if (!ret) { \
-                        return INTERNAL_ERR; \
-                    }
+                       if (!ret) { \
+                           return INTERNAL_ERR; \
+                       }
 
 #define ACCEPT_LEXEM() ungetc(ch, f); \
                        flag = true
@@ -34,18 +37,20 @@ void set_source_file(FILE *file) {
 }
 
 void recognize_keyword(token_t *token) {
-        if      (!str_cmp_const_str(&token->attr.id, "do"))       token->keyword = KW_DO;
-        else if (!str_cmp_const_str(&token->attr.id, "global"))   token->keyword = KW_GLOBAL;
-        else if (!str_cmp_const_str(&token->attr.id, "require"))  token->keyword = KW_REQUIRE;
-        else if (!str_cmp_const_str(&token->attr.id, "else"))     token->keyword = KW_ELSE;
-        else if (!str_cmp_const_str(&token->attr.id, "if"))       token->keyword = KW_IF;
-        else if (!str_cmp_const_str(&token->attr.id, "return"))   token->keyword = KW_RETURN;
-        else if (!str_cmp_const_str(&token->attr.id, "end"))      token->keyword = KW_END;
-        else if (!str_cmp_const_str(&token->attr.id, "local"))    token->keyword = KW_LOCAL;
-        else if (!str_cmp_const_str(&token->attr.id, "then"))     token->keyword = KW_THEN;
-        else if (!str_cmp_const_str(&token->attr.id, "function")) token->keyword = KW_FUNCTION;
-        else if (!str_cmp_const_str(&token->attr.id, "nil"))      token->keyword = KW_NIL;
-        else if (!str_cmp_const_str(&token->attr.id, "while"))    token->keyword = KW_WHILE;
+        char* keywords[NUMBER_OF_KEYWORDS] = {"do", "global", "number", "else",
+                                              "if", "require", "end", "integer",
+                                              "return", "function", "local",
+                                              "string", "nil", "then", "while"};
+
+        for(keywords_t kw = KW_DO; kw < NUMBER_OF_KEYWORDS; kw++) {
+            if (!str_cmp_const_str(&token->attr.id, keywords[kw])) {
+                token->keyword = kw;
+                token->type = T_KEYWORD;
+                return;
+            }
+        }
+
+        token->type = T_ID;
 }
 
 int scan_id(token_t *token) {
@@ -86,7 +91,7 @@ int scan_id(token_t *token) {
         }
     }
 
-    token->type = T_ID;
+    recognize_keyword(token);
 
     return NO_ERR;
 }
@@ -95,6 +100,7 @@ int scan_number(token_t *token) {
     state = START;
     flag = false;
     bool float_num = false;
+    int counter_0 = 0;
 
     while (!flag) {
         ch = fgetc(f);
@@ -102,9 +108,15 @@ int scan_number(token_t *token) {
         switch (state) {
             case START:
                 switch (ch) {
-                    // START {0-9} -> N1
-                    case '0': DIGITS_CASE:
+                    // START {0} -> N1
+                    case '0':
+                        counter_0++;
                         state = N1;
+                        PUSH_CHAR(ch);
+                        break;
+                    // START {1-9} -> N2
+                    DIGITS_CASE:
+                        state = N2;
                         PUSH_CHAR(ch);
                         break;
                     default:
@@ -114,20 +126,21 @@ int scan_number(token_t *token) {
                 break;
             case N1:
                 switch (ch) {
-                    // N1 {0-9} -> N1
-                    case '0': DIGITS_CASE:
+                    // N1 {0} -> N1
+                    case '0':
+                        counter_0++;
                         state = N1;
                         PUSH_CHAR(ch);
                         break;
-                    // N1 {.} -> N3
-                    case '.':
-                        state = N3;
-                        float_num = true;
+                    // N1 {1-9} -> N2
+                    DIGITS_CASE:
+                        state = N2;
                         PUSH_CHAR(ch);
                         break;
-                    // N1 {E, e} -> N2
-                    case 'E': case 'e':
-                        state = N2;
+                    case '.':
+                    // N1 {.} -> N3
+                        state = N3;
+                        float_num = true;
                         PUSH_CHAR(ch);
                         break;
                     default:
@@ -138,18 +151,25 @@ int scan_number(token_t *token) {
                 break;
             case N2:
                 switch (ch) {
-                    // N2 {-, +} -> N5
-                    case '-': case '+':
+                    // N2 {0-9} -> N2
+                    case '0': DIGITS_CASE:
+                        state = N2;
+                        PUSH_CHAR(ch);
+                        break;
+                    // N2 {.} -> N3
+                    case '.':
+                        state = N3;
+                        float_num = true;
+                        PUSH_CHAR(ch);
+                        break;
+                    // N2 {E, e} -> N2
+                    case 'E': case 'e':
                         state = N5;
                         PUSH_CHAR(ch);
                         break;
-                    // N2 {0-9} -> N6
-                    case '0': DIGITS_CASE:
-                        state = N6;
-                        PUSH_CHAR(ch);
-                        break;
                     default:
-                        return SCANNER_ERR;
+                        ACCEPT_LEXEM();
+                        break;
                 }
 
                 break;
@@ -172,9 +192,9 @@ int scan_number(token_t *token) {
                         state = N4;
                         PUSH_CHAR(ch);
                         break;
-                    // N4 {E, e} -> N2
+                    // N4 {E, e} -> N5
                     case 'E': case 'e':
-                        state = N2;
+                        state = N5;
                         PUSH_CHAR(ch);
                         break;
                     default:
@@ -185,9 +205,14 @@ int scan_number(token_t *token) {
                 break;
             case N5:
                 switch (ch) {
-                    // N5 {0-9} -> N6
-                    case '0': DIGITS_CASE:
+                    // N5 {-, +} -> N6
+                    case '-': case '+':
                         state = N6;
+                        PUSH_CHAR(ch);
+                        break;
+                    // N2 {0-9} -> N7
+                    case '0': DIGITS_CASE:
+                        state = N7;
                         PUSH_CHAR(ch);
                         break;
                     default:
@@ -197,9 +222,21 @@ int scan_number(token_t *token) {
                 break;
             case N6:
                 switch (ch) {
-                    // N6 {0-9} -> N6
+                    // N6 {0-9} -> N7
                     case '0': DIGITS_CASE:
-                        state = N6;
+                        state = N7;
+                        PUSH_CHAR(ch);
+                        break;
+                    default:
+                        return SCANNER_ERR;
+                }
+
+                break;
+            case N7:
+                switch (ch) {
+                    // N7 {0-9} -> N7
+                    case '0': DIGITS_CASE:
+                        state = N7;
                         PUSH_CHAR(ch);
                         break;
                     default:
@@ -213,7 +250,18 @@ int scan_number(token_t *token) {
         }
     }
 
-    token->type = float_num ? T_FLOAT : T_INT;
+    if (float_num) {
+        token->attr.num_f = strtof(token->attr.id.str, NULL);
+        token->type = T_FLOAT;
+    }
+    else {
+        if ((counter_0 > 1 && state != N1) || (state == N1 && counter_0 > 2)) {
+            return SCANNER_ERR;
+        }
+
+        token->attr.num_i = strtol(token->attr.id.str, NULL, 10);
+        token->type = T_INT;
+    }
 
     return NO_ERR;
 }
@@ -766,6 +814,8 @@ int scan_other_lexem(token_t *token) {
 int get_next_token(token_t *token) {
     int err;
     str_clear(&token->attr.id);
+    token->keyword = KW_NONE;
+    token->type = T_NONE;
 
 skip:
     ch = fgetc(f);

@@ -13,11 +13,12 @@
 #define _STR_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct string {
+	uint64_t length;
+	uint64_t alloc_size;
 	char* str;
-	int length;
-	int alloc_size;
 } string_t;
 
 /*
