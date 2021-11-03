@@ -116,7 +116,6 @@ void Dispose(ElementPtr Element) {
 }
 
 void Insert(List * list, char * data) {
-    //printf("insert: %s -> ", data);
     if (list == NULL) {
         return;
     }
@@ -317,7 +316,7 @@ bool expression() {
     char precedence;
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
-        start:
+start_expr:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
 
@@ -332,7 +331,7 @@ bool expression() {
          * precedence = '<';
          */
         precedence = Precedence_Table[GET_ID(data)][GET_ID(token.attr.id.str)];
-        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n",
+        printf("on top: %s, token: %s, precedence: %c\n",
                     data, token.attr.id.str, precedence);
 
         if (precedence == '<') {
@@ -355,14 +354,13 @@ bool expression() {
             // and check it against the rules, if we didnt find a rule
             // we return false as expression is wrong
             if (!Close(list)) {
-                Deallocate(list);
-                return false;
+                goto err_expr;
             }
 
             print_stack_debug(list);
             // If we found a rule, we check the precedence of the new created stack
             // by returning to the start of the while cycle
-            goto start;
+            goto start_expr;
         }
         else if (precedence == '=') {
             // We just copy the data onto the stack
@@ -373,24 +371,11 @@ bool expression() {
             // Special incident with finding identificator after identificator,
             // which means the expression has ended and we close our stack
             // and check against the rules
-            while (Close(list)) {
-                print_stack_debug(list);
-            }
-
-            // If we were successful in reducing the expression
-            if (Check_Correct_Closure(list)) {
-                printf("Vyraz je korektny.\n\n");
-                Deallocate(list);
-                return true;
-            }
-
-            Deallocate(list);
-            return false;
+            goto end_expr;
         }
         else if (precedence == 'c') {
             // If we found something that doesnt have correct order, for example )(
-            Deallocate(list);
-            return false;
+            goto err_expr;
         }
 
         NEXT_TOKEN();
@@ -410,6 +395,7 @@ bool expression() {
     printf("we are closing this: ");
     print_stack_debug(list);
 
+end_expr:
     // We are reducing the expression by using our rules
     while (Close(list)) {
         print_stack_debug(list);
@@ -417,11 +403,11 @@ bool expression() {
 
     // If we were successful in reducing the expression
     if (Check_Correct_Closure(list)) {
-        printf("Vyraz je korektny.\n\n");
         Deallocate(list);
         return true;
     }
 
+err_expr:
     Deallocate(list);
     return false;
 }
