@@ -81,7 +81,7 @@ void Push(List *, char * );
 bool Check_Correct_Closure(List * );
 
 /*
- * @brief Frees list amd all its elements
+ * @brief Frees list and all its elements
  */
 void Deallocate(List *list);
 
