@@ -47,7 +47,7 @@ bool expression();
  * @brief The first initialization, we create the stack and
  * put $ as the first element of the stack
  */
-List * Init(List * );
+List * Init(List *);
 
 /*
  * @brief We delete everything after Element with Element included

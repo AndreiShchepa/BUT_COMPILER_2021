@@ -15,6 +15,8 @@
 #include "error.h"
 #include "expressions.h"
 
+extern int err;
+
 char Precedence_Table[][NUMBER_OF_OPERATORS] = {
         //#    *    /    //   +    -    ..   <    <=   >    >=   ==   ~=   (    )    i    $
         {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // #
@@ -104,6 +106,7 @@ List * Init(List * list) {
     // We create the first element and check for malloc
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
+        free(list);
         return NULL;
     }
 
@@ -162,7 +165,9 @@ void Insert(List * list, char * data) {
     }
 
     // We check if malloc was successful
+    // TODO_MEMORY can be false
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
+    // TODO_MEMORY can be false
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_first == NULL || TempElement_second == NULL) {
         Deallocate(list);
@@ -264,6 +269,7 @@ void Push(List * list, char * data) {
     }
 
     // We create our new element
+    // TODO_MEMORY can be false
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
@@ -311,9 +317,9 @@ void Deallocate(List * list) {
 // To get rid of test prints comment all printfs
 // and callings of print_stack_debug(); in expression();
 bool expression() {
-    // TODO ret = INTERNAL_ERR; pridat vsade kde moze vzniknut chyba kvoli malloc
     char data[3] = {"$"};
-    List *list = NULL; list = Init(list);
+    List * list = NULL;
+    list = Init(list);
     char precedence;
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
@@ -348,6 +354,7 @@ start_expr:
 
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
+            //TODO if insert false (segfault)
             Insert(list, data);
         }
         else if (precedence == '>') {
@@ -365,6 +372,7 @@ start_expr:
         }
         else if (precedence == '=') {
             // We just copy the data onto the stack
+            //TODO if insert false (segfault)
             Push(list, token.attr.id.str);
             print_stack_expr(list);
         }
@@ -389,8 +397,8 @@ start_expr:
     // that if list is empty and we never did combination of return true
     // false with deallocation of list that there was an error along the way
     if (list == NULL) {
-        // TODO ret
-        return INTERNAL_ERR;
+        err = INTERNAL_ERR;
+        return false;
     }
 
     print_dbg_msg_single("reduction: ");
