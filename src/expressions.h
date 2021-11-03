@@ -8,14 +8,22 @@
  * @author Richard Gajdosik <xgajdo33>
  */
 
-#ifndef _EXPRESSION_H
-#define _EXPRESSION_H
+#ifndef _EXPRESSIONS_H
+#define _EXPRESSIONS_H
 
 #include <stdbool.h>
 #define INDEX_OF_IDENTIFICATOR 15
 #define NUMBER_OF_OPERATORS 17
 #define LENGHT_OF_OPERATORS 3
 #define LENGHT_OF_RULES 5
+
+#define GET_ID(data) Get_Index_Of_String((data))
+
+#ifdef DEBUG_EXPR
+    #define print_dbg_msg(s) printf("%s\n", (s))
+#else
+    #define print_dbg_msg(s)
+#endif
 
 typedef struct Element {
     char data[3];
@@ -83,4 +91,4 @@ int Get_Index_Of_String(char * );
  */
 void Deallocate(List *list);
 
-#endif // _EXPRESSION_H
+#endif // _EXPRESSIONS_H

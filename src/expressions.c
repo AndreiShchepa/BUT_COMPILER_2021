@@ -16,29 +16,40 @@
 #include "expressions.h"
 
 char Precedence_Table[][NUMBER_OF_OPERATORS] = {
-        {"<>>>>>>>>>>>><><>"}, // #
-        {"<>>>>>>>>>>>><><>"}, // *
-        {"<>>>>>>>>>>>><><>"}, // /
-        {"<>>>>>>>>>>>><><>"}, // //
+        //#    *    /    //   +    -    ..   <    <=   >    >=   ==   ~=   (    )    i    $
+        {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // #
 
-        {"<<<<>>>>>>>>><><>"}, // +
-        {"<<<<>>>>>>>>><><>"}, // -
+        {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // *
 
-        {"<<<<<<<>>>>>><><>"}, // ..
-        {"<<<<<<<>>>>>><><>"}, // <
-        {"<<<<<<<>>>>>><><>"}, // <=
-        {"<<<<<<<>>>>>><><>"}, // >
-        {"<<<<<<<>>>>>><><>"}, // >=
-        {"<<<<<<<>>>>>><><>"}, // ==
-        {"<<<<<<<>>>>>><><>"}, // ~=
+        {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // /
 
-        {"<<<<<<<<<<<<<<=<c"}, // (
+        {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // //
 
-        {">>>>>>>>>>>>>c>s>"}, // )
+        {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // +
 
-        {"c>>>>>>>>>>>>c>s>"}, // i
+        {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // -
 
-        {"<<<<<<<<<<<<<<c<c"} // $
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // ..
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // <
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // <=
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // >
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // >=
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // ==
+
+        {'<', '<', '<', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // ~=
+
+        {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', 'c'}, // (
+
+        {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'c', '>', 's', '>'}, // )
+
+        {'c', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'c', '>', 's', '>'}, // i
+
+        {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'c', '<', 'c'}, // $
 };
 
 char Chars[][LENGHT_OF_OPERATORS] = {
@@ -278,18 +289,16 @@ bool Check_Correct_Closure(List * list) {
 }
 
 int Get_Index_Of_String(char * data) {
-    // if i remains 15 at the end of the for cycle,
-    // it means data contains not one of our chars (+, -, <= etc.)
-    // but a string or a variable
-    int i = INDEX_OF_IDENTIFICATOR;
-
     for (int j = 0; j < NUMBER_OF_OPERATORS; j++) {
         if (strcmp(data, Chars[j]) == 0) {
             return j;
         }
     }
 
-    return i;
+    // if i remains 15 at the end of the for cycle,
+    // it means data contains not one of our chars (+, -, <= etc.)
+    // but a string or a variable
+    return INDEX_OF_IDENTIFICATOR;
 }
 
 void Deallocate(List * list) {
@@ -312,7 +321,7 @@ bool expression() {
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
 
-        /* Takes index of a character that is in data,
+        /* Take index of a character that is in data,
          * for example + has index of 5 due to being 5th in Chars[] array,
          * we find that through comparing strings Chars[] and data
          * takes index of a character that is in token,
@@ -322,13 +331,14 @@ bool expression() {
          * and the precedence is <, because +<i in our precedence table
          * precedence = '<';
          */
-        precedence = Precedence_Table[Get_Index_Of_String(data)][Get_Index_Of_String(token.attr.id.str)];
-        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n", data, token.attr.id.str, precedence);
+        precedence = Precedence_Table[GET_ID(data)][GET_ID(token.attr.id.str)];
+        printf("top nasiel: %s oproti tokenu: %s, precedencia: %c \n",
+                    data, token.attr.id.str, precedence);
 
-        if(precedence == '<') {
+        if (precedence == '<') {
             // If token is a variable or a string we put i on the stack instead
             // of copying the whole name of the variable or whole string
-            if (Get_Index_Of_String(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
+            if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
                 strcpy(data, "i");
             }
             else {
