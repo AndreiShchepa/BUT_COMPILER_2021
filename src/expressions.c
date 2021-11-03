@@ -70,6 +70,30 @@ char Rules[][LENGHT_OF_RULES] = {
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
+void print_stack_debug(List * list) {
+    ElementPtr PrintElement = list->firstElement;
+    while (PrintElement != NULL) {
+        printf("%s", PrintElement->data);
+        PrintElement = PrintElement->nextElement;
+    }
+
+    printf("\n");
+}
+
+// Return on which index we can find our precedence rule
+int Get_Index_Of_String(char * data) {
+    for (int j = 0; j < NUMBER_OF_OPERATORS; j++) {
+        if (strcmp(data, Chars[j]) == 0) {
+            return j;
+        }
+    }
+
+    // if i remains 15 at the end of the for cycle,
+    // it means data contains not one of our chars (+, -, <= etc.)
+    // but a string or a variable
+    return INDEX_OF_IDENTIFICATOR;
+}
+
 List * Init(List * list) {
     // We create the list and check for malloc
     list = malloc(sizeof(List));
@@ -180,7 +204,7 @@ void Insert(List * list, char * data) {
     strcpy(TempElement_first->data, "<<");
     strcpy(TempElement_second->data, data);
 
-    print_stack_debug(list);
+    print_stack_expr(list);
 }
 
 bool Close(List * list) {
@@ -259,16 +283,6 @@ void Push(List * list, char * data) {
     strcpy(TempElement->data, data);
 }
 
-void print_stack_debug(List * list) {
-    ElementPtr PrintElement = list->firstElement;
-    while (PrintElement != NULL) {
-        printf("%s", PrintElement->data);
-        PrintElement = PrintElement->nextElement;
-    }
-
-    printf("\n");
-}
-
 bool Check_Correct_Closure(List * list) {
     if (list != NULL) {
         // We just forcefully check if first element on stack
@@ -285,19 +299,6 @@ bool Check_Correct_Closure(List * list) {
     }
 
     return false;
-}
-
-int Get_Index_Of_String(char * data) {
-    for (int j = 0; j < NUMBER_OF_OPERATORS; j++) {
-        if (strcmp(data, Chars[j]) == 0) {
-            return j;
-        }
-    }
-
-    // if i remains 15 at the end of the for cycle,
-    // it means data contains not one of our chars (+, -, <= etc.)
-    // but a string or a variable
-    return INDEX_OF_IDENTIFICATOR;
 }
 
 void Deallocate(List * list) {
@@ -331,7 +332,7 @@ start_expr:
          * precedence = '<';
          */
         precedence = Precedence_Table[GET_ID(data)][GET_ID(token.attr.id.str)];
-        printf("on top: %s, token: %s, precedence: %c\n",
+        print_dbg_msg_multiply("on top: %s, token: %s, precedence: %c\n",
                     data, token.attr.id.str, precedence);
 
         if (precedence == '<') {
@@ -357,7 +358,7 @@ start_expr:
                 goto err_expr;
             }
 
-            print_stack_debug(list);
+            print_stack_expr(list);
             // If we found a rule, we check the precedence of the new created stack
             // by returning to the start of the while cycle
             goto start_expr;
@@ -365,7 +366,7 @@ start_expr:
         else if (precedence == '=') {
             // We just copy the data onto the stack
             Push(list, token.attr.id.str);
-            print_stack_debug(list);
+            print_stack_expr(list);
         }
         else if (precedence == 's') {
             // Special incident with finding identificator after identificator,
@@ -392,13 +393,13 @@ start_expr:
         return INTERNAL_ERR;
     }
 
-    printf("we are closing this: ");
-    print_stack_debug(list);
+    print_dbg_msg_single("reduction: ");
+    print_stack_expr(list);
 
 end_expr:
     // We are reducing the expression by using our rules
     while (Close(list)) {
-        print_stack_debug(list);
+        print_stack_expr(list);
     }
 
     // If we were successful in reducing the expression

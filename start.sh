@@ -14,6 +14,9 @@ for i in "$@"; do
         SCANNER)
             set_dbg_cmake "$i"
             ;;
+        EXPR)
+            set_dbg_cmake "$i"
+            ;;
          *)
             ;;
     esac

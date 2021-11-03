@@ -10,3 +10,5 @@ chmod +x start.sh
 RULES   - enable rules printing from parser
 
 SCANNER - run only scanner
+
+EXPR    - enable debug for expressions processing

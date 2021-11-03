@@ -20,9 +20,13 @@
 #define GET_ID(data) Get_Index_Of_String((data))
 
 #ifdef DEBUG_EXPR
-    #define print_dbg_msg(s) printf("%s\n", (s))
+    #define print_dbg_msg_multiply(s, ...) printf((s), __VA_ARGS__)
+    #define print_dbg_msg_single(s)        printf((s))
+    #define print_stack_expr(list)         print_stack_debug((list))
 #else
-    #define print_dbg_msg(s)
+    #define print_dbg_msg_multiply(s, ...)
+    #define print_dbg_msg_single(s)
+    #define print_stack_expr(list)
 #endif
 
 typedef struct Element {
@@ -72,19 +76,9 @@ void Top(List *, char * );
 void Push(List *, char * );
 
 /*
- * @brief debug tool
- */
-void print_stack_debug(List * );
-
-/*
  * @brief We check if only thing left on stack is "$E"
  */
 bool Check_Correct_Closure(List * );
-
-/*
- * @brief Return on which index we can find our precedence rule
- */
-int Get_Index_Of_String(char * );
 
 /*
  * @brief Frees list amd all its elements
