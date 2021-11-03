@@ -30,6 +30,7 @@ int main() {
         err = get_next_token(&token);
         if (err == SCANNER_ERR) {
             fprintf(stderr, "\nError in scanner, wrong token %s\n", token.attr.id.str);
+            return 1;
         }
     } while (token.type != T_EOF);
 

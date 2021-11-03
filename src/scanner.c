@@ -487,7 +487,7 @@ int scan_comment_or_sub(token_t *token) {
                         state = C4;
                         break;
                     // C2 {\n} -> C3
-                    case '\n':
+                    NEW_LINE:
                         state = C3;
                         break;
                     default:
@@ -508,7 +508,7 @@ int scan_comment_or_sub(token_t *token) {
                         state = C5;
                         break;
                     // C4 {\n} -> C3
-                    case '\n':
+                    NEW_LINE:
                         state = C3;
                         break;
                     default:
@@ -821,7 +821,7 @@ skip:
     ch = fgetc(f);
 
     switch (ch) {
-        case '\t': case ' ': case '\n':
+        case '\t': case ' ': NEW_LINE:
             goto skip;
         case '_': LETTERS_CASE:
             ungetc(ch, f);

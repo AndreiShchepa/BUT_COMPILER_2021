@@ -28,6 +28,8 @@
                     case '4': case '5': case '6': \
                     case '7': case '8': case '9'
 
+#define NEW_LINE case 10: case 13
+
 typedef enum states {
     START,                  // state  for starting
     I1,                     // state  for identifier scanning
