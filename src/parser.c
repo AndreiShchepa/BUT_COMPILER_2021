@@ -18,7 +18,8 @@
 token_t token;
 int err;
 static bool ret;
-htab_t *h_table;
+arr_symtbs_t local_symtbs;
+htable_t global_symtab;
 
 bool prog() {
     if (token.keyword == KW_REQUIRE) {
@@ -58,6 +59,10 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        int index = local_symtbs.size - 1;
+        if (!symtab_add(&local_symtbs.htab[index], &token.attr.id)) {
+            return false; // INTERNAL OR SEMANTIC ERR
+        }
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -441,8 +446,16 @@ int parser() {
         return INTERNAL_ERR;
     }
 
-    h_table = symtab_init();
+    ret = init_symtbs(&local_symtbs);
     if (!ret) {
+        str_free(&token.attr.id);
+        return INTERNAL_ERR;
+    }
+
+    ret = add_symtab(&local_symtbs);
+    if (!ret) {
+        // dont repeat yourself
+        free_symtbs(&local_symtbs);
         str_free(&token.attr.id);
         return INTERNAL_ERR;
     }
@@ -455,7 +468,7 @@ int parser() {
     }
 
     str_free(&token.attr.id);
-    symtab_free(h_table);
+    free_symtbs(&local_symtbs);
 
     return err;
 }

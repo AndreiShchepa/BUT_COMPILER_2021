@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include "scanner.h"
 
-#define SYMTAB_SIZE 45503
+#define MAX_HT_SIZE 101
 
 typedef struct data {
     bool def_func;
@@ -30,10 +30,32 @@ typedef struct htab_item {
     struct htab_item *next;
 } htab_item_t;
 
-typedef struct htab {
-    int num_of_el;
-    htab_item_t *arr[];
-} htab_t;
+typedef htab_item_t *htable_t[MAX_HT_SIZE];
+
+typedef struct {
+    int size;
+    htable_t *htab;
+} arr_symtbs_t;
+
+/*
+ *
+ */
+bool init_symtbs(arr_symtbs_t *symtbs);
+
+/*
+ *
+ */
+void free_symtbs(arr_symtbs_t *symtbs);
+
+/*
+ *
+ */
+void delete_last_symtab(arr_symtbs_t *symtbs);
+
+/*
+ *
+ */
+bool add_symtab(arr_symtbs_t *symtbs);
 
 /*
  * @brief Sdbm algorithm for hash table
@@ -43,9 +65,8 @@ uint32_t symtab_hash(const char *id);
 
 /*
  * @brief Allocate hash table and set the structure values
- * @return Initialized and allocated hash table
  */
-htab_t *symtab_init();
+void symtab_init(htable_t *table);
 
 /*
  * @brief Find the item int the table that matches the key
@@ -53,19 +74,19 @@ htab_t *symtab_init();
  * @param key - key for searching item
  * @return On success pointer to item, otherwise NULL
  */
-htab_item_t *symtab_find(const htab_t *table, const char *key);
+htab_item_t *symtab_find(const htable_t *table, const char *key);
 
 /*
  * @brief Create new item in the table
  * @return Pointer to the created item, otherwise NULL
  */
-htab_item_t *symtab_add(htab_t *table, const string_t *s);
+htab_item_t *symtab_add(htable_t *table, const string_t *s);
 
-bool symtab_add_params(htab_t *table, token_t *token, bool value);
+bool symtab_add_params(htable_t *table, token_t *token, bool value);
 
 /*
  * @brief Table destructor
  */
-void symtab_free(htab_t *table);
+void symtab_free(htable_t *table);
 
 #endif // _SYMTABLE_H

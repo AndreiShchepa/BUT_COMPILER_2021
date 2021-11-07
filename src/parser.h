@@ -81,7 +81,6 @@
 
 extern token_t token;
 extern int err;
-extern htab_t *h_table;
 
 /*
  * @brief process all rules start with nonterminal <prog>
