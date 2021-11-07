@@ -96,15 +96,12 @@ TEST_F(Token, Double) {
     tokenTestNoErrNumber(T_FLOAT, 0, 0.0000000000000004f)
     tokenTestNoErrNumber(T_FLOAT, 0, 3.4f)
     tokenTestNoErrNumber(T_FLOAT, 0, 3400.0f)
-
-    tokenTestErr("3.4e");
-    tokenTestErr("3.4e");
     tokenTestErr("3.4e");
     tokenTestErr("3.a");
     tokenTestErr("0.04E-+0003");
 }
 
-TEST_F(Token, string) {
+TEST_F(Token, String) {
     std::string tokenStr;
     createBuffer(R"("Hello' World"
                  "Printing some numbers: 0 1 33 3.e10"
@@ -183,6 +180,9 @@ TEST_F(Token, Comment) {
     this is comment]])";
     const std::string block_comment2 = R"(--[[comment
     this is comment]])";
+    const std::string block_comment3 = R"(100 --[[comment
+    this is comment]]
+	code)";
 
     createBuffer(line_comment1);
     EXPECT_FALSE(get_next_token(&token));
@@ -200,4 +200,10 @@ TEST_F(Token, Comment) {
     EXPECT_FALSE(get_next_token(&token)); // 100
     EXPECT_FALSE(get_next_token(&token)); // comment
     EXPECT_TRUE(token.type == T_EOF); // comment
+
+    createBuffer(block_comment3);
+    EXPECT_FALSE(get_next_token(&token));
+    EXPECT_TRUE(token.type == T_INT);
+    EXPECT_FALSE(get_next_token(&token));
+    EXPECT_TRUE(token.type == T_ID);
 }
