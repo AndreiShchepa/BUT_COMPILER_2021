@@ -1,8 +1,32 @@
 #!/bin/bash
 
-declare -a arr=("cmake .."
+set_dbg_cmake() {
+    params="$params -DDEBUG_$1=on"
+}
+
+params=""
+
+for i in "$@"; do
+    case $i in
+        RULES)
+            set_dbg_cmake "$i"
+            ;;
+        SCANNER)
+            set_dbg_cmake "$i"
+            ;;
+        EXPR)
+            set_dbg_cmake "$i"
+            ;;
+         *)
+            ;;
+    esac
+done
+
+declare -a arr=("rm -rf *"
+                "cmake $params .."
                 "make"
-                "./compiler <../$1")
+                "./compiler <../$1"
+                "cd ..")
 
 if [ ! -d "build/" ]; then
     mkdir build

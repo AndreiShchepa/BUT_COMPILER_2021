@@ -12,6 +12,7 @@
 #ifndef _SCANNER_H
 #define _SCANNER_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include "str.h"
 #define COUNT_KEYWORDS 12
@@ -26,6 +27,8 @@
 #define DIGITS_CASE case '1': case '2': case '3': \
                     case '4': case '5': case '6': \
                     case '7': case '8': case '9'
+
+#define NEW_LINE case 10: case 13
 
 typedef enum states {
     START,                  // state  for starting
@@ -59,7 +62,8 @@ typedef enum keywords {
     KW_STRING,
     KW_NIL,
     KW_THEN,
-    KW_WHILE
+    KW_WHILE,
+    KW_NONE // init value
 } keywords_t;
 
 typedef enum token_type {
@@ -87,6 +91,7 @@ typedef enum token_type {
     T_COMMA,
     T_COLON,
     T_CONCAT,
+    T_NONE // init value
 } token_type_t;
 
 typedef union token_attr {

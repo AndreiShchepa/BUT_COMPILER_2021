@@ -3,5 +3,12 @@
 ## Fast run for scanner testing
 ```
 chmod +x start.sh
-./start.sh name_of_file_for_intput_with_tokens
+./start.sh file_with_code list_of_params
 ```
+
+## List of params and their meaning
+RULES   - enable rules printing from parser
+
+SCANNER - run only scanner
+
+EXPR    - enable debug for expressions processing

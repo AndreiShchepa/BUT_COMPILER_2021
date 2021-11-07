@@ -14,11 +14,14 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "scanner.h"
 
 #define SYMTAB_SIZE 45503
 
 typedef struct data {
-    void *type;
+    bool def_func;
+    bool decl_func;
+    bool def_var;
 } data_t;
 
 typedef struct htab_item {
@@ -29,7 +32,7 @@ typedef struct htab_item {
 
 typedef struct htab {
     int num_of_el;
-    htab_item_t *arr[SYMTAB_SIZE];
+    htab_item_t *arr[];
 } htab_t;
 
 /*
@@ -42,7 +45,7 @@ uint32_t symtab_hash(const char *id);
  * @brief Allocate hash table and set the structure values
  * @return Initialized and allocated hash table
  */
-bool symtab_init(htab_t *table);
+htab_t *symtab_init();
 
 /*
  * @brief Find the item int the table that matches the key
@@ -56,7 +59,9 @@ htab_item_t *symtab_find(const htab_t *table, const char *key);
  * @brief Create new item in the table
  * @return Pointer to the created item, otherwise NULL
  */
-htab_item_t *symtab_add(htab_t *table);
+htab_item_t *symtab_add(htab_t *table, const string_t *s);
+
+bool symtab_add_params(htab_t *table, token_t *token, bool value);
 
 /*
  * @brief Table destructor
