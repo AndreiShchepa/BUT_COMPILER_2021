@@ -33,6 +33,7 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        ADD_FUNC_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -59,13 +60,11 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
-        int index = local_symtbs.size - 1;
-        if (!symtab_add(&local_symtbs.htab[index], &token.attr.id)) {
-            return false; // INTERNAL OR SEMANTIC ERR
-        }
+        ADD_FUNC_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
+        ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(params);
@@ -78,6 +77,7 @@ bool prog() {
         NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
+        DEL_SYMTAB();
 
         NEXT_TOKEN();
         return prog();
@@ -174,11 +174,13 @@ bool statement() {
         NEXT_NONTERM(expression);
 
         EXPECTED_TOKEN(token.keyword == KW_DO);
+        ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
+        DEL_SYMTAB();
 
         NEXT_TOKEN();
         return statement();
@@ -188,6 +190,7 @@ bool statement() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        FIND_ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -360,6 +363,7 @@ bool other_types() {
 bool params() {
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
+        FIND_ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -380,6 +384,7 @@ bool other_params() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        FIND_ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -446,19 +451,8 @@ int parser() {
         return INTERNAL_ERR;
     }
 
-    ret = init_symtbs(&local_symtbs);
-    if (!ret) {
-        str_free(&token.attr.id);
-        return INTERNAL_ERR;
-    }
+    local_symtbs.size = 0;
 
-    ret = add_symtab(&local_symtbs);
-    if (!ret) {
-        // dont repeat yourself
-        free_symtbs(&local_symtbs);
-        str_free(&token.attr.id);
-        return INTERNAL_ERR;
-    }
 
     FIRST_TOKEN();
     ret = prog();
@@ -469,6 +463,7 @@ int parser() {
 
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
+    symtab_free(&global_symtab);
 
     return err;
 }

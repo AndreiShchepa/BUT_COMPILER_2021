@@ -51,8 +51,14 @@ int main() {
         else if (ret == SCANNER_ERR) {
             fprintf(stderr, "\nScanner err\n");
         }
-        else {
+        else if (ret == SEM_DEF_ERR) {
+            fprintf(stderr, "\nSemantic err: redefinition\n");
+        }
+        else if (ret == PARSER_ERR) {
             fprintf(stderr, "\nParser err\n");
+        }
+        else {
+            fprintf(stderr, "\nAnother err\n");
         }
     }
 #endif

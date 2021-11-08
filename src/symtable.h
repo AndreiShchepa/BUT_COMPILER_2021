@@ -15,17 +15,66 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "scanner.h"
+#include "str.h"
 
 #define MAX_HT_SIZE 101
 
-typedef struct data {
-    bool def_func;
-    bool decl_func;
-    bool def_var;
+#define DEL_SYMTAB() \
+        delete_last_symtab(&local_symtbs)
+
+#define ADD_SYMTAB() \
+        ret = add_symtab(&local_symtbs); \
+        if (!ret) { \
+            return false; \
+        }
+
+#define ADD_FUNC_TO_SYMTAB() \
+        if (!symtab_add(&global_symtab, &token.attr.id)) { \
+            return false; \
+        }
+
+#define FIND_ADD_VAR_TO_SYMTAB() \
+        if (!find_id_symtbs(&local_symtbs, token.attr.id.str)) { \
+            return false; \
+        } \
+        if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
+            return false; \
+        }
+
+typedef enum type_id {
+    VAR,
+    FUNC
+} type_id_t;
+
+typedef enum type {
+    STRING,
+    INTEGER,
+    NUMBER,
+    NIL
+} type_t;
+
+typedef struct var {
+    bool init;
+    bool val_nil;
+    type_t type;
+    token_type_t attr;
+} var_t;
+
+typedef struct func {
+    bool def;
+    bool decl;
+    type_t *types;
+    type_t *rets;
+} func_t;
+
+typedef union data {
+    var_t *var;
+    func_t *func;
 } data_t;
 
 typedef struct htab_item {
     char* key_id;
+    type_id_t type;
     data_t data;
     struct htab_item *next;
 } htab_item_t;
@@ -36,11 +85,6 @@ typedef struct {
     int size;
     htable_t *htab;
 } arr_symtbs_t;
-
-/*
- *
- */
-bool init_symtbs(arr_symtbs_t *symtbs);
 
 /*
  *
@@ -56,6 +100,11 @@ void delete_last_symtab(arr_symtbs_t *symtbs);
  *
  */
 bool add_symtab(arr_symtbs_t *symtbs);
+
+/*
+ *
+ */
+bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
 
 /*
  * @brief Sdbm algorithm for hash table

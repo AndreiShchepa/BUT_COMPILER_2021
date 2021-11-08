@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtable.h"
+#include "error.h"
+
+extern int err;
 
 // can be changed, but why...
 uint32_t symtab_hash(const char *id) {
@@ -22,17 +25,6 @@ uint32_t symtab_hash(const char *id) {
 	}
 
 	return h;
-}
-
-bool init_symtbs(arr_symtbs_t *symtbs) {
-    symtbs->htab = calloc(1, sizeof(htable_t));
-    if (!(symtbs->htab)) {
-        return false; // INTERNAL ERR
-    }
-
-    symtab_init(&symtbs->htab[0]);
-    symtbs->size = 1;
-    return true;
 }
 
 void free_symtbs(arr_symtbs_t *symtbs) {
@@ -64,6 +56,17 @@ bool add_symtab(arr_symtbs_t *symtbs) {
     symtbs->htab = tmp;
     symtab_init(&symtbs->htab[const_size]);
     (symtbs->size)++;
+
+    return true;
+}
+
+bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
+    for (int i = symtbs->size - 1; i >= 0; i--) {
+        if (symtab_find(&symtbs->htab[i], key)) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
+    }
 
     return true;
 }
@@ -124,6 +127,7 @@ htab_item_t *symtab_add(htable_t *table, const string_t *s) {
     htab_item_t *item = symtab_find(table, s->str);
 
     if (item) {
+        err = SEM_DEF_ERR;
         return NULL; // set err to SEMANTIC ERR
     }
     else {
@@ -133,6 +137,7 @@ htab_item_t *symtab_add(htable_t *table, const string_t *s) {
             return NULL; // INTERNAL ERR
         }
 
+        new_item->next = (*table)[index];
         (*table)[index] = new_item;
         return new_item;
     }
