@@ -52,10 +52,10 @@
         }
 
 // Check if type of token is id or some term
-#define TOKEN_ID_TERM() token.type == T_ID    || \
-                        token.type == T_INT   || \
-                        token.type == T_FLOAT || \
-                        token.type == T_STRING
+#define TOKEN_TERM() token.keyword == KW_NIL || \
+                     token.type == T_INT     || \
+                     token.type == T_FLOAT   || \
+                     token.type == T_STRING
 
 // Check if type of token belongs to expression
 #define TOKEN_ID_EXPRESSION() token.type == T_ID          || \
@@ -83,9 +83,15 @@ extern token_t token;
 extern int err;
 
 /*
+ * @brief process start of the code
+ *
+ * 1. <prolog> -> require term_str <prog>
+ */
+bool prolog();
+
+/*
  * @brief process all rules start with nonterminal <prog>
  *
- * 1. <prog> -> <prolog> <prog>
  * 2. <prog> -> GLOBAL ID : FUNCTION ( <type_params> ) <type_returns> <prog>
  * 3. <prog> -> FUNCTION ID ( <params> ) <type_returns> <statement> <return_type> END <prog>
  * 4. <prog> -> ID_FUNC ( <args> ) <prog>
@@ -103,126 +109,134 @@ bool prolog();
 /*
  * @brief process all possible types of variables
  *
- * 7. <type> -> integer
- * 8. <type> -> number
- * 9. <type> -> string
- * 10. <type> -> nil
+ * 6. <type> -> integer
+ * 7. <type> -> number
+ * 8. <type> -> string
+ * 9. <type> -> nil
  */
 bool type();
 
 /*
  * @brief process all rules start with nonterminal <statement>
  *
- * 11. <statement> -> IF <expression> THEN <statement> ELSE <statement> END <statement>
- * 12. <statement> -> WHILE <expression> DO <statement> END <statement>
- * 13. <statement> -> LOCAL ID_VAR : <type> <def_var> <statement>
- * 14. <statement> -> ID <work_var> <statement>
- * 15. <statement> -> RETURN <expression> <other_exp> <statement>
- * 16. <statement> -> e
+ * 10. <statement> -> IF <expression> THEN <statement> ELSE <statement> END <statement>
+ * 11. <statement> -> WHILE <expression> DO <statement> END <statement>
+ * 12. <statement> -> LOCAL ID_VAR : <type> <def_var> <statement>
+ * 13. <statement> -> ID <work_var> <statement>
+ * 14. <statement> -> RETURN <expression> <other_exp> <statement>
+ * 15. <statement> -> e
  */
 bool statement();
 
 /*
  * @brief process rules for manipulating with tokens after ID
  *
- * 17. <work_var> -> ( <args> )
- * 18. <work_var> -> <vars>
+ * 16. <work_var> -> ( <args> )
+ * 17. <work_var> -> <vars>
  */
 bool work_var();
 
 /*
  * @brief process rules for multiply assigning
  *
- * 19. <vars> -> , ID_VAR <vars>
- * 20. <vars> -> = <type_expr>
+ * 18. <vars> -> , ID_VAR <vars>
+ * 19. <vars> -> = <type_expr>
  */
 bool vars();
 
 /*
  * @brief process rules for assigning
  *
- * 21. <type_expr> -> ID_FUNC ( <args> )
- * 22. <type_expr> -> <expression> <other_exp>
+ * 20. <type_expr> -> ID_FUNC ( <args> )
+ * 21. <type_expr> -> <expression> <other_exp>
  */
 bool type_expr();
 
 /*
  * @brief process myltiply assigning
  *
- * 23. <other_exp> -> , <expression> <other_exp>
- * 24. <other_exp> -> e
+ * 22. <other_exp> -> , <expression> <other_exp>
+ * 23. <other_exp> -> e
  */
 bool other_exp();
 
 /*
  * @brief process rules for definition of variables
  *
- * 25. <def_var> -> <init_assign>
- * 26. <def_var> -> e
+ * 24. <def_var> -> <init_assign>
+ * 25. <def_var> -> e
  */
 bool def_var();
 
 /*
  * @brief process rules for the first initializing of variables
  *
- * 27. <init_assign> -> ID_FUNC ( <args> )
- * 28. <init_assign> -> <expression>
+ * 26. <init_assign> -> ID_FUNC ( <args> )
+ * 27. <init_assign> -> <expression>
  */
 bool init_assign();
 
 /*
  * @brief process all possible types of variables in function return
  *
- * 29. <type_returns> -> : <type> <other_types>
- * 30. <type_returns> -> e
+ * 28. <type_returns> -> : <type> <other_types>
+ * 29. <type_returns> -> e
  */
 bool type_returns();
 
 /*
  * @brief process all possible types of variables in function return
  *
- * 31. <other_types> -> , <type> <other_types>
- * 32. <other_types> -> e
+ * 30. <other_types> -> , <type> <other_types>
+ * 31. <other_types> -> e
  */
 bool other_types();
 
 /*
  * @brief process params as arguments for function
  *
- * 33. <params> -> e
- * 34. <params> -> ID : <type> <other_params>
+ * 32. <params> -> e
+ * 33. <params> -> ID : <type> <other_params>
  */
 bool params();
 
 /*
  * @brief process params as arguments for function
  *
- * 35. <other_params> -> , ID : <type> <other_params>
- * 36. <other_params> -> e
+ * 34. <other_params> -> , ID : <type> <other_params>
+ * 35. <other_params> -> e
  */
 bool other_params();
 
 /*
  * @brief process all possible types of variables as arguments in functions
  *
- * 37. <type_params> -> <type> <other_types>
- * 38. <type_params> -> e
+ * 36. <type_params> -> <type> <other_types>
+ * 37. <type_params> -> e
  */
 bool type_params();
 
 /*
  * @brief process all possible args
  *
- * 39. <args> -> ID_VAR <other_args>
- * 40. <args> -> e
+ * 38. <args> -> <param_to_func> <other_args>
+ * 39. <args> -> e
  */
 bool args();
 
 /*
+ * @brief process args
+ *
+ * 38. <param_to_func> -> ID_VAR
+ * 39. <param_to_func> -> TERM
+ */
+bool param_to_func();
+
+/*
  * @brief process all possible other args
  *
- * 41. <other_args> -> , ID_VAR <other_args>
- * 42. <other_args> -> e
+ * 42. <other_args> -> , <param_to_func> <other_args>
+ * 43. <other_args> -> e
  */
 bool other_args();
 
