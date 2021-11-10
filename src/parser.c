@@ -148,16 +148,21 @@ bool statement() {
         NEXT_NONTERM(expression);
 
         EXPECTED_TOKEN(token.keyword == KW_THEN);
+        ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
+        DEL_SYMTAB();
+
+        ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
+        DEL_SYMTAB();
 
         NEXT_TOKEN();
         return statement();
