@@ -63,12 +63,11 @@ bool add_symtab(arr_symtbs_t *symtbs) {
 bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
     for (int i = symtbs->size - 1; i >= 0; i--) {
         if (symtab_find(&symtbs->htab[i], key)) {
-            err = SEM_DEF_ERR;
-            return false;
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 void symtab_init(htable_t *table) {

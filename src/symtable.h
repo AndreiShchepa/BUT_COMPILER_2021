@@ -33,10 +33,11 @@
             return false; \
         }
 
-#define FIND_ADD_VAR_TO_SYMTAB() \
-        if (!find_id_symtbs(&local_symtbs, token.attr.id.str)) { \
-            return false; \
-        } \
+#define FIND_VAR_IN_SYMTAB find_id_symtbs(&local_symtbs, token.attr.id.str)
+
+#define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
+
+#define ADD_VAR_TO_SYMTAB() \
         if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
             return false; \
         }
