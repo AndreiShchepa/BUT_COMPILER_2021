@@ -531,7 +531,7 @@ int scan_comment_or_sub(token_t *token) {
                         state = C3;
                         break;
                     default:
-                        state = C2;
+                        state = C8;
                         break;
                 }
 
@@ -552,7 +552,7 @@ int scan_comment_or_sub(token_t *token) {
                         state = C3;
                         break;
                     default:
-                        state = C4;
+                        state = C8;
                         break;
                 }
 
@@ -589,6 +589,19 @@ int scan_comment_or_sub(token_t *token) {
                 str_clear(&token->attr.id);
 
                 return NO_ERR;
+
+            case C8:
+                switch (ch) {
+                    // C8 {\n} -> C3
+                    NEW_LINE:
+                        state = C3;
+                        break;
+                    default:
+                        state = C8;
+                        break;
+                }
+
+                break;
             default:
                 return SCANNER_ERR;
         }

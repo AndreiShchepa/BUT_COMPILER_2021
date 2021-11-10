@@ -47,7 +47,7 @@ typedef enum states {
       S7, S8, S9, S10, S11,
 
     C1, C2, C3, C4, C5, C6, // states for comments scanning
-                        C7,
+                    C7, C8,
     D1, D2,                 // states for concatinating scanning
     B1, B2,                 // states for division scannnig
     R1, R2, R3, R4, R5, R6, // states for relations operators scanning
