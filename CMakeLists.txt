@@ -3,12 +3,6 @@ project(compiler)
 
 
 ###############################################################################
-# other pref
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)                   # for vim tags
-set(CMAKE_BUILD_TYPE Debug)
-
-
-###############################################################################
 # includes
 include(FetchContent)
 include(GoogleTest)
@@ -34,52 +28,58 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)              # to get *.o files => fo
 
 
 ###############################################################################
+# other pref
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)                   # for vim tags
+set(CMAKE_BUILD_TYPE Debug)
+
+
+###############################################################################
 # opts
 option(DEBUG_RULES   "Enable rules printing from parser"       OFF)
 option(DEBUG_SCANNER "Run only scanner"                        OFF)
 option(DEBUG_EXPR    "Enable debug for expressions processing" OFF)
 
 if (DEBUG_RULES)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_RULES")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_RULES")
 endif()
 
 if (DEBUG_SCANNER)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_SCANNER")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_SCANNER")
 endif()
 
 if (DEBUG_EXPR)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_EXPR")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_EXPR")
 endif()
 
 
 ###############################################################################
 # sources
 set(COMMON_SOURCES
-        ./src/debug.h
-        ./src/error.h
-        ./src/str.c src/str.h
-        )
+	./src/debug.h
+	./src/error.h
+	./src/str.c src/str.h
+	)
 
 set(COMPILER_SOURCES
-        src/compiler.c
-        src/symtable.c    src/symtable.h
-        src/scanner.c     src/scanner.h
-		src/parser.c      src/parser.h
-		src/expressions.c src/expressions.h
-        ${COMMON_SOURCES}
-        )
+	src/compiler.c
+	src/symtable.c    src/symtable.h
+	src/scanner.c     src/scanner.h
+	src/parser.c      src/parser.h
+	src/expressions.c src/expressions.h
+	${COMMON_SOURCES}
+	)
 
 set(SCANNER_TESTS_SOURCES
-        ./tests/scannerTests.cpp
-        ./src/scanner.c ./src/scanner.h
-        ${COMMON_SOURCES}
-        )
+	./tests/scannerTests.cpp
+	./src/scanner.c ./src/scanner.h
+	${COMMON_SOURCES}
+	)
 
 set(RETURN_CODES_TESTS_SOURCES
-        ./tests/returnCodesTests.cpp
-        ./src/scanner.c ./src/scanner.h
-        ${COMMON_SOURCES}
-        )
+	./tests/returnCodesTests.cpp
+	./src/scanner.c ./src/scanner.h
+	${COMMON_SOURCES}
+	)
 
 
 ###############################################################################
@@ -91,9 +91,9 @@ target_link_libraries(${PROJECT_NAME})
 ###############################################################################
 # TESTS
 FetchContent_Declare(googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG master
-        )
+	GIT_REPOSITORY https://github.com/google/googletest.git
+	GIT_TAG master
+	)
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
@@ -106,6 +106,6 @@ target_link_libraries(returnCodesTests gtest_main)
 gtest_discover_tests(scannerTests)
 gtest_discover_tests(returnCodesTests)
 
-### TESTS COVERED
+### TESTS COVERAGE
 setup_target_for_coverage(scannerTests_coverage scannerTests scannerTests_coverage)
 setup_target_for_coverage(returnCodesTests_coverage returnCodesTests returnCodesTests_coverage)
