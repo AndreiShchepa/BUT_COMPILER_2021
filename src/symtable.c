@@ -50,7 +50,8 @@ bool add_symtab(arr_symtbs_t *symtbs) {
     htable_t *tmp = NULL;
     tmp = realloc(symtbs->htab, (const_size + 1) * sizeof(htable_t));
     if (!tmp) {
-        return false; // INTERNAL ERR
+        err = INTERNAL_ERR;
+        return false;
     }
 
     symtbs->htab = tmp;
@@ -82,7 +83,8 @@ void symtab_init(htable_t *table) {
 
 htab_item_t *symtab_find(const htable_t *table, const char *key) {
     if (!table) {
-        return NULL; // INTERNAL ERR
+        err = INTERNAL_ERR;
+        return NULL;
     }
 
 	htab_item_t *item = (*table)[symtab_hash(key) % MAX_HT_SIZE];
@@ -102,13 +104,15 @@ htab_item_t *htab_item_init(const string_t *s) {
     htab_item_t *item = calloc(1, sizeof(htab_item_t));
 
     if (!item) {
-        return NULL; // INTERNAL ERR
+        err = INTERNAL_ERR;
+        return NULL;
     }
 
     item->key_id = calloc(s->length + 1, sizeof(char));
 
     if (!item) {
-        return NULL; // INTERNAL ERR
+        err = INTERNAL_ERR;
+        return NULL;
     }
 
     strcpy(item->key_id, s->str);
@@ -119,7 +123,8 @@ htab_item_t *htab_item_init(const string_t *s) {
 
 htab_item_t *symtab_add(htable_t *table, const string_t *s) {
     if (!table) {
-        return NULL; // INTERNAL ERR
+        err = INTERNAL_ERR;
+        return NULL;
     }
 
     uint32_t index = symtab_hash(s->str) % MAX_HT_SIZE;
@@ -127,13 +132,14 @@ htab_item_t *symtab_add(htable_t *table, const string_t *s) {
 
     if (item) {
         err = SEM_DEF_ERR;
-        return NULL; // set err to SEMANTIC ERR
+        return NULL;
     }
     else {
         htab_item_t *new_item = htab_item_init(s);
 
         if (!new_item) {
-            return NULL; // INTERNAL ERR
+            err = INTERNAL_ERR;
+            return NULL;
         }
 
         new_item->next = (*table)[index];
