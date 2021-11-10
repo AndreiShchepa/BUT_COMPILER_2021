@@ -17,8 +17,6 @@
 #include "error.h"
 #include "scanner.h"
 
-#define NUMBER_OF_KEYWORDS 15
-
 #define PUSH_CHAR(sym) ret = str_add_char(&token->attr.id, (char)(sym)); \
                        if (!ret) { \
                            return INTERNAL_ERR; \
@@ -26,6 +24,17 @@
 
 #define ACCEPT_LEXEM() ungetc(ch, f); \
                        flag = true
+
+#define TRANSLATE_HEX(ch, symbol, n) \
+                      if ((ch) >= '0' && (ch) <= '9') { \
+                          (symbol) += ((n) * ((ch) - 48)); \
+                      } \
+                      else if ((ch) >= 'a' && (ch) <= 'f') { \
+                          (symbol) += ((n) * ((ch) - 87)); \
+                      } \
+                      else if ((ch) >= 'A' && (ch) <= 'F') { \
+                          (symbol) += ((n) * ((ch) - 55)); \
+                      }
 
 int ch;
 states_t state;
@@ -37,12 +46,12 @@ void set_source_file(FILE *file) {
 }
 
 void recognize_keyword(token_t *token) {
-        char* keywords[NUMBER_OF_KEYWORDS] = {"do", "global", "number", "else",
+        char* keywords[COUNT_KEYWORDS] = {"do", "global", "number", "else",
                                               "if", "require", "end", "integer",
                                               "return", "function", "local",
                                               "string", "nil", "then", "while"};
 
-        for(keywords_t kw = KW_DO; kw < NUMBER_OF_KEYWORDS; kw++) {
+        for(keywords_t kw = KW_DO; kw < COUNT_KEYWORDS; kw++) {
             if (!str_cmp_const_str(&token->attr.id, keywords[kw])) {
                 token->keyword = kw;
                 token->type = T_KEYWORD;
@@ -342,6 +351,10 @@ state:
                         state = S5;
                         symbol = 200;
                         break;
+                    // S2 {x} -> S10
+                    case 'x':
+                        state = S10;
+                        break;
                     default:
                         return SCANNER_ERR;
                 }
@@ -437,6 +450,33 @@ state:
                 break;
             case S9:
                 ACCEPT_LEXEM();
+                break;
+
+            case S10:
+                switch (ch) {
+                    // S10 {0-9, a-f, A-F} -> S11
+                    HEX_CASE:
+                        state = S11;
+                        TRANSLATE_HEX(ch, symbol, 16);
+                        break;
+                    default:
+                        return SCANNER_ERR;
+                }
+
+                break;
+            case S11:
+                switch (ch) {
+                    // S11 {0-9, a-f, A-F} -> S1
+                    HEX_CASE:
+                        state = S1;
+                        TRANSLATE_HEX(ch, symbol, 1);
+                        PUSH_CHAR(symbol);
+                        symbol = 0;
+                        break;
+                    default:
+                        return SCANNER_ERR;
+                }
+
                 break;
             default:
                 return SCANNER_ERR;

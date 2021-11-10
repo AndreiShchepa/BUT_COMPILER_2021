@@ -18,27 +18,26 @@
 
 int main() {
 
+int ret;
+
 #ifdef DEBUG_SCANNER
     FILE *f = stdin;
     set_source_file(f);
 
     token_t token;
     str_init(&token.attr.id, 20);
-    int err;
 
     do {
-        err = get_next_token(&token);
-        if (err == SCANNER_ERR) {
+        ret = get_next_token(&token);
+        if (ret == SCANNER_ERR) {
             fprintf(stderr, "\nError in scanner, wrong token %s\n", token.attr.id.str);
-            return 1;
+            return ret;
         }
     } while (token.type != T_EOF);
 
     str_free(&token.attr.id);
     fprintf(stderr, "\nNo error in scanner\n");
 #else
-    int ret;
-
     ret = parser();
 
     if (ret == NO_ERR) {
@@ -63,5 +62,5 @@ int main() {
     }
 #endif
 
-	return 0;
+	return ret;
 }
