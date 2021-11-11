@@ -204,7 +204,7 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
-        print_rule("14. <statement> -> return <expression> <other_exp> <statement>");
+        print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
@@ -240,27 +240,23 @@ bool statement() {
         return statement();
     }
 
-    print_rule("15. <statement> -> e");
+    print_rule("16. <statement> -> e");
     return true;
 }
 
 bool vars() {
     if (token.type == T_COMMA) {
-        print_rule("18. <vars> -> , id_var <vars>");
+        print_rule("17. <vars> -> , id_var <vars>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
-        if (FIND_VAR_IN_SYMTAB == false) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
-        // check id_var
+        CHECK_ID(VAR);
 
         NEXT_TOKEN();
         return vars();
     }
     else if (token.type == T_ASSIGN) {
-        print_rule("19. <vars> -> = <type_expr>");
+        print_rule("18. <vars> -> = <type_expr>");
 
         NEXT_TOKEN();
         return type_expr();
@@ -270,8 +266,8 @@ bool vars() {
 }
 
 bool type_expr() {
-    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) { // check id_func
-        print_rule("20. <type_expr> -> id_func ( <args> )");
+    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) {
+        print_rule("19. <type_expr> -> id_func ( <args> )");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -285,7 +281,7 @@ bool type_expr() {
         return true;
     }
 
-    print_rule("21. <type_expr> -> <expression> <other_exp>");
+    print_rule("20. <type_expr> -> <expression> <other_exp>");
 
     NEXT_NONTERM(expression);
     return other_exp();
@@ -293,7 +289,7 @@ bool type_expr() {
 
 bool other_exp() {
     if (token.type == T_COMMA) {
-        print_rule("22. <other_exp> -> , <expression> <other_exp>");
+        print_rule("21. <other_exp> -> , <expression> <other_exp>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
@@ -301,30 +297,25 @@ bool other_exp() {
         return other_exp();
     }
 
-    print_rule("23. <other_exp> -> e");
+    print_rule("22. <other_exp> -> e");
     return true;
 }
 
 bool def_var() {
     if (token.type == T_ASSIGN) {
-        print_rule("24. <def_var> -> = <init_assign>");
+        print_rule("23. <def_var> -> = <init_assign>");
 
         NEXT_TOKEN();
         return init_assign();
     }
 
-    print_rule("25. <def_var> -> e");
+    print_rule("24. <def_var> -> e");
     return true;
 }
 
 bool init_assign() {
-    if (token.type == T_ID) { // check id_func
-        if (FIND_FUNC_IN_SYMTAB == false) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
-
-        print_rule("26. <init_assign> -> id_func ( <args> )");
+    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) {
+        print_rule("25. <init_assign> -> id_func ( <args> )");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -338,13 +329,13 @@ bool init_assign() {
         return true;
     }
 
-    print_rule("27. <init_assign> -> <expression>");
+    print_rule("26. <init_assign> -> <expression>");
     return expression();
 }
 
 bool type_returns() {
     if (token.type == T_COLON) {
-        print_rule("28. <type_returns> -> : <type> <other_types>");
+        print_rule("27. <type_returns> -> : <type> <other_types>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(type);
@@ -352,13 +343,13 @@ bool type_returns() {
         return other_types();
     }
 
-    print_rule("29. <type_returns> -> e");
+    print_rule("28. <type_returns> -> e");
     return true;
 }
 
 bool other_types() {
     if (token.type == T_COMMA) {
-        print_rule("30. <other_types> -> , <type> <other_types>");
+        print_rule("29. <other_types> -> , <type> <other_types>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(type);
@@ -366,13 +357,13 @@ bool other_types() {
         return other_types();
     }
 
-    print_rule("31. <other_types> -> e");
+    print_rule("30. <other_types> -> e");
     return true;
 }
 
 bool params() {
     if (token.type == T_ID) {
-        print_rule("33. <params> -> id : <type> <other_params>");
+        print_rule("32. <params> -> id : <type> <other_params>");
         ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
@@ -384,13 +375,13 @@ bool params() {
         return other_params();
     }
 
-    print_rule("32. <params> -> e");
+    print_rule("31. <params> -> e");
     return true;
 }
 
 bool other_params() {
     if (token.type == T_COMMA) {
-        print_rule("34. <other_params> -> , id : <type> <other_params>");
+        print_rule("33. <other_params> -> , id : <type> <other_params>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -405,40 +396,37 @@ bool other_params() {
         return other_params();
     }
 
-    print_rule("35. <other_params> -> e");
+    print_rule("34. <other_params> -> e");
     return true;
 }
 
 bool type_params() {
     if (type()) {
-        print_rule("36. <type_params> -> <type> <other_types>");
+        print_rule("35. <type_params> -> <type> <other_types>");
         return other_types();
     }
 
-    print_rule("37. <type_params> -> e");
+    print_rule("36. <type_params> -> e");
     return true;
 }
 
 bool args() {
     if (param_to_func()) {
-        print_rule("38. <args> -> <param_to_func> <other_args>");
+        print_rule("37. <args> -> <param_to_func> <other_args>");
         return other_args();
     }
 
-    print_rule("39. <args> -> e");
+    print_rule("38. <args> -> e");
     return true;
 }
 
 bool param_to_func() {
     if (token.type == T_ID) {
-        if (FIND_VAR_IN_SYMTAB == false) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
-        print_rule("40. <param_to_func> -> id_var"); // check id_var
+        print_rule("39. <param_to_func> -> id_var");
+        CHECK_ID(VAR);
     }
     else if (TOKEN_TERM()) {
-        print_rule("41. <param_to_func> -> term");
+        print_rule("40. <param_to_func> -> term");
     }
     else {
         return false;
@@ -450,14 +438,14 @@ bool param_to_func() {
 
 bool other_args() {
     if (token.type == T_COMMA) {
-        print_rule("42. <other_args> -> , <param_to_func> <other_args>");
+        print_rule("41. <other_args> -> , <param_to_func> <other_args>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(param_to_func);
         return other_args();
     }
 
-    print_rule("43. <other_args> -> e");
+    print_rule("42. <other_args> -> e");
     return true;
 }
 

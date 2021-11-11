@@ -37,6 +37,13 @@
 
 #define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
 
+#define CHECK_ID(EL) \
+        if (FIND_##EL##_IN_SYMTAB == false) { \
+            err = SEM_DEF_ERR; \
+            return false; \
+        }
+
+
 #define ADD_VAR_TO_SYMTAB() \
         if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
             return false; \

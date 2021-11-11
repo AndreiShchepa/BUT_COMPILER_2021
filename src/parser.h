@@ -100,13 +100,6 @@ bool prolog();
 bool prog();
 
 /*
- * @brief process rule start with nonterminal <prolog>
- *
- * 6. <prolog> -> REQUIRE TERM_STR
- */
-bool prolog();
-
-/*
  * @brief process all possible types of variables
  *
  * 6. <type> -> integer
@@ -122,121 +115,114 @@ bool type();
  * 10. <statement> -> IF <expression> THEN <statement> ELSE <statement> END <statement>
  * 11. <statement> -> WHILE <expression> DO <statement> END <statement>
  * 12. <statement> -> LOCAL ID_VAR : <type> <def_var> <statement>
- * 13. <statement> -> ID <work_var> <statement>
- * 14. <statement> -> RETURN <expression> <other_exp> <statement>
- * 15. <statement> -> e
+ * 13. <statement> -> ID_FUNC ( <args> ) <statement>
+ * 14. <statement> -> ID_VAR <vars> <statement>
+ * 15. <statement> -> RETURN <expression> <other_exp> <statement>
+ * 16. <statement> -> e
  */
 bool statement();
 
 /*
- * @brief process rules for manipulating with tokens after ID
- *
- * 16. <work_var> -> ( <args> )
- * 17. <work_var> -> <vars>
- */
-bool work_var();
-
-/*
  * @brief process rules for multiply assigning
  *
- * 18. <vars> -> , ID_VAR <vars>
- * 19. <vars> -> = <type_expr>
+ * 17. <vars> -> , ID_VAR <vars>
+ * 18. <vars> -> = <type_expr>
  */
 bool vars();
 
 /*
  * @brief process rules for assigning
  *
- * 20. <type_expr> -> ID_FUNC ( <args> )
- * 21. <type_expr> -> <expression> <other_exp>
+ * 19. <type_expr> -> ID_FUNC ( <args> )
+ * 20. <type_expr> -> <expression> <other_exp>
  */
 bool type_expr();
 
 /*
  * @brief process myltiply assigning
  *
- * 22. <other_exp> -> , <expression> <other_exp>
- * 23. <other_exp> -> e
+ * 21. <other_exp> -> , <expression> <other_exp>
+ * 22. <other_exp> -> e
  */
 bool other_exp();
 
 /*
  * @brief process rules for definition of variables
  *
- * 24. <def_var> -> <init_assign>
- * 25. <def_var> -> e
+ * 23. <def_var> -> <init_assign>
+ * 24. <def_var> -> e
  */
 bool def_var();
 
 /*
  * @brief process rules for the first initializing of variables
  *
- * 26. <init_assign> -> ID_FUNC ( <args> )
- * 27. <init_assign> -> <expression>
+ * 25. <init_assign> -> ID_FUNC ( <args> )
+ * 26. <init_assign> -> <expression>
  */
 bool init_assign();
 
 /*
  * @brief process all possible types of variables in function return
  *
- * 28. <type_returns> -> : <type> <other_types>
- * 29. <type_returns> -> e
+ * 27. <type_returns> -> : <type> <other_types>
+ * 28. <type_returns> -> e
  */
 bool type_returns();
 
 /*
  * @brief process all possible types of variables in function return
  *
- * 30. <other_types> -> , <type> <other_types>
- * 31. <other_types> -> e
+ * 29. <other_types> -> , <type> <other_types>
+ * 30. <other_types> -> e
  */
 bool other_types();
 
 /*
  * @brief process params as arguments for function
  *
- * 32. <params> -> e
- * 33. <params> -> ID : <type> <other_params>
+ * 31. <params> -> e
+ * 32. <params> -> ID : <type> <other_params>
  */
 bool params();
 
 /*
  * @brief process params as arguments for function
  *
- * 34. <other_params> -> , ID : <type> <other_params>
- * 35. <other_params> -> e
+ * 33. <other_params> -> , ID : <type> <other_params>
+ * 34. <other_params> -> e
  */
 bool other_params();
 
 /*
  * @brief process all possible types of variables as arguments in functions
  *
- * 36. <type_params> -> <type> <other_types>
- * 37. <type_params> -> e
+ * 35. <type_params> -> <type> <other_types>
+ * 36. <type_params> -> e
  */
 bool type_params();
 
 /*
  * @brief process all possible args
  *
- * 38. <args> -> <param_to_func> <other_args>
- * 39. <args> -> e
+ * 37. <args> -> <param_to_func> <other_args>
+ * 38. <args> -> e
  */
 bool args();
 
 /*
  * @brief process args
  *
- * 38. <param_to_func> -> ID_VAR
- * 39. <param_to_func> -> TERM
+ * 39. <param_to_func> -> ID_VAR
+ * 40. <param_to_func> -> TERM
  */
 bool param_to_func();
 
 /*
  * @brief process all possible other args
  *
- * 42. <other_args> -> , <param_to_func> <other_args>
- * 43. <other_args> -> e
+ * 41. <other_args> -> , <param_to_func> <other_args>
+ * 42. <other_args> -> e
  */
 bool other_args();
 
