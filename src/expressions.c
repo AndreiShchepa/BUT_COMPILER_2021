@@ -166,15 +166,14 @@ bool Insert(List * list, char * data) {
     }
 
     // We check if malloc was successful
-    // TODO MEMORY can be false
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
     if (TempElement_first == NULL) {
         Deallocate(list);
         return 0;
     }
-    // TODO MEMORY can be false
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_second == NULL) {
+        free(TempElement_first);
         Deallocate(list);
         return 0;
     }
@@ -274,7 +273,6 @@ bool Push(List * list, char * data) {
     }
 
     // We create our new element
-    // TODO MEMORY can be false
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
@@ -321,11 +319,11 @@ void Deallocate(List * list) {
     }
 }
 
-
 bool expression() {
     char data[3] = {"$"};
     List * list = NULL;
     list = Init(list);
+
     char precedence;
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
@@ -360,8 +358,8 @@ start_expr:
 
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
-            //TODO if insert false (segfault)
             if(!Insert(list, data)){
+                list = NULL;
                 goto end_expr;
             }
         }
@@ -380,8 +378,8 @@ start_expr:
         }
         else if (precedence == '=') {
             // We just copy the data onto the stack
-            //TODO if insert false (segfault)
             if(!Push(list, token.attr.id.str)){
+                list = NULL;
                 goto end_expr;
             }
             print_stack_expr(list);
