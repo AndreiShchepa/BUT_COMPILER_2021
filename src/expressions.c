@@ -139,6 +139,7 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         free(DelElement);
+        DelElement = NULL;
     }
 }
 
@@ -167,13 +168,16 @@ bool Insert(List * list, char * data) {
     // We check if malloc was successful
     // TODO MEMORY can be false
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
-    // TODO MEMORY can be false
-    ElementPtr TempElement_second = malloc(sizeof(struct Element));
-    if (TempElement_first == NULL || TempElement_second == NULL) {
+    if (TempElement_first == NULL) {
         Deallocate(list);
         return 0;
     }
-
+    // TODO MEMORY can be false
+    ElementPtr TempElement_second = malloc(sizeof(struct Element));
+    if (TempElement_second == NULL) {
+        Deallocate(list);
+        return 0;
+    }
     // If we found expression character on stack without going through E
     if (flag == 0) {
         find->nextElement = TempElement_first;
