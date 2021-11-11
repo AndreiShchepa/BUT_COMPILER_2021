@@ -79,7 +79,7 @@ void Dispose(ElementPtr );
 /*
  * @brief We are inserting << with its char (+, -, <= etc.)
  */
-void Insert(List *, char *);
+bool Insert(List *, char *);
 
 /*
  * @brief We close the first part of the expression we find,
@@ -95,7 +95,7 @@ void Top(List *, char * );
 /*
  * @brief We Copy a string on top of the stack
  */
-void Push(List *, char * );
+bool Push(List *, char * );
 
 /*
  * @brief We check if only thing left on stack is "$E"
