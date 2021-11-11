@@ -16,7 +16,6 @@
 
 extern int err;
 
-// can be changed, but why...
 uint32_t symtab_hash(const char *id) {
 	uint32_t h = 0;
 	const unsigned char *p;

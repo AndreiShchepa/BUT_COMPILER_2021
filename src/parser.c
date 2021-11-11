@@ -27,8 +27,8 @@ bool prolog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
-
         NEXT_TOKEN();
+
         return prog();
     }
 
@@ -41,22 +41,18 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
         ADD_FUNC_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
-
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.keyword == KW_FUNCTION);
-
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type_params);
-
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
 
@@ -68,26 +64,26 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
         ADD_FUNC_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
+
         ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(params);
-
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
-
         NEXT_NONTERM(statement);
-
         EXPECTED_TOKEN(token.keyword == KW_END);
+
         DEL_SYMTAB();
 
         NEXT_TOKEN();
+
         return prog();
     }
     else if (token.type == T_ID) {
@@ -95,13 +91,11 @@ bool prog() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(args);
-
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-
         NEXT_TOKEN();
+
         return prog();
     }
     else if (token.type == T_EOF) {
@@ -146,25 +140,26 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
-
         EXPECTED_TOKEN(token.keyword == KW_THEN);
+
         ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
-
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
+
         DEL_SYMTAB();
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
-
         EXPECTED_TOKEN(token.keyword == KW_END);
+
         DEL_SYMTAB();
 
         NEXT_TOKEN();
+
         return statement();
     }
     else if (token.keyword == KW_WHILE) {
@@ -173,17 +168,18 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
-
         EXPECTED_TOKEN(token.keyword == KW_DO);
+
         ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
-
         EXPECTED_TOKEN(token.keyword == KW_END);
+
         DEL_SYMTAB();
 
         NEXT_TOKEN();
+
         return statement();
     }
     else if (token.keyword == KW_LOCAL) {
@@ -191,23 +187,22 @@ bool statement() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
         ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type);
-
         NEXT_NONTERM(def_var);
 
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
         print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
+
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
-
         NEXT_NONTERM(other_exp);
 
         return statement();
@@ -219,9 +214,7 @@ bool statement() {
             NEXT_TOKEN();
             EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
-
             NEXT_NONTERM(args);
-
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
             NEXT_TOKEN();
         }
@@ -249,15 +242,18 @@ bool vars() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
         CHECK_ID(VAR);
 
         NEXT_TOKEN();
+
         return vars();
     }
     else if (token.type == T_ASSIGN) {
         print_rule("18. <vars> -> = <type_expr>");
 
         NEXT_TOKEN();
+
         return type_expr();
     }
 
@@ -270,13 +266,11 @@ bool type_expr() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(args);
-
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-
         NEXT_TOKEN();
+
         return true;
     }
 
@@ -305,6 +299,7 @@ bool def_var() {
         print_rule("23. <def_var> -> = <init_assign>");
 
         NEXT_TOKEN();
+
         return init_assign();
     }
 
@@ -318,13 +313,11 @@ bool init_assign() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
-
         NEXT_TOKEN();
         NEXT_NONTERM(args);
-
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
-
         NEXT_TOKEN();
+
         return true;
     }
 
@@ -363,11 +356,11 @@ bool other_types() {
 bool params() {
     if (token.type == T_ID) {
         print_rule("32. <params> -> id : <type> <other_params>");
+
         ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type);
 
@@ -384,11 +377,11 @@ bool other_params() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
         ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
-
         NEXT_TOKEN();
         NEXT_NONTERM(type);
 
@@ -402,6 +395,7 @@ bool other_params() {
 bool type_params() {
     if (type()) {
         print_rule("35. <type_params> -> <type> <other_types>");
+
         return other_types();
     }
 
@@ -412,6 +406,7 @@ bool type_params() {
 bool args() {
     if (param_to_func()) {
         print_rule("37. <args> -> <param_to_func> <other_args>");
+
         return other_args();
     }
 
@@ -422,6 +417,7 @@ bool args() {
 bool param_to_func() {
     if (token.type == T_ID) {
         print_rule("39. <param_to_func> -> id_var");
+
         CHECK_ID(VAR);
     }
     else if (TOKEN_TERM()) {
