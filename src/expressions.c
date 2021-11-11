@@ -142,9 +142,9 @@ void Dispose(ElementPtr Element) {
     }
 }
 
-void Insert(List * list, char * data) {
+bool Insert(List * list, char * data) {
     if (list == NULL) {
-        return;
+        return 0;
     }
 
     int flag = 0;
@@ -171,7 +171,7 @@ void Insert(List * list, char * data) {
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_first == NULL || TempElement_second == NULL) {
         Deallocate(list);
-        return;
+        return 0;
     }
 
     // If we found expression character on stack without going through E
@@ -210,6 +210,7 @@ void Insert(List * list, char * data) {
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
+    return 1;
 }
 
 bool Close(List * list) {
@@ -263,9 +264,9 @@ void Top(List * list, char data[]) {
     strcpy(data, find->data);
 }
 
-void Push(List * list, char * data) {
+bool Push(List * list, char * data) {
     if (list == NULL) {
-        return;
+        return 0;
     }
 
     // We create our new element
@@ -273,7 +274,7 @@ void Push(List * list, char * data) {
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
-        return;
+        return 0;
     }
 
     // We find the position of last element on the stack
@@ -287,6 +288,7 @@ void Push(List * list, char * data) {
 
     // Copy onto the stack
     strcpy(TempElement->data, data);
+    return 1;
 }
 
 bool Check_Correct_Closure(List * list) {
@@ -311,11 +313,11 @@ void Deallocate(List * list) {
     if (list != NULL) {
         Dispose(list->firstElement);
         free(list);
+        list = NULL;
     }
 }
 
-// To get rid of test prints comment all printfs
-// and callings of print_stack_debug(); in expression();
+
 bool expression() {
     char data[3] = {"$"};
     List * list = NULL;
@@ -355,7 +357,9 @@ start_expr:
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             //TODO if insert false (segfault)
-            Insert(list, data);
+            if(!Insert(list, data)){
+                goto end_expr;
+            }
         }
         else if (precedence == '>') {
             // We find the first << from the top of the stack to the bottom
@@ -373,7 +377,9 @@ start_expr:
         else if (precedence == '=') {
             // We just copy the data onto the stack
             //TODO if insert false (segfault)
-            Push(list, token.attr.id.str);
+            if(!Push(list, token.attr.id.str)){
+                goto end_expr;
+            }
             print_stack_expr(list);
         }
         else if (precedence == 's') {
@@ -390,6 +396,11 @@ start_expr:
         NEXT_TOKEN();
     }
 
+    print_dbg_msg_single("reduction: ");
+    print_stack_expr(list);
+
+end_expr:
+
     // If there is internal error such as failure to allocate,
     // list will free itself which means none of the functions
     // will do anything and eventually we will learn
@@ -401,10 +412,6 @@ start_expr:
         return false;
     }
 
-    print_dbg_msg_single("reduction: ");
-    print_stack_expr(list);
-
-end_expr:
     // We are reducing the expression by using our rules
     while (Close(list)) {
         print_stack_expr(list);
