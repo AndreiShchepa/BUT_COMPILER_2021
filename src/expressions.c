@@ -165,9 +165,9 @@ void Insert(List * list, char * data) {
     }
 
     // We check if malloc was successful
-    // TODO_MEMORY can be false
+    // TODO MEMORY can be false
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
-    // TODO_MEMORY can be false
+    // TODO MEMORY can be false
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_first == NULL || TempElement_second == NULL) {
         Deallocate(list);
@@ -269,7 +269,7 @@ void Push(List * list, char * data) {
     }
 
     // We create our new element
-    // TODO_MEMORY can be false
+    // TODO MEMORY can be false
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
