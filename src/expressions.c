@@ -294,10 +294,10 @@ bool Check_Correct_Closure(List * list) {
         // We just forcefully check if first element on stack
         // is $ and the second one E
 
-        // TODO this is very obscure way to do this,
         // also should add if statements to check if
         // we are not dealing with NULL pointer
         if ((strcmp(list->firstElement->data, "$") == 0) &&
+            list->firstElement->nextElement != NULL &&
            (strcmp(list->firstElement->nextElement->data, "E") == 0))
         {
             return true;
