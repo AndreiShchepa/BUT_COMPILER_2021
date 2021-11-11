@@ -15,6 +15,8 @@
 #include "scanner.h"
 #include "symtable.h"
 
+#define COUNT_DEF_FUNCS 8
+
 // If you want to see all rules, which are used for process your program
 // Pass RULES to cmake or read README.md
 #ifdef DEBUG_RULES

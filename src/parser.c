@@ -449,6 +449,21 @@ bool other_args() {
     return true;
 }
 
+void init_default_funcs_ifj21() {
+    string_t def_funcs[COUNT_DEF_FUNCS] = { {.length = 3, .alloc_size = 0, .str = "chr"      },
+                                            {.length = 9, .alloc_size = 0, .str = "tointeger"},
+                                            {.length = 5, .alloc_size = 0, .str = "reads"    },
+                                            {.length = 5, .alloc_size = 0, .str = "readi"    },
+                                            {.length = 5, .alloc_size = 0, .str = "readn"    },
+                                            {.length = 5, .alloc_size = 0, .str = "write"    },
+                                            {.length = 6, .alloc_size = 0, .str = "substr"   },
+                                            {.length = 3, .alloc_size = 0, .str = "ord"      }, };
+
+    for (int i = 0; i < COUNT_DEF_FUNCS; i++) {
+        symtab_add(&global_symtab, &(def_funcs[i]));
+    }
+}
+
 int parser() {
     FILE *f = stdin;
     err = NO_ERR;
@@ -460,7 +475,7 @@ int parser() {
     }
 
     local_symtbs.size = 0;
-
+    init_default_funcs_ifj21();
 
     FIRST_TOKEN();
     ret = prolog();
