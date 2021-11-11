@@ -109,7 +109,8 @@ htab_item_t *htab_item_init(const string_t *s) {
 
     item->key_id = calloc(s->length + 1, sizeof(char));
 
-    if (!item) {
+    if (!item->key_id) {
+        free(item);
         err = INTERNAL_ERR;
         return NULL;
     }

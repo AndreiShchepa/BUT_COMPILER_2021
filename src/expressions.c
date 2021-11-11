@@ -169,13 +169,13 @@ bool Insert(List * list, char * data) {
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
     if (TempElement_first == NULL) {
         Deallocate(list);
-        return 0;
+        return false;
     }
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_second == NULL) {
         free(TempElement_first);
         Deallocate(list);
-        return 0;
+        return false;
     }
     // If we found expression character on stack without going through E
     if (flag == 0) {
@@ -213,7 +213,7 @@ bool Insert(List * list, char * data) {
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
-    return 1;
+    return true;
 }
 
 bool Close(List * list) {
@@ -269,14 +269,14 @@ void Top(List * list, char data[]) {
 
 bool Push(List * list, char * data) {
     if (list == NULL) {
-        return 0;
+        return false;
     }
 
     // We create our new element
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
-        return 0;
+        return false;
     }
 
     // We find the position of last element on the stack
@@ -290,7 +290,7 @@ bool Push(List * list, char * data) {
 
     // Copy onto the stack
     strcpy(TempElement->data, data);
-    return 1;
+    return true;
 }
 
 bool Check_Correct_Closure(List * list) {
@@ -363,7 +363,8 @@ start_expr:
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             if(!Insert(list, data)){
                 list = NULL;
-                goto end_expr;
+                err = INTERNAL_ERR;
+                goto err_expr;
             }
         }
         else if (precedence == '>') {
@@ -382,8 +383,9 @@ start_expr:
         else if (precedence == '=') {
             // We just copy the data onto the stack
             if(!Push(list, token.attr.id.str)){
+                err = INTERNAL_ERR;
                 list = NULL;
-                goto end_expr;
+                goto err_expr;
             }
             print_stack_expr(list);
         }
