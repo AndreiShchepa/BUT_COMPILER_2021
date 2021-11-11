@@ -317,12 +317,15 @@ void Deallocate(List * list) {
 // To get rid of test prints comment all printfs
 // and callings of print_stack_debug(); in expression();
 bool expression() {
+    bool nothing_todo = true;
     char data[3] = {"$"};
     List * list = NULL;
     list = Init(list);
     char precedence;
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
+        nothing_todo = false;
+
 start_expr:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
@@ -388,6 +391,11 @@ start_expr:
         }
 
         NEXT_TOKEN();
+    }
+
+    if (nothing_todo) {
+        Deallocate(list);
+        return true;
     }
 
     // If there is internal error such as failure to allocate,

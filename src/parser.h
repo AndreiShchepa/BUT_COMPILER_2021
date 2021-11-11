@@ -59,28 +59,6 @@
                      token.type == T_FLOAT   || \
                      token.type == T_STRING
 
-// Check if type of token belongs to expression
-#define TOKEN_ID_EXPRESSION() token.type == T_ID          || \
-                              token.type == T_INT         || \
-                              token.type == T_FLOAT       || \
-                              token.type == T_STRING      || \
-                              token.type == T_PLUS        || \
-                              token.type == T_MINUS       || \
-                              token.type == T_MUL         || \
-                              token.type == T_DIV         || \
-                              token.type == T_DIV_INT     || \
-                              token.type == T_LT          || \
-                              token.type == T_GT          || \
-                              token.type == T_LE          || \
-                              token.type == T_GE          || \
-                              token.type == T_EQ          || \
-                              token.type == T_NEQ         || \
-                              token.type == T_LENGTH      || \
-                              token.type == T_L_ROUND_BR  || \
-                              token.type == T_R_ROUND_BR  || \
-                              token.type == T_CONCAT
-
-
 extern token_t token;
 extern int err;
 

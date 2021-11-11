@@ -205,7 +205,6 @@ bool statement() {
     }
     else if (token.keyword == KW_RETURN) {
         print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
-
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
 
