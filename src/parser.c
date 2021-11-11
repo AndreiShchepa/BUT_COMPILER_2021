@@ -20,6 +20,49 @@ int err;
 static bool ret;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
+htab_item_t *item;
+
+#define FILL_RETS(IDX) \
+        switch (token.keyword) { \
+            case KW_INTEGER: \
+                IDX = INTEGER; \
+                break; \
+            case KW_STRING: \
+                IDX = STRING; \
+                break; \
+            case KW_NUMBER: \
+                IDX = NUMBER; \
+                break; \
+            case KW_NIL: \
+                IDX = NIL; \
+                break; \
+            default: \
+                break; \
+        }
+
+#define ADD_FUNC_TO_SYMTAB(SUSPECT_REDECLARATION, LABEL) \
+        if (!symtab_add(&global_symtab, &token.attr.id)) { \
+            if (err == INTERNAL_ERR) { \
+                return false; \
+            } \
+            else if (err == SEM_DEF_ERR) { \
+                item = symtab_find(&global_symtab, token.attr.id.str); \
+                if (!item && err == INTERNAL_ERR) { \
+                    return false; \
+                } \
+                else if (SUSPECT_REDECLARATION) { \
+                    return false; \
+                } \
+                err = NO_ERR; \
+                goto LABEL; \
+            } \
+        } \
+        item = symtab_find(&global_symtab, token.attr.id.str); \
+        if (!item) { \
+            return false; \
+        } \
+        item->data.func = calloc(1, sizeof(func_t)); \
+        item->type = FUNC;
 
 bool prolog() {
     if (token.keyword == KW_REQUIRE) {
@@ -42,7 +85,15 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_FUNC_TO_SYMTAB();
+        //////////////////////////////////////////////////////
+        ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
+add_func_decl:
+        item->data.func->decl = true;
+        item->data.func->decl_attr.num_argv = 0;
+        item->data.func->decl_attr.num_rets = 0;
+        item->data.func->decl_attr.argv = NULL;
+        item->data.func->decl_attr.rets = NULL;
+        //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -55,7 +106,7 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
-
+        // item = NULL;
         return prog();
     }
     else if (token.keyword == KW_FUNCTION) {
@@ -65,7 +116,15 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_FUNC_TO_SYMTAB();
+        //////////////////////////////////////////////////////
+        ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
+add_func_def:
+        item->data.func->def = true;
+        item->data.func->def_attr.num_argv = 0;
+        item->data.func->def_attr.num_rets = 0;
+        item->data.func->def_attr.argv = NULL;
+        item->data.func->def_attr.rets = NULL;
+        //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -77,6 +136,7 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
+        // item = NULL;
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -332,6 +392,19 @@ bool type_returns() {
         NEXT_TOKEN();
         NEXT_NONTERM(type);
 
+        ///////////////////////////////////////////
+        if (item->data.func->def == true && item->data.func->def_attr.rets == NULL) {
+            item->data.func->def_attr.rets = calloc(1, sizeof(type_t)); // RETURN
+            FILL_RETS(item->data.func->def_attr.rets[item->data.func->def_attr.num_rets]);
+            (item->data.func->def_attr.num_rets)++;
+        }
+        else if (item->data.func->decl == true && item->data.func->decl_attr.rets == NULL) {
+            item->data.func->decl_attr.rets = calloc(1, sizeof(type_t)); // RETURN
+            FILL_RETS(item->data.func->decl_attr.rets[item->data.func->decl_attr.num_rets]);
+            (item->data.func->decl_attr.num_rets)++;
+        }
+        ///////////////////////////////////////////
+
         return other_types();
     }
 
@@ -345,6 +418,22 @@ bool other_types() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(type);
+
+        ///////////////////////////////////////////
+        type_t *tmp = NULL;
+        if (item->data.func->def == true && item->data.func->def_attr.num_rets == 1) {
+            tmp = realloc(item->data.func->def_attr.rets, sizeof(type_t) * (item->data.func->def_attr.num_rets + 1)); // RETURN
+            item->data.func->def_attr.rets = tmp;
+            FILL_RETS(item->data.func->def_attr.rets[item->data.func->def_attr.num_rets]);
+            (item->data.func->def_attr.num_rets)++;
+        }
+        else if (item->data.func->decl == true && item->data.func->decl_attr.num_rets == 1) {
+            tmp = realloc(item->data.func->decl_attr.rets, sizeof(type_t) * (item->data.func->decl_attr.num_rets + 1)); // RETURN
+            item->data.func->decl_attr.rets = tmp;
+            FILL_RETS(item->data.func->decl_attr.rets[item->data.func->decl_attr.num_rets]);
+            (item->data.func->decl_attr.num_rets)++;
+        }
+        ///////////////////////////////////////////
 
         return other_types();
     }
@@ -455,7 +544,7 @@ void init_default_funcs_ifj21() {
                                             {.length = 3, .alloc_size = 0, .str = "ord"      }, };
 
     for (int i = 0; i < COUNT_DEF_FUNCS; i++) {
-        symtab_add(&global_symtab, &(def_funcs[i]));
+        symtab_add(&global_symtab, &(def_funcs[i])); // RETURN
     }
 }
 

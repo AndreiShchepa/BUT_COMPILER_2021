@@ -169,6 +169,27 @@ void symtab_free(htable_t *table) {
         while (item) {
             item_free = item;
             item = item->next;
+            if (item_free->type == FUNC && item_free->data.func) {
+                printf("%d %d\n", item_free->data.func->decl, item_free->data.func->def);
+                if (item_free->data.func->def == true) {
+                    if (item_free->data.func->def_attr.num_rets > 0) {
+                        free(item_free->data.func->def_attr.rets);
+                    }
+                    if (item_free->data.func->def_attr.num_argv > 0) {
+                        free(item_free->data.func->def_attr.argv);
+                    }
+                }
+                if (item_free->data.func->decl == true) {
+                    if (item_free->data.func->decl_attr.num_rets > 0) {
+                        free(item_free->data.func->decl_attr.rets);
+                    }
+                    if (item_free->data.func->decl_attr.num_argv > 0) {
+                        free(item_free->data.func->decl_attr.argv);
+                    }
+                }
+                free(item_free->data.func);
+            }
+
             free(item_free->key_id);
             free(item_free);
         }

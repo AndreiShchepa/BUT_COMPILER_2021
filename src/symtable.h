@@ -31,13 +31,6 @@
             return false; \
         }
 
-// Add ID_FUNC to the global symtable
-// If ID_FUNC exists, return false
-#define ADD_FUNC_TO_SYMTAB() \
-        if (!symtab_add(&global_symtab, &token.attr.id)) { \
-            return false; \
-        }
-
 #define FIND_VAR_IN_SYMTAB find_id_symtbs(&local_symtbs, token.attr.id.str)
 
 #define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
@@ -76,12 +69,19 @@ typedef struct var {
     token_type_t attr;
 } var_t;
 
+typedef struct attr_func {
+    int num_argv;
+    int num_rets;
+    type_t *argv;
+    type_t *rets;
+} attr_func_t;
+
 // Attributes for ID_FUNC
 typedef struct func {
     bool def;
     bool decl;
-    type_t *types;
-    type_t *rets;
+    attr_func_t decl_attr;
+    attr_func_t def_attr;
 } func_t;
 
 typedef union data {
@@ -102,6 +102,8 @@ typedef struct {
     int size;
     htable_t *htab;
 } arr_symtbs_t;
+
+bool create_attrs();
 
 /*
  * @brief Deallocate array of symtables
