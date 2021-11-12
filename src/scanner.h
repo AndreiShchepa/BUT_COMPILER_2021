@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "str.h"
-#define COUNT_KEYWORDS 12
+#define COUNT_KEYWORDS 15
 
 #define LETTERS_CASE case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': \
                      case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': \
@@ -28,6 +28,13 @@
                     case '4': case '5': case '6': \
                     case '7': case '8': case '9'
 
+#define HEX_CASE case '0': case '1': case '2': case '3': \
+                 case '4': case '5': case '6': case '7': \
+                 case '8': case '9': case 'a': case 'b': \
+                 case 'c': case 'd': case 'e': case 'f': \
+                 case 'A': case 'B': case 'C': case 'D': \
+                 case 'E': case 'F'
+
 #define NEW_LINE case 10: case 13
 
 typedef enum states {
@@ -37,10 +44,10 @@ typedef enum states {
                         N7,
 
     S1, S2, S3, S4, S5, S6, // states for string scanning
-                S7, S8, S9,
+      S7, S8, S9, S10, S11,
 
     C1, C2, C3, C4, C5, C6, // states for comments scanning
-                        C7,
+                    C7, C8,
     D1, D2,                 // states for concatinating scanning
     B1, B2,                 // states for division scannnig
     R1, R2, R3, R4, R5, R6, // states for relations operators scanning

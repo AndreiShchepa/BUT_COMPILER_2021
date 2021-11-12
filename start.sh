@@ -38,7 +38,7 @@ for i in "${arr[@]}"
 do
     eval "$i"
     if [ $? != 0 ]; then
-        echo -e "\nSOME ERROR"
+        echo -e "\nERROR"
         exit 1
     fi
 done

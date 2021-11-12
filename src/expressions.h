@@ -29,6 +29,28 @@
     #define print_stack_expr(list)
 #endif
 
+// Check if type of token belongs to expression
+#define TOKEN_ID_EXPRESSION() token.type    == T_ID         || \
+                              token.type    == T_INT        || \
+                              token.type    == T_FLOAT      || \
+                              token.type    == T_STRING     || \
+                              token.keyword == KW_NIL       || \
+                              token.type    == T_PLUS       || \
+                              token.type    == T_MINUS      || \
+                              token.type    == T_MUL        || \
+                              token.type    == T_DIV        || \
+                              token.type    == T_DIV_INT    || \
+                              token.type    == T_LT         || \
+                              token.type    == T_GT         || \
+                              token.type    == T_LE         || \
+                              token.type    == T_GE         || \
+                              token.type    == T_EQ         || \
+                              token.type    == T_NEQ        || \
+                              token.type    == T_LENGTH     || \
+                              token.type    == T_L_ROUND_BR || \
+                              token.type    == T_R_ROUND_BR || \
+                              token.type    == T_CONCAT
+
 typedef struct Element {
     char data[3];
     struct Element *previousElement;
@@ -57,7 +79,7 @@ void Dispose(ElementPtr );
 /*
  * @brief We are inserting << with its char (+, -, <= etc.)
  */
-void Insert(List *, char *);
+bool Insert(List *, char *);
 
 /*
  * @brief We close the first part of the expression we find,
@@ -73,7 +95,7 @@ void Top(List *, char * );
 /*
  * @brief We Copy a string on top of the stack
  */
-void Push(List *, char * );
+bool Push(List *, char * );
 
 /*
  * @brief We check if only thing left on stack is "$E"
