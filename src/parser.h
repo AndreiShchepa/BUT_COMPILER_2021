@@ -145,7 +145,7 @@ bool init_assign();
 /*
  * @brief process all possible types of variables in function return
  *
- * 27. <type_returns> -> : <type> <other_types>
+ * 27. <type_returns> -> : <type> <other_types_returns>
  * 28. <type_returns> -> e
  */
 bool type_returns();
@@ -153,56 +153,64 @@ bool type_returns();
 /*
  * @brief process all possible types of variables in function return
  *
- * 29. <other_types> -> , <type> <other_types>
- * 30. <other_types> -> e
+ * 29. <other_types_returns> -> , <type> <other_types_returns>
+ * 30. <other_types_returns> -> e
  */
-bool other_types();
+bool other_types_returns();
+
+/*
+ * @brief process all possible types of variables in function arguments
+ *
+ * 31. <other_types_params> -> , <type> <other_types_params>
+ * 32. <other_types_params> -> e
+ */
+bool other_types_params();
 
 /*
  * @brief process params as arguments for function
  *
- * 31. <params> -> e
- * 32. <params> -> ID : <type> <other_params>
+ * 33. <params> -> e
+ * 34. <params> -> ID : <type> <other_params>
  */
 bool params();
 
 /*
  * @brief process params as arguments for function
  *
- * 33. <other_params> -> , ID : <type> <other_params>
- * 34. <other_params> -> e
+ * 35. <other_params> -> , ID : <type> <other_params>
+ * 36. <other_params> -> e
  */
 bool other_params();
 
 /*
  * @brief process all possible types of variables as arguments in functions
  *
- * 35. <type_params> -> <type> <other_types>
- * 36. <type_params> -> e
+ * 37. <type_params> -> <type> <other_types_params>
+ * 38. <type_params> -> e
  */
 bool type_params();
 
 /*
  * @brief process all possible args
  *
- * 37. <args> -> <param_to_func> <other_args>
- * 38. <args> -> e
+ * 39. <args> -> <param_to_func> <other_args>
+ * 40. <args> -> e
  */
 bool args();
 
 /*
  * @brief process args
  *
- * 39. <param_to_func> -> ID_VAR
- * 40. <param_to_func> -> TERM
+ * 41. <param_to_func> -> ID_VAR
+ * 42. <param_to_func> -> TERM
  */
 bool param_to_func();
 
 /*
  * @brief process all possible other args
  *
- * 41. <other_args> -> , <param_to_func> <other_args>
- * 42. <other_args> -> e
+ * 43. <other_args> -> , <param_to_func> <other_args>
+ * 44. <other_args> -> e
  */
 bool other_args();
 

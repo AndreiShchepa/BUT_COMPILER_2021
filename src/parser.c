@@ -21,20 +21,22 @@ static bool ret;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
 htab_item_t *item;
+string_t tps_left_vars;
+bool working_func; // 0 - decl_fun, 1 - def_func
 
 #define FILL_RETS(IDX) \
         switch (token.keyword) { \
             case KW_INTEGER: \
-                IDX = INTEGER; \
+                ret = str_add_char(IDX, 'I'); \
                 break; \
             case KW_STRING: \
-                IDX = STRING; \
+                ret = str_add_char(IDX, 'S'); \
                 break; \
             case KW_NUMBER: \
-                IDX = NUMBER; \
+                ret = str_add_char(IDX, 'F'); \
                 break; \
             case KW_NIL: \
-                IDX = NIL; \
+                ret = str_add_char(IDX, 'N'); \
                 break; \
             default: \
                 break; \
@@ -89,10 +91,9 @@ bool prog() {
         ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
 add_func_decl:
         item->data.func->decl = true;
-        item->data.func->decl_attr.num_argv = 0;
-        item->data.func->decl_attr.num_rets = 0;
-        item->data.func->decl_attr.argv = NULL;
-        item->data.func->decl_attr.rets = NULL;
+        working_func = 0;
+        item->data.func->decl_attr.argv.str = NULL;
+        item->data.func->decl_attr.rets.str = NULL;
         //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
@@ -120,10 +121,9 @@ add_func_decl:
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
 add_func_def:
         item->data.func->def = true;
-        item->data.func->def_attr.num_argv = 0;
-        item->data.func->def_attr.num_rets = 0;
-        item->data.func->def_attr.argv = NULL;
-        item->data.func->def_attr.rets = NULL;
+        working_func = 1;
+        item->data.func->def_attr.argv.str = NULL;
+        item->data.func->def_attr.rets.str = NULL;
         //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
@@ -387,82 +387,99 @@ bool init_assign() {
 
 bool type_returns() {
     if (token.type == T_COLON) {
-        print_rule("27. <type_returns> -> : <type> <other_types>");
+        print_rule("27. <type_returns> -> : <type> <other_types_returns>");
 
         NEXT_TOKEN();
+        ///////////////////////////////////////////
+        if (working_func == 1) {
+            ret = str_init(&item->data.func->def_attr.rets, 5); // RETURN
+            FILL_RETS(&item->data.func->def_attr.rets); // RETURN
+        }
+        else if (working_func == 0) {
+            ret = str_init(&item->data.func->decl_attr.rets, 5); // RETURN
+            FILL_RETS(&item->data.func->decl_attr.rets); // RETURN
+        }
+        ////////////////////////////////////////////
         NEXT_NONTERM(type);
 
-        ///////////////////////////////////////////
-        if (item->data.func->def == true && item->data.func->def_attr.rets == NULL) {
-            item->data.func->def_attr.rets = calloc(1, sizeof(type_t)); // RETURN
-            FILL_RETS(item->data.func->def_attr.rets[item->data.func->def_attr.num_rets]);
-            (item->data.func->def_attr.num_rets)++;
-        }
-        else if (item->data.func->decl == true && item->data.func->decl_attr.rets == NULL) {
-            item->data.func->decl_attr.rets = calloc(1, sizeof(type_t)); // RETURN
-            FILL_RETS(item->data.func->decl_attr.rets[item->data.func->decl_attr.num_rets]);
-            (item->data.func->decl_attr.num_rets)++;
-        }
-        ///////////////////////////////////////////
-
-        return other_types();
+        return other_types_returns();
     }
 
     print_rule("28. <type_returns> -> e");
     return true;
 }
 
-bool other_types() {
+bool other_types_returns() {
     if (token.type == T_COMMA) {
-        print_rule("29. <other_types> -> , <type> <other_types>");
+        print_rule("29. <other_types_returns> -> , <type> <other_types_returns>");
 
         NEXT_TOKEN();
+        ///////////////////////////////////////////
+        if (working_func == 1) {
+            FILL_RETS(&item->data.func->def_attr.rets); // RETURN
+        }
+        else if (working_func == 0) {
+            FILL_RETS(&item->data.func->decl_attr.rets); // RETURN
+        }
+        ///////////////////////////////////////////
         NEXT_NONTERM(type);
 
-        ///////////////////////////////////////////
-        type_t *tmp = NULL;
-        if (item->data.func->def == true && item->data.func->def_attr.num_rets == 1) {
-            tmp = realloc(item->data.func->def_attr.rets, sizeof(type_t) * (item->data.func->def_attr.num_rets + 1)); // RETURN
-            item->data.func->def_attr.rets = tmp;
-            FILL_RETS(item->data.func->def_attr.rets[item->data.func->def_attr.num_rets]);
-            (item->data.func->def_attr.num_rets)++;
-        }
-        else if (item->data.func->decl == true && item->data.func->decl_attr.num_rets == 1) {
-            tmp = realloc(item->data.func->decl_attr.rets, sizeof(type_t) * (item->data.func->decl_attr.num_rets + 1)); // RETURN
-            item->data.func->decl_attr.rets = tmp;
-            FILL_RETS(item->data.func->decl_attr.rets[item->data.func->decl_attr.num_rets]);
-            (item->data.func->decl_attr.num_rets)++;
-        }
-        ///////////////////////////////////////////
-
-        return other_types();
+        return other_types_returns();
     }
 
-    print_rule("30. <other_types> -> e");
+    print_rule("30. <other_types_returns> -> e");
+    return true;
+}
+
+bool other_types_params() {
+    if (token.type == T_COMMA) {
+        print_rule("31. <other_types_params> -> , <type> <other_types_params>");
+
+        NEXT_TOKEN();
+        ///////////////////////////////////////////
+        if (working_func == 1) {
+            FILL_RETS(&item->data.func->def_attr.argv); // RETURN
+        }
+        else if (working_func == 0) {
+            FILL_RETS(&item->data.func->decl_attr.argv); // RETURN
+        }
+        ///////////////////////////////////////////
+        NEXT_NONTERM(type);
+
+        return other_types_params();
+    }
+
+    print_rule("32. <other_types_params> -> e");
     return true;
 }
 
 bool params() {
     if (token.type == T_ID) {
-        print_rule("32. <params> -> id : <type> <other_params>");
+        print_rule("34. <params> -> id : <type> <other_params>");
 
         ADD_VAR_TO_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+        ////////////////////////////////////////
+        if (working_func == 1) {
+            ret = str_init(&item->data.func->def_attr.argv, 5); // RETURN
+            FILL_RETS(&item->data.func->def_attr.argv); // RETURN
+        }
+        ////////////////////////////////////////
         NEXT_NONTERM(type);
 
         return other_params();
     }
 
-    print_rule("31. <params> -> e");
+    print_rule("33. <params> -> e");
     return true;
 }
 
 bool other_params() {
     if (token.type == T_COMMA) {
-        print_rule("33. <other_params> -> , id : <type> <other_params>");
+        print_rule("35. <other_params> -> , id : <type> <other_params>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -472,45 +489,57 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+        ////////////////////////////////////////
+        if (working_func == 1) {
+            FILL_RETS(&item->data.func->def_attr.argv); // RETURN
+        }
+        ////////////////////////////////////////
         NEXT_NONTERM(type);
 
         return other_params();
     }
 
-    print_rule("34. <other_params> -> e");
+    print_rule("36. <other_params> -> e");
     return true;
 }
 
 bool type_params() {
-    if (type()) {
-        print_rule("35. <type_params> -> <type> <other_types>");
+    ////////////////////////////////////////
+    if (working_func == 0) {
+        ret = str_init(&item->data.func->decl_attr.argv, 5); // RETURN
+        FILL_RETS(&item->data.func->decl_attr.argv); // RETURN
+    }
+    ////////////////////////////////////////
 
-        return other_types();
+    if (type()) {
+        print_rule("37. <type_params> -> <type> <other_types_params>");
+
+        return other_types_params();
     }
 
-    print_rule("36. <type_params> -> e");
+    print_rule("38. <type_params> -> e");
     return true;
 }
 
 bool args() {
     if (param_to_func()) {
-        print_rule("37. <args> -> <param_to_func> <other_args>");
+        print_rule("39. <args> -> <param_to_func> <other_args>");
 
         return other_args();
     }
 
-    print_rule("38. <args> -> e");
+    print_rule("40. <args> -> e");
     return true;
 }
 
 bool param_to_func() {
     if (token.type == T_ID) {
-        print_rule("39. <param_to_func> -> id_var");
+        print_rule("41. <param_to_func> -> id_var");
 
         CHECK_ID(VAR);
     }
     else if (TOKEN_TERM()) {
-        print_rule("40. <param_to_func> -> term");
+        print_rule("42. <param_to_func> -> term");
     }
     else {
         return false;
@@ -522,14 +551,14 @@ bool param_to_func() {
 
 bool other_args() {
     if (token.type == T_COMMA) {
-        print_rule("41. <other_args> -> , <param_to_func> <other_args>");
+        print_rule("43. <other_args> -> , <param_to_func> <other_args>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(param_to_func);
         return other_args();
     }
 
-    print_rule("42. <other_args> -> e");
+    print_rule("44. <other_args> -> e");
     return true;
 }
 

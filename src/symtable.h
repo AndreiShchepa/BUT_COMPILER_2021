@@ -61,19 +61,22 @@ typedef enum type {
     NIL
 } type_t;
 
+// I INTEGER
+// S STRING
+// F NUMBER
+// N NIL
+
 // Attributes for ID_VAR
 typedef struct var {
     bool init;
     bool val_nil;
-    type_t type;
+    char type;
     token_type_t attr;
 } var_t;
 
 typedef struct attr_func {
-    int num_argv;
-    int num_rets;
-    type_t *argv;
-    type_t *rets;
+    string_t argv;
+    string_t rets;
 } attr_func_t;
 
 // Attributes for ID_FUNC
