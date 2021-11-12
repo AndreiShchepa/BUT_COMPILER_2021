@@ -4,6 +4,10 @@ set_dbg_cmake() {
     params="$params -DDEBUG_$1=on"
 }
 
+set_compile_opts() {
+	params="$params -DCOMPILE_$1=on"
+}
+
 params=""
 
 for i in "$@"; do
@@ -17,6 +21,9 @@ for i in "$@"; do
         EXPR)
             set_dbg_cmake "$i"
             ;;
+		TESTS)
+            set_compile_opts "$i"
+            ;;
          *)
             ;;
     esac
@@ -24,7 +31,7 @@ done
 
 declare -a arr=("rm -rf *"
                 "cmake $params .."
-                "make"
+                "make -j16"
                 "./compiler <../$1"
                 "cd ..")
 
@@ -38,7 +45,7 @@ for i in "${arr[@]}"
 do
     eval "$i"
     if [ $? != 0 ]; then
-        echo -e "\nSOME ERROR"
+        echo -e "\nERROR"
         exit 1
     fi
 done

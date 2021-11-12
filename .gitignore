@@ -1,4 +1,5 @@
 *.o
+*.orig
 *.out
 *.DS_Store
 *.txt

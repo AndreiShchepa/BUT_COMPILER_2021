@@ -15,25 +15,118 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "scanner.h"
+#include "str.h"
 
-#define SYMTAB_SIZE 45503
+// Size of hash table
+#define MAX_HT_SIZE 101
 
-typedef struct data {
-    bool def_func;
-    bool decl_func;
-    bool def_var;
+// Delete last symtable from array of symtables
+#define DEL_SYMTAB() \
+        delete_last_symtab(&local_symtbs)
+
+// Add new symtable to the end of the array of symtables
+#define ADD_SYMTAB() \
+        ret = add_symtab(&local_symtbs); \
+        if (!ret) { \
+            return false; \
+        }
+
+// Add ID_FUNC to the global symtable
+// If ID_FUNC exists, return false
+#define ADD_FUNC_TO_SYMTAB() \
+        if (!symtab_add(&global_symtab, &token.attr.id)) { \
+            return false; \
+        }
+
+#define FIND_VAR_IN_SYMTAB find_id_symtbs(&local_symtbs, token.attr.id.str)
+
+#define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
+
+#define CHECK_ID(EL) \
+        if (FIND_##EL##_IN_SYMTAB == false) { \
+            err = SEM_DEF_ERR; \
+            return false; \
+        }
+
+// Add ID_VAR to the local symtable
+// If ID_FUNC exists in, return false
+#define ADD_VAR_TO_SYMTAB() \
+        if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
+            return false; \
+        }
+
+typedef enum type_id {
+    VAR,
+    FUNC
+} type_id_t;
+
+// Type of possible ID_VAR
+typedef enum type {
+    STRING,
+    INTEGER,
+    NUMBER,
+    NIL
+} type_t;
+
+// Attributes for ID_VAR
+typedef struct var {
+    bool init;
+    bool val_nil;
+    type_t type;
+    token_type_t attr;
+} var_t;
+
+// Attributes for ID_FUNC
+typedef struct func {
+    bool def;
+    bool decl;
+    type_t *types;
+    type_t *rets;
+} func_t;
+
+typedef union data {
+    var_t *var;
+    func_t *func;
 } data_t;
 
 typedef struct htab_item {
     char* key_id;
+    type_id_t type;
     data_t data;
     struct htab_item *next;
 } htab_item_t;
 
-typedef struct htab {
-    int num_of_el;
-    htab_item_t *arr[];
-} htab_t;
+typedef htab_item_t *htable_t[MAX_HT_SIZE];
+
+typedef struct {
+    int size;
+    htable_t *htab;
+} arr_symtbs_t;
+
+/*
+ * @brief Deallocate array of symtables
+ */
+void free_symtbs(arr_symtbs_t *symtbs);
+
+/*
+ * @brief Deallocate and delete last symtable
+ *        from array of local symtables
+ */
+void delete_last_symtab(arr_symtbs_t *symtbs);
+
+/*
+ * @brief Allocate and add new local symtable
+ * @return On success true, otherwise false
+ */
+bool add_symtab(arr_symtbs_t *symtbs);
+
+/*
+ * @brief Search ID in last and pervious local tables
+ * @param symtbs - pointer ro the array of local symtables
+ * @param key - ID for searching
+ * @return On success true, otherwise false
+ */
+bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
 
 /*
  * @brief Sdbm algorithm for hash table
@@ -43,9 +136,8 @@ uint32_t symtab_hash(const char *id);
 
 /*
  * @brief Allocate hash table and set the structure values
- * @return Initialized and allocated hash table
  */
-htab_t *symtab_init();
+void symtab_init(htable_t *table);
 
 /*
  * @brief Find the item int the table that matches the key
@@ -53,19 +145,23 @@ htab_t *symtab_init();
  * @param key - key for searching item
  * @return On success pointer to item, otherwise NULL
  */
-htab_item_t *symtab_find(const htab_t *table, const char *key);
+htab_item_t *symtab_find(const htable_t *table, const char *key);
 
 /*
  * @brief Create new item in the table
  * @return Pointer to the created item, otherwise NULL
  */
-htab_item_t *symtab_add(htab_t *table, const string_t *s);
+htab_item_t *symtab_add(htable_t *table, const string_t *s);
 
-bool symtab_add_params(htab_t *table, token_t *token, bool value);
+/*
+ * @brief Add attributes for IDs in symtables
+ * @return On success true, otherwise false
+ */
+bool symtab_add_params(htable_t *table, token_t *token, bool value);
 
 /*
  * @brief Table destructor
  */
-void symtab_free(htab_t *table);
+void symtab_free(htable_t *table);
 
 #endif // _SYMTABLE_H

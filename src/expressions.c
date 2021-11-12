@@ -139,12 +139,13 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         free(DelElement);
+        DelElement = NULL;
     }
 }
 
-void Insert(List * list, char * data) {
+bool Insert(List * list, char * data) {
     if (list == NULL) {
-        return;
+        return 0;
     }
 
     int flag = 0;
@@ -165,15 +166,17 @@ void Insert(List * list, char * data) {
     }
 
     // We check if malloc was successful
-    // TODO_MEMORY can be false
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
-    // TODO_MEMORY can be false
-    ElementPtr TempElement_second = malloc(sizeof(struct Element));
-    if (TempElement_first == NULL || TempElement_second == NULL) {
+    if (TempElement_first == NULL) {
         Deallocate(list);
-        return;
+        return false;
     }
-
+    ElementPtr TempElement_second = malloc(sizeof(struct Element));
+    if (TempElement_second == NULL) {
+        free(TempElement_first);
+        Deallocate(list);
+        return false;
+    }
     // If we found expression character on stack without going through E
     if (flag == 0) {
         find->nextElement = TempElement_first;
@@ -210,6 +213,7 @@ void Insert(List * list, char * data) {
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
+    return true;
 }
 
 bool Close(List * list) {
@@ -263,17 +267,16 @@ void Top(List * list, char data[]) {
     strcpy(data, find->data);
 }
 
-void Push(List * list, char * data) {
+bool Push(List * list, char * data) {
     if (list == NULL) {
-        return;
+        return false;
     }
 
     // We create our new element
-    // TODO_MEMORY can be false
     ElementPtr TempElement = malloc(sizeof(struct Element));
     if (TempElement == NULL) {
         Deallocate(list);
-        return;
+        return false;
     }
 
     // We find the position of last element on the stack
@@ -287,6 +290,7 @@ void Push(List * list, char * data) {
 
     // Copy onto the stack
     strcpy(TempElement->data, data);
+    return true;
 }
 
 bool Check_Correct_Closure(List * list) {
@@ -294,10 +298,10 @@ bool Check_Correct_Closure(List * list) {
         // We just forcefully check if first element on stack
         // is $ and the second one E
 
-        // TODO this is very obscure way to do this,
         // also should add if statements to check if
         // we are not dealing with NULL pointer
         if ((strcmp(list->firstElement->data, "$") == 0) &&
+            list->firstElement->nextElement != NULL &&
            (strcmp(list->firstElement->nextElement->data, "E") == 0))
         {
             return true;
@@ -311,18 +315,21 @@ void Deallocate(List * list) {
     if (list != NULL) {
         Dispose(list->firstElement);
         free(list);
+        list = NULL;
     }
 }
 
-// To get rid of test prints comment all printfs
-// and callings of print_stack_debug(); in expression();
 bool expression() {
+    bool nothing_todo = true;
     char data[3] = {"$"};
     List * list = NULL;
     list = Init(list);
+
     char precedence;
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
+        nothing_todo = false;
+
 start_expr:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
@@ -354,8 +361,11 @@ start_expr:
 
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
-            //TODO if insert false (segfault)
-            Insert(list, data);
+            if(!Insert(list, data)){
+                list = NULL;
+                err = INTERNAL_ERR;
+                goto err_expr;
+            }
         }
         else if (precedence == '>') {
             // We find the first << from the top of the stack to the bottom
@@ -372,8 +382,11 @@ start_expr:
         }
         else if (precedence == '=') {
             // We just copy the data onto the stack
-            //TODO if insert false (segfault)
-            Push(list, token.attr.id.str);
+            if(!Push(list, token.attr.id.str)){
+                err = INTERNAL_ERR;
+                list = NULL;
+                goto err_expr;
+            }
             print_stack_expr(list);
         }
         else if (precedence == 's') {
@@ -388,6 +401,11 @@ start_expr:
         }
 
         NEXT_TOKEN();
+    }
+
+    if (nothing_todo) {
+        Deallocate(list);
+        return true;
     }
 
     // If there is internal error such as failure to allocate,
@@ -405,6 +423,7 @@ start_expr:
     print_stack_expr(list);
 
 end_expr:
+
     // We are reducing the expression by using our rules
     while (Close(list)) {
         print_stack_expr(list);

@@ -38,6 +38,7 @@ set(CMAKE_BUILD_TYPE Debug)
 option(DEBUG_RULES   "Enable rules printing from parser"       OFF)
 option(DEBUG_SCANNER "Run only scanner"                        OFF)
 option(DEBUG_EXPR    "Enable debug for expressions processing" OFF)
+option(COMPILE_TESTS "Compile tests and code_coverage"		   OFF)
 
 if (DEBUG_RULES)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_RULES")
@@ -90,6 +91,7 @@ target_link_libraries(${PROJECT_NAME})
 
 ###############################################################################
 # TESTS
+<<<<<<< HEAD
 FetchContent_Declare(googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
 	GIT_TAG master
@@ -109,3 +111,27 @@ gtest_discover_tests(returnCodesTests)
 ### TESTS COVERAGE
 setup_target_for_coverage(scannerTests_coverage scannerTests scannerTests_coverage)
 setup_target_for_coverage(returnCodesTests_coverage returnCodesTests returnCodesTests_coverage)
+=======
+if (COMPILE_TESTS)
+	FetchContent_Declare(googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG master
+		)
+	FetchContent_MakeAvailable(googletest)
+	enable_testing()
+
+	add_executable(scannerTests ${SCANNER_TESTS_SOURCES})
+	add_executable(returnCodesTests ${RETURN_CODES_TESTS_SOURCES})
+
+	target_link_libraries(scannerTests gtest_main)
+	target_link_libraries(returnCodesTests gtest_main)
+
+	gtest_discover_tests(scannerTests)
+	gtest_discover_tests(returnCodesTests)
+
+	### TESTS COVERAGE
+	setup_target_for_coverage(scannerTests_coverage scannerTests scannerTests_coverage)
+	setup_target_for_coverage(returnCodesTests_coverage returnCodesTests returnCodesTests_coverage)
+endif()
+
+>>>>>>> master
