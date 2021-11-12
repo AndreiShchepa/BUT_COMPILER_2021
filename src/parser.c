@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "expressions.h"
 #include "parser.h"
 #include "error.h"
@@ -22,6 +23,7 @@ arr_symtbs_t local_symtbs;
 htable_t global_symtab;
 htab_item_t *item;
 string_t tps_left_vars;
+string_t tps_right_vars;
 bool working_func; // 0 - decl_fun, 1 - def_func
 
 #define FILL_RETS(IDX) \
@@ -66,6 +68,16 @@ bool working_func; // 0 - decl_fun, 1 - def_func
         item->data.func = calloc(1, sizeof(func_t)); \
         item->type = FUNC;
 
+#define CHECK_TPS_DEF_DECL_FUNCS() \
+        if (item->data.func->decl && item->data.func->def) { \
+            if (strcmp(item->data.func->def_attr.argv.str, item->data.func->decl_attr.argv.str) || \
+                strcmp(item->data.func->def_attr.rets.str, item->data.func->decl_attr.rets.str)) \
+            { \
+                err = SEM_FUNC_ERR; \
+                return false; \
+            } \
+        }
+
 bool prolog() {
     if (token.keyword == KW_REQUIRE) {
         print_rule("1.  <prolog> -> require term_str <prog>");
@@ -107,6 +119,9 @@ add_func_decl:
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
+
+        CHECK_TPS_DEF_DECL_FUNCS();
+
         // item = NULL;
         return prog();
     }
@@ -136,6 +151,9 @@ add_func_def:
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
+
+        CHECK_TPS_DEF_DECL_FUNCS();
+
         // item = NULL;
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);

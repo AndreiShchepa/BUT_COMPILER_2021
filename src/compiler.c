@@ -51,7 +51,13 @@ int ret;
             fprintf(stderr, "\nScanner err\n");
         }
         else if (ret == SEM_DEF_ERR) {
-            fprintf(stderr, "\nSemantic err: redefinition\n");
+            fprintf(stderr, "\nSemantic err: undefined function/variable, "
+                    "attempt to redefinition of variables, etc.\n");
+        }
+        else if (ret == SEM_FUNC_ERR) {
+            fprintf(stderr, "\nSemantic err: wrong number/type "
+                    "of parameters or return values when calling a function "
+                    "or return from a function\n");
         }
         else if (ret == PARSER_ERR) {
             fprintf(stderr, "\nParser err\n");
