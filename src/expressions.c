@@ -210,6 +210,7 @@ bool Insert(List * list, char * data) {
 
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
+    // todo copy token data into structure
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
@@ -230,7 +231,7 @@ bool Close(List * list) {
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-
+    // Todo check if types are correct between expressions
     // We check against rules
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
@@ -244,6 +245,7 @@ bool Close(List * list) {
             list->lastElement = find;
 
             // We were successful in finding a rule
+            // todo call gen_code_func(Ei, Ej)[j];
             return true;
         }
     }

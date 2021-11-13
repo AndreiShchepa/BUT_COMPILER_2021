@@ -50,7 +50,18 @@
                               token.type    == T_L_ROUND_BR || \
                               token.type    == T_R_ROUND_BR || \
                               token.type    == T_CONCAT
-
+// Todo add information from tokens
+//typedef union token_attr {
+//    string_t id;
+//    uint64_t num_i;
+//    double num_f;
+//} token_attr_t;
+//
+//typedef struct token {
+//    token_type_t type;
+//    keywords_t keyword;
+//    token_attr_t attr;
+//} token_t;
 typedef struct Element {
     char data[3];
     struct Element *previousElement;
