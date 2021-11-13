@@ -268,7 +268,7 @@ bool Close(List * list) {
             // todo call gen_code_func(Ei, Ej)[j];
 
             // We cannot lose our token type because we are deleting
-            // everything after << and just copying E instead of <<
+            // everything after << and just copying E in the place of <<
             // so we also need to "transition" token type
             //                  find = find->nextElement
             //                  <<   = E
@@ -290,8 +290,24 @@ bool Close(List * list) {
             strcpy(find->data, "E");
             find->nextElement = NULL;
             list->lastElement = find;
-
-            // We were successful in finding a rule and that also means neither Ei or Ej are NULL pointers
+            // We are already doing a check if we are operating two identical types together
+            // however there can be a situation where we are doing operation on two identical
+            // types yet we are doing an operation that doesnt belong to it i.e.
+            // 5..5 would have passed because both expressions are integers
+            // but operation .. is reserved only for strings so in this
+            // if statement we make sure that if rules #E = 7 and E..E = 14 were found
+            // the expressions are also strings
+            if((j == 7 || j == 14) && find->element_token.type != T_STRING){
+                err = SEM_ARITHM_REL_ERR;
+                return false;
+                // If we found any other rules other than
+                // i = 0, (E) = 1 operations where it doesn't matter of what type the expression is
+                // #E = 7, E..E = 14 string operations
+                // and the type is string, that means we are trying to do number operation with strings
+            } else if(j != 0 && j != 1 && j != 7 && j != 14 && find->element_token.type == T_STRING){
+                err = SEM_ARITHM_REL_ERR;
+                return false;
+            }
             return true;
         }
     }
@@ -479,8 +495,8 @@ end_expr:
         print_stack_expr(list);
     }
 
-    // If we were successful in reducing the expression
-    if (Check_Correct_Closure(list)) {
+    // If we were successful in reducing the expression and there wasn't any error
+    if (Check_Correct_Closure(list) && err == NO_ERR) {
         Deallocate(list);
         return true;
     }
