@@ -29,6 +29,8 @@
     #define print_stack_expr(list)
 #endif
 
+#include "scanner.h"
+
 // Check if type of token belongs to expression
 #define TOKEN_ID_EXPRESSION() token.type    == T_ID         || \
                               token.type    == T_INT        || \
@@ -50,7 +52,6 @@
                               token.type    == T_L_ROUND_BR || \
                               token.type    == T_R_ROUND_BR || \
                               token.type    == T_CONCAT
-// Todo add information from tokens
 //typedef union token_attr {
 //    string_t id;
 //    uint64_t num_i;
@@ -63,6 +64,7 @@
 //    token_attr_t attr;
 //} token_t;
 typedef struct Element {
+    token_t token;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;
