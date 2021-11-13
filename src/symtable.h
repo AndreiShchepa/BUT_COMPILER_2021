@@ -70,7 +70,7 @@ typedef enum type {
 typedef struct var {
     bool init;
     bool val_nil;
-    char type;
+    string_t type;
     token_type_t attr;
 } var_t;
 
@@ -84,6 +84,7 @@ typedef struct func {
     bool def;
     bool decl;
     bool func_write;
+    bool return_e;
     attr_func_t decl_attr;
     attr_func_t def_attr;
 } func_t;

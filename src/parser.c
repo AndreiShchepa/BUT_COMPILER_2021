@@ -22,8 +22,10 @@ static bool ret;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
 htab_item_t *item;
-string_t tps_left_vars;
-string_t tps_right_vars;
+htab_item_t *tmp_var;
+htab_item_t *tmp_func;
+string_t tps_left;
+string_t tps_right;
 bool working_func; // 0 - decl_fun, 1 - def_func
 
 #define FILL_RETS(IDX) \
@@ -66,6 +68,8 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             return false; \
         } \
         item->data.func = calloc(1, sizeof(func_t)); \
+        item->data.func->decl = false; \
+        item->data.func->def = false; \
         item->type = FUNC;
 
 #define CHECK_TPS_DEF_DECL_FUNCS() \
@@ -77,6 +81,10 @@ bool working_func; // 0 - decl_fun, 1 - def_func
                 return false; \
             } \
         }
+
+bool type_compatibility() {
+    return true;
+}
 
 bool prolog() {
     if (token.keyword == KW_REQUIRE) {
@@ -104,8 +112,8 @@ bool prog() {
 add_func_decl:
         item->data.func->decl = true;
         working_func = 0;
-        item->data.func->decl_attr.argv.str = NULL;
-        item->data.func->decl_attr.rets.str = NULL;
+        ret = str_init(&item->data.func->decl_attr.rets, 5); // RETURN
+        ret = str_init(&item->data.func->decl_attr.argv, 5); // RETURN
         //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
@@ -137,8 +145,8 @@ add_func_decl:
 add_func_def:
         item->data.func->def = true;
         working_func = 1;
-        item->data.func->def_attr.argv.str = NULL;
-        item->data.func->def_attr.rets.str = NULL;
+        ret = str_init(&item->data.func->def_attr.rets, 5); // RETURN
+        ret = str_init(&item->data.func->def_attr.argv, 5); // RETURN
         //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
@@ -153,7 +161,6 @@ add_func_def:
         NEXT_NONTERM(type_returns);
 
         CHECK_TPS_DEF_DECL_FUNCS();
-
         // item = NULL;
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);
@@ -266,11 +273,25 @@ bool statement() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_VAR_TO_SYMTAB();
+        /////////////////////////////////////////////////////////////////////
+        tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id);
+        if (!tmp_var) {
+            return false;
+        }
+        tmp_var->type = VAR;
+        tmp_var->data.var = calloc(1, sizeof(var_t)); // RETURN
+        tmp_var->data.var->init = true;
+        tmp_var->data.var->val_nil = true;
+        str_init(&tmp_var->data.var->type, 2);
+        /////////////////////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+
+        FILL_RETS(&tmp_var->data.var->type);
+        FILL_RETS(&tps_left);
+
         NEXT_NONTERM(type);
         NEXT_NONTERM(def_var);
 
@@ -377,6 +398,9 @@ bool def_var() {
         print_rule("23. <def_var> -> = <init_assign>");
 
         NEXT_TOKEN();
+        /////////////////////////////////////////////////
+        tmp_var->data.var->val_nil = false;
+        /////////////////////////////////////////////////
 
         return init_assign();
     }
@@ -386,8 +410,22 @@ bool def_var() {
 }
 
 bool init_assign() {
-    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) {
+    tmp_func = symtab_find(&global_symtab, token.attr.id.str);
+
+    if (token.type == T_ID && tmp_func) {
         print_rule("25. <init_assign> -> id_func ( <args> )");
+        /////////////////////////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
+                                                                         &tmp_func->data.func->decl_attr.rets);
+        if (strcmp(tps_left.str, tps_right.str)) {
+            err = SEM_TYPE_COMPAT_ERR;
+            return false;
+        }
+        else {
+            str_clear(&tps_left);
+            str_clear(&tps_right);
+        }
+        ////////////////////////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -410,11 +448,11 @@ bool type_returns() {
         NEXT_TOKEN();
         ///////////////////////////////////////////
         if (working_func == 1) {
-            ret = str_init(&item->data.func->def_attr.rets, 5); // RETURN
+            //ret = str_init(&item->data.func->def_attr.rets, 5); // RETURN
             FILL_RETS(&item->data.func->def_attr.rets); // RETURN
         }
         else if (working_func == 0) {
-            ret = str_init(&item->data.func->decl_attr.rets, 5); // RETURN
+            //ret = str_init(&item->data.func->decl_attr.rets, 5); // RETURN
             FILL_RETS(&item->data.func->decl_attr.rets); // RETURN
         }
         ////////////////////////////////////////////
@@ -482,7 +520,7 @@ bool params() {
         NEXT_TOKEN();
         ////////////////////////////////////////
         if (working_func == 1) {
-            ret = str_init(&item->data.func->def_attr.argv, 5); // RETURN
+            //ret = str_init(&item->data.func->def_attr.argv, 5); // RETURN
             FILL_RETS(&item->data.func->def_attr.argv); // RETURN
         }
         ////////////////////////////////////////
@@ -524,7 +562,7 @@ bool other_params() {
 bool type_params() {
     ////////////////////////////////////////
     if (working_func == 0) {
-        ret = str_init(&item->data.func->decl_attr.argv, 5); // RETURN
+        //ret = str_init(&item->data.func->decl_attr.argv, 5); // RETURN
         FILL_RETS(&item->data.func->decl_attr.argv); // RETURN
     }
     ////////////////////////////////////////
@@ -635,6 +673,22 @@ bool init_default_funcs_ifj21() {
     return true;
 }
 
+void check_def_of_decl_func() {
+    for (int i = 0; i < MAX_HT_SIZE; i++) {
+        item = global_symtab[i];
+
+        while (item) {
+            if (item->data.func->decl == 1 && item->data.func->def == 0) {
+                err = SEM_DEF_ERR;
+                return;
+            }
+            item = item->next;
+        }
+    }
+
+    return;
+}
+
 int parser() {
     FILE *f = stdin;
     err = NO_ERR;
@@ -651,7 +705,8 @@ int parser() {
         return INTERNAL_ERR;
     }
 
-
+    str_init(&tps_left, 5);
+    str_init(&tps_right, 5);
     FIRST_TOKEN();
     ret = prolog();
 
@@ -659,6 +714,10 @@ int parser() {
         err = PARSER_ERR;
     }
 
+    check_def_of_decl_func();
+
+    str_free(&tps_right);
+    str_free(&tps_left);
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
     symtab_free(&global_symtab);

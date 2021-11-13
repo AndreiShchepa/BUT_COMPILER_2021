@@ -59,6 +59,9 @@ int ret;
                     "of parameters or return values when calling a function "
                     "or return from a function\n");
         }
+        else if (ret == SEM_TYPE_COMPAT_ERR) {
+            fprintf(stderr, "\nSemantic err: type incompatibility in assignment statement\n");
+        }
         else if (ret == PARSER_ERR) {
             fprintf(stderr, "\nParser err\n");
         }

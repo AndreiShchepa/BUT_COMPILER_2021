@@ -180,6 +180,10 @@ void symtab_free(htable_t *table) {
                 }
                 free(item_free->data.func);
             }
+            else if (item_free->type == VAR && item_free->data.var) {
+                str_free(&item_free->data.var->type);
+                free(item_free->data.var);
+            }
 
             free(item_free->key_id);
             free(item_free);
