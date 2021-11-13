@@ -299,8 +299,10 @@ bool Push(List * list, char * data) {
     TempElement->nextElement = NULL;
     list->lastElement = TempElement;
 
-    // Copy onto the stack
-    //todo copy only data? we should copy token data too
+    // Copy onto the stack and we also copy T_NONE into token because there will never be situation
+    // where we just arbitrary copy i onto the stack because
+    // there doesnt exist precedence rule "=" with expressions, only with characters
+    TempElement->element_token.type = T_NONE;
     strcpy(TempElement->data, data);
     return true;
 }
@@ -364,7 +366,6 @@ start_expr:
             // If token is a variable or a string we put i on the stack instead
             // of copying the whole name of the variable or whole string
             if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
-                // todo copy only data ? we  should copy token too
                 strcpy(data, "i");
             }
             else {
