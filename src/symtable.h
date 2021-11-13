@@ -83,6 +83,7 @@ typedef struct attr_func {
 typedef struct func {
     bool def;
     bool decl;
+    bool func_write;
     attr_func_t decl_attr;
     attr_func_t def_attr;
 } func_t;

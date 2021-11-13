@@ -580,7 +580,7 @@ bool other_args() {
     return true;
 }
 
-void init_default_funcs_ifj21() {
+bool init_default_funcs_ifj21() {
     string_t def_funcs[COUNT_DEF_FUNCS] = { {.length = 3, .alloc_size = 0, .str = "chr"      },
                                             {.length = 9, .alloc_size = 0, .str = "tointeger"},
                                             {.length = 5, .alloc_size = 0, .str = "reads"    },
@@ -590,9 +590,49 @@ void init_default_funcs_ifj21() {
                                             {.length = 6, .alloc_size = 0, .str = "substr"   },
                                             {.length = 3, .alloc_size = 0, .str = "ord"      }, };
 
+    char *argv[COUNT_DEF_FUNCS] = {"I", "F",  "",  "",  "", "...FSIN", "SFF", "SI"};
+    char *rets[COUNT_DEF_FUNCS] = {"S", "I", "S", "I", "F",        "",   "S",  "I"};
+
     for (int i = 0; i < COUNT_DEF_FUNCS; i++) {
-        symtab_add(&global_symtab, &(def_funcs[i])); // RETURN
+        item = symtab_add(&global_symtab, &(def_funcs[i])); // RETURN
+
+        if (!item) {
+            return false;
+        }
+
+        item->data.func = calloc(1, sizeof(func_t)); // RETURN
+        item->type = FUNC;
+        item->data.func->decl = true;
+        item->data.func->def = true;
+
+        if (!str_init(&item->data.func->def_attr.rets,  strlen(rets[i]) + 1) ||
+            !str_init(&item->data.func->decl_attr.rets, strlen(rets[i]) + 1) ||
+            !str_init(&item->data.func->def_attr.argv,  strlen(argv[i]) + 1) ||
+            !str_init(&item->data.func->decl_attr.argv, strlen(argv[i]) + 1))
+        {
+            return false;
+        }
+
+        for (int j = 0; argv[i][j] != '\0'; j++) {
+            if (!str_add_char(&item->data.func->def_attr.argv,  argv[i][j]) ||
+                !str_add_char(&item->data.func->decl_attr.argv, argv[i][j]))
+            {
+                return false;
+            }
+        }
+
+        for (int j = 0; rets[i][j] != '\0'; j++) {
+            if (!str_add_char(&item->data.func->def_attr.rets, rets[i][j]) ||
+                !str_add_char(&item->data.func->decl_attr.rets, rets[i][j]))
+            {
+                return false;
+            }
+        }
+
+        item->data.func->func_write = i == 5 ? true : false;
     }
+
+    return true;
 }
 
 int parser() {
@@ -606,7 +646,11 @@ int parser() {
     }
 
     local_symtbs.size = 0;
-    init_default_funcs_ifj21();
+    ret = init_default_funcs_ifj21();
+    if (!ret) {
+        return INTERNAL_ERR;
+    }
+
 
     FIRST_TOKEN();
     ret = prolog();
