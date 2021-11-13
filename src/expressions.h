@@ -63,8 +63,9 @@
 //    keywords_t keyword;
 //    token_attr_t attr;
 //} token_t;
+
 typedef struct Element {
-    token_t token;
+    token_t element_token;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;

@@ -210,7 +210,16 @@ bool Insert(List * list, char * data) {
 
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
-    // todo copy token data into structure
+    // If we are dealing not with character, but with an expression we copy the data of token into our structure
+    if((strcmp(data, "i")) == 0){
+        TempElement_second->element_token.type = token.type;
+        TempElement_second->element_token.attr = token.attr;
+        TempElement_second->element_token.keyword = token.keyword;
+//        printf("We are copying: %s %f %lu %s\n", data, token.attr.num_f, token.attr.num_i, token.attr.id.str);
+        // else we just set type to T_NONE so we can differentiate between an expression and a character
+    } else {
+        TempElement_second->element_token.type = T_NONE;
+    }
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
@@ -291,6 +300,7 @@ bool Push(List * list, char * data) {
     list->lastElement = TempElement;
 
     // Copy onto the stack
+    //todo copy only data? we should copy token data too
     strcpy(TempElement->data, data);
     return true;
 }
@@ -354,6 +364,7 @@ start_expr:
             // If token is a variable or a string we put i on the stack instead
             // of copying the whole name of the variable or whole string
             if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
+                // todo copy only data ? we  should copy token too
                 strcpy(data, "i");
             }
             else {
