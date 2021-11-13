@@ -60,14 +60,16 @@ bool add_symtab(arr_symtbs_t *symtbs) {
     return true;
 }
 
-bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
+htab_item_t *find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
+    htab_item_t *item;
     for (int i = symtbs->size - 1; i >= 0; i--) {
-        if (symtab_find(&symtbs->htab[i], key)) {
-            return true;
+        item = symtab_find(&symtbs->htab[i], key);
+        if (item) {
+            return item;
         }
     }
 
-    return false;
+    return NULL;
 }
 
 void symtab_init(htable_t *table) {

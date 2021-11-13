@@ -131,9 +131,9 @@ bool add_symtab(arr_symtbs_t *symtbs);
  * @brief Search ID in last and pervious local tables
  * @param symtbs - pointer ro the array of local symtables
  * @param key - ID for searching
- * @return On success true, otherwise false
+ * @return On success pointer to item, otherwise NULL
  */
-bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
+htab_item_t *find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
 
 /*
  * @brief Sdbm algorithm for hash table
