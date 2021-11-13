@@ -270,8 +270,19 @@ bool Close(List * list) {
             // We cannot lose our token type because we are deleting
             // everything after << and just copying E instead of <<
             // so we also need to "transition" token type
+            //                  find = find->nextElement
+            //                  <<   = E
+//            printf("TYPES: %d %d \n", find->element_token.type, find->nextElement->element_token.type);
             find->element_token.type = find->nextElement->element_token.type;
-
+            // If we are dealing with rules (E) and #E we need to copy token type from E, not from ( or #
+            // in other rules that doesnt occur because every other rules starts with E
+            if(j == 1 || j == 7){
+                //                  find = find->nextElement    ->nextElement
+                //                  <<   = (                    E
+//                printf("TYPES: %d %d \n", find->element_token.type, find->nextElement->nextElement->element_token.type);
+                find->element_token.type = find->nextElement->nextElement->element_token.type;
+            }
+            printf("TYPE IS: %d\n", find->element_token.type);
             // We delete everything after <<
             Dispose(find->nextElement);
 
