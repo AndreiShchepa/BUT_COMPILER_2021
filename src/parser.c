@@ -91,6 +91,25 @@ bool working_func; // 0 - decl_fun, 1 - def_func
         }
 
 bool type_compatibility() {
+    if (tps_left.length > tps_right.length) {
+        err = SEM_FUNC_ERR;
+        return false;
+    }
+    else {
+        for (long unsigned int i = 0; i < tps_left.length; i++) {
+            if ((tps_left.str[i] == tps_right.str[i]) ||
+                (tps_left.str[i] == 'F' && tps_right.str[i] == 'I') ||
+                (tps_right.str[i] == 'N'))
+            {
+                continue;
+            }
+            else {
+                err = SEM_FUNC_ERR;
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 
@@ -186,6 +205,12 @@ add_func_def:
     }
     else if (token.type == T_ID) {
         print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
+
+        item = FIND_FUNC_IN_SYMTAB;
+        if (!item) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -420,6 +445,7 @@ bool def_var() {
         return init_assign();
     }
 
+    str_clear(&tps_left);
     print_rule("24. <def_var> -> e");
     return true;
 }
@@ -432,7 +458,7 @@ bool init_assign() {
         /////////////////////////////////////////////////////////////////////////
         ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
                                                                          &tmp_func->data.func->decl_attr.rets);
-        if (strcmp(tps_left.str, tps_right.str)) {
+        if (!type_compatibility()) {
             err = SEM_TYPE_COMPAT_ERR;
             return false;
         }
