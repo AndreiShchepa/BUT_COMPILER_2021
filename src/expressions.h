@@ -53,6 +53,23 @@
                               token.type    == T_R_ROUND_BR || \
                               token.type    == T_CONCAT
 
+
+//void gen_code_PLUS(token_t a, token_t b);
+//void gen_code_MINUS(token_t a, token_t b);
+//void gen_code_MUL(token_t a, token_t b);
+//void gen_code_DIV(token_t a, token_t b);
+//void gen_code_DIV_INT(token_t a, token_t b);
+//void gen_code_LENGTH(token_t a, token_t b);
+//void gen_code_LT(token_t a, token_t b);
+//void gen_code_GT(token_t a, token_t b);
+//void gen_code_LE(token_t a, token_t b);
+//void gen_code_GE(token_t a, token_t b);
+//void gen_code_NEQ(token_t a, token_t b);
+//void gen_code_CONCAT(token_t a, token_t b);
+//
+//void (*gen_code_expressions[12]) (token_t x, token_t y) = {gen_code_PLUS, gen_code_MINUS, gen_code_MUL, gen_code_DIV, gen_code_DIV_INT,
+//                                               gen_code_LENGTH, gen_code_LT, gen_code_GT, gen_code_LE, gen_code_GE, gen_code_NEQ, gen_code_CONCAT};
+
 typedef struct Element {
     // T_NONE will be used with everything else other than expressions
     // and thus making use of token different than in the rest of the program

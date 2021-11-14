@@ -213,7 +213,9 @@ bool Insert(List * list, char * data) {
     strcpy(TempElement_first->data, "<<");
     // If we are dealing not with character, but with an expression we copy the data of token into our structure
     if((strcmp(data, "i")) == 0){
+        TempElement_second->element_token.attr = token.attr;
         TempElement_second->element_token.type = token.type;
+        TempElement_second->element_token.keyword = token.keyword;
         // else we just set type to T_NONE so we can differentiate between an expression and a character
     } else {
         TempElement_second->element_token.type = T_NONE;
@@ -259,34 +261,33 @@ bool Close(List * list) {
             err = SEM_ARITHM_REL_ERR;
             return false;
         }
+        // Special case with rule #E where there is only one expression so Ei will stay NULL, we make sure Ei isn't NULL
+        // so we can call gen_code_LENGTH with arguments (Ei, Ej) without passing null pointer
+    } else if(Ej != NULL){
+        Ei = Ej;
     }
     // We check against rules
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
         if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
-            // todo call gen_code_func(Ei, Ej)[j];
-
             // We cannot lose our token type because we are deleting
             // everything after << and just copying E in the place of <<
             // so we also need to "transition" token type
             //                  find = find->nextElement
             //                  <<   = E
+            find->element_token.attr = find->nextElement->element_token.attr;
             find->element_token.type = find->nextElement->element_token.type;
+            find->element_token.keyword = find->nextElement->element_token.keyword;
             // If we are dealing with rules (E) and #E we need to copy token type from E, not from ( or #
             // in other rules that doesnt occur because every other rules starts with E
             if(j == 1 || j == 7){
                 //                  find = find->nextElement    ->nextElement
                 //                  <<   = (                    E
+                find->element_token.attr = find->nextElement->nextElement->element_token.attr;
                 find->element_token.type = find->nextElement->nextElement->element_token.type;
+                find->element_token.keyword = find->nextElement->nextElement->element_token.keyword;
             }
 //            printf("TYPE IS: %d\n", find->element_token.type);
-            // We delete everything after <<
-            Dispose(find->nextElement);
-
-            // We change << with E
-            strcpy(find->data, "E");
-            find->nextElement = NULL;
-            list->lastElement = find;
             // We are already doing a check if we are operating two identical types together
             // however there can be a situation where we are doing operation on two identical
             // types yet we are doing an operation that doesnt belong to it i.e.
@@ -305,6 +306,19 @@ bool Close(List * list) {
                 err = SEM_ARITHM_REL_ERR;
                 return false;
             }
+
+            // We change << with E
+            strcpy(find->data, "E");
+            // If we found any other rule other than i and (E) we call gen code function,
+            // special case with #E where Ei == Ej
+            if(j != 0 && j != 1){
+//                (*gen_code_expressions[j])(Ei->element_token, Ej->element_token);
+//                printf("TYPES: %d %d\n", Ei->element_token.type, Ej->element_token.type);
+            }
+            // We delete everything after <<
+            Dispose(find->nextElement);
+            find->nextElement = NULL;
+            list->lastElement = find;
             return true;
         }
     }
