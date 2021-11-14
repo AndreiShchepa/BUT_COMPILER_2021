@@ -31,13 +31,6 @@
             return false; \
         }
 
-// Add ID_FUNC to the global symtable
-// If ID_FUNC exists, return false
-#define ADD_FUNC_TO_SYMTAB() \
-        if (!symtab_add(&global_symtab, &token.attr.id)) { \
-            return false; \
-        }
-
 #define FIND_VAR_IN_SYMTAB find_id_symtbs(&local_symtbs, token.attr.id.str)
 
 #define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
@@ -68,20 +61,32 @@ typedef enum type {
     NIL
 } type_t;
 
+// I INTEGER
+// S STRING
+// F NUMBER
+// N NIL
+
 // Attributes for ID_VAR
 typedef struct var {
     bool init;
     bool val_nil;
-    type_t type;
+    string_t type;
     token_type_t attr;
 } var_t;
+
+typedef struct attr_func {
+    string_t argv;
+    string_t rets;
+} attr_func_t;
 
 // Attributes for ID_FUNC
 typedef struct func {
     bool def;
     bool decl;
-    type_t *types;
-    type_t *rets;
+    bool func_write;
+    bool return_e;
+    attr_func_t decl_attr;
+    attr_func_t def_attr;
 } func_t;
 
 typedef union data {
@@ -102,6 +107,8 @@ typedef struct {
     int size;
     htable_t *htab;
 } arr_symtbs_t;
+
+bool create_attrs();
 
 /*
  * @brief Deallocate array of symtables
@@ -124,9 +131,9 @@ bool add_symtab(arr_symtbs_t *symtbs);
  * @brief Search ID in last and pervious local tables
  * @param symtbs - pointer ro the array of local symtables
  * @param key - ID for searching
- * @return On success true, otherwise false
+ * @return On success pointer to item, otherwise NULL
  */
-bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
+htab_item_t *find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
 
 /*
  * @brief Sdbm algorithm for hash table

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "expressions.h"
 #include "parser.h"
 #include "error.h"
@@ -20,6 +21,138 @@ int err;
 static bool ret;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
+htab_item_t *item;
+htab_item_t *tmp_var;
+htab_item_t *tmp_func;
+string_t tps_left;
+string_t tps_right;
+bool working_func; // 0 - decl_fun, 1 - def_func
+
+#define CHECK_INTERNAL_ERR(COND, ret) \
+        if (COND) { \
+            err = INTERNAL_ERR; \
+            return ret; \
+        }
+
+#define CHECK_SEM_DEF_ERR(COND) \
+        if (COND) { \
+            err = SEM_DEF_ERR; \
+            return false; \
+        }
+
+#define FILL_TYPE(IDX) \
+        switch (token.keyword) { \
+            case KW_INTEGER: \
+                ret = str_add_char(IDX, 'I'); \
+                break; \
+            case KW_STRING: \
+                ret = str_add_char(IDX, 'S'); \
+                break; \
+            case KW_NUMBER: \
+                ret = str_add_char(IDX, 'F'); \
+                break; \
+            case KW_NIL: \
+                ret = str_add_char(IDX, 'N'); \
+                break; \
+            default: \
+                ret = str_add_char(IDX, 'U'); \
+                break; \
+        } \
+        CHECK_INTERNAL_ERR(!ret, false);
+
+#define ADD_FUNC_TO_SYMTAB(SUSPECT_REDECLARATION, LABEL) \
+        if (!symtab_add(&global_symtab, &token.attr.id)) { \
+            if (err == INTERNAL_ERR) { \
+                return false; \
+            } \
+            else if (err == SEM_DEF_ERR) { \
+                item = symtab_find(&global_symtab, token.attr.id.str); \
+                if (!item && err == INTERNAL_ERR) { \
+                    return false; \
+                } \
+                else if (SUSPECT_REDECLARATION) { \
+                    return false; \
+                } \
+                err = NO_ERR; \
+                goto LABEL; \
+            } \
+        } \
+        item = symtab_find(&global_symtab, token.attr.id.str); \
+        if (!item) { \
+            return false; \
+        } \
+        item->data.func = calloc(1, sizeof(func_t)); \
+        CHECK_INTERNAL_ERR(!item->data.func, false); \
+        item->data.func->decl = false; \
+        item->data.func->def = false; \
+        item->type = FUNC;
+
+#define CHECK_TPS_DEF_DECL_FUNCS() \
+        if (item->data.func->decl && item->data.func->def) { \
+            if (strcmp(item->data.func->def_attr.argv.str, item->data.func->decl_attr.argv.str) || \
+                strcmp(item->data.func->def_attr.rets.str, item->data.func->decl_attr.rets.str)) \
+            { \
+                err = SEM_DEF_ERR; \
+                return false; \
+            } \
+        }
+
+#define ALLOC_VAR_IN_SYMTAB() \
+        tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id); \
+        if (!tmp_var) { \
+            return false; \
+        } \
+        tmp_var->data.var = calloc(1, sizeof(var_t)); \
+        CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
+        tmp_var->type = VAR; \
+        tmp_var->data.var->init = true; \
+        tmp_var->data.var->val_nil = true; \
+        str_init(&tmp_var->data.var->type, 2);
+
+#define CHECK_COMPATIBILITY() \
+        if (!type_compatibility()) { \
+            err = SEM_FUNC_ERR; \
+            return false; \
+        } \
+        else { \
+            str_clear(&tps_left); \
+            str_clear(&tps_right); \
+        }
+
+bool type_compatibility() {
+
+    if(tmp_func->data.func->func_write) {
+        for (long unsigned int i = 0; i < tps_right.length; i++) {
+            if (tps_right.str[i] == 'U') {
+                err = SEM_FUNC_ERR;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    if (tps_left.length > tps_right.length) {
+        err = SEM_FUNC_ERR;
+        return false;
+    }
+    else {
+        for (long unsigned int i = 0; i < tps_left.length; i++) {
+            if ((tps_left.str[i] == tps_right.str[i]) ||
+                (tps_left.str[i] == 'F' && tps_right.str[i] == 'I') ||
+                (tps_right.str[i] == 'N'))
+            {
+                continue;
+            }
+            else {
+                err = SEM_FUNC_ERR;
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
 
 bool prolog() {
     if (token.keyword == KW_REQUIRE) {
@@ -42,7 +175,16 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_FUNC_TO_SYMTAB();
+        // Allocate structure for decl_function in symtable //
+        ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
+add_func_decl:
+        item->data.func->decl = true;
+        working_func = 0; // declaration of function
+        ret = str_init(&item->data.func->decl_attr.rets, 5);
+        CHECK_INTERNAL_ERR(!ret, false);
+        ret = str_init(&item->data.func->decl_attr.argv, 5);
+        CHECK_INTERNAL_ERR(!ret, false);
+        //////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -56,6 +198,8 @@ bool prog() {
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
 
+        CHECK_TPS_DEF_DECL_FUNCS();
+
         return prog();
     }
     else if (token.keyword == KW_FUNCTION) {
@@ -65,7 +209,16 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_FUNC_TO_SYMTAB();
+        // Allocate structure for def_function in symtable //
+        ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
+add_func_def:
+        item->data.func->def = true;
+        working_func = 1;
+        ret = str_init(&item->data.func->def_attr.rets, 5);
+        CHECK_INTERNAL_ERR(!ret, false);
+        ret = str_init(&item->data.func->def_attr.argv, 5);
+        CHECK_INTERNAL_ERR(!ret, false);
+        /////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -77,6 +230,9 @@ bool prog() {
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
+
+        CHECK_TPS_DEF_DECL_FUNCS();
+
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -89,10 +245,21 @@ bool prog() {
     else if (token.type == T_ID) {
         print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
 
+        tmp_func = FIND_FUNC_IN_SYMTAB;
+        CHECK_SEM_DEF_ERR(!tmp_func);
+        ////////////////////////////////
+        ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
+                                                                         &tmp_func->data.func->decl_attr.argv);
+        CHECK_INTERNAL_ERR(!ret, false);
+        ////////////////////////////////
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args);
+
+        CHECK_COMPATIBILITY();
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
 
@@ -188,11 +355,17 @@ bool statement() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_VAR_TO_SYMTAB();
+        // Allocate structure for variable in symtable //
+        ALLOC_VAR_IN_SYMTAB();
+        /////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+
+        FILL_TYPE(&tmp_var->data.var->type);
+        FILL_TYPE(&tps_left);
+
         NEXT_NONTERM(type);
         NEXT_NONTERM(def_var);
 
@@ -211,15 +384,35 @@ bool statement() {
         if (FIND_FUNC_IN_SYMTAB) {
             print_rule("13. <statement> -> id_func ( <args> ) <statement>");
 
+            tmp_func = FIND_FUNC_IN_SYMTAB;
+            CHECK_SEM_DEF_ERR(!tmp_func);
+
+            /////////////////////////////////////////////////
+            ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
+                                                                             &tmp_func->data.func->decl_attr.argv);
+            CHECK_INTERNAL_ERR(!ret, false);
+            /////////////////////////////////////////////////
+
             NEXT_TOKEN();
             EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
+
             NEXT_NONTERM(args);
+
+            CHECK_COMPATIBILITY();
+
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
             NEXT_TOKEN();
         }
         else if (FIND_VAR_IN_SYMTAB) {
             print_rule("14. <statement> -> id_var <vars> <statement>");
+
+
+            tmp_var = FIND_VAR_IN_SYMTAB;
+            CHECK_SEM_DEF_ERR(!tmp_var);
+
+            ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
+            CHECK_INTERNAL_ERR(!ret, false);
 
             NEXT_TOKEN();
             NEXT_NONTERM(vars);
@@ -243,7 +436,11 @@ bool vars() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        CHECK_ID(VAR);
+        tmp_var = FIND_VAR_IN_SYMTAB;
+        CHECK_SEM_DEF_ERR(!tmp_var);
+
+        ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
+        CHECK_INTERNAL_ERR(!ret, false);
 
         NEXT_TOKEN();
 
@@ -261,19 +458,38 @@ bool vars() {
 }
 
 bool type_expr() {
-    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) {
+    tmp_func = FIND_FUNC_IN_SYMTAB;
+
+    if (token.type == T_ID && tmp_func) {
         print_rule("19. <type_expr> -> id_func ( <args> )");
+
+        ////////////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
+                                                                         &tmp_func->data.func->decl_attr.rets);
+        //printf("left  = %s\n", tps_left.str);
+        //printf("right = %s\n", tps_right.str);
+        CHECK_INTERNAL_ERR(!ret, false);
+        CHECK_COMPATIBILITY();
+        /////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
+                                                                         &tmp_func->data.func->decl_attr.argv);
+        CHECK_INTERNAL_ERR(!ret, false);
+        /////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args);
+
+        CHECK_COMPATIBILITY();
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
 
         return true;
     }
 
+    str_clear(&tps_left);
     print_rule("20. <type_expr> -> <expression> <other_exp>");
 
     NEXT_NONTERM(expression);
@@ -300,26 +516,50 @@ bool def_var() {
 
         NEXT_TOKEN();
 
+        // variable has initial value //
+        tmp_var->data.var->val_nil = false;
+        ////////////////////////////////
+
         return init_assign();
     }
+
+    str_clear(&tps_left);
 
     print_rule("24. <def_var> -> e");
     return true;
 }
 
 bool init_assign() {
-    if (token.type == T_ID && FIND_FUNC_IN_SYMTAB) {
+    tmp_func = symtab_find(&global_symtab, token.attr.id.str);
+
+    if (token.type == T_ID && tmp_func) {
         print_rule("25. <init_assign> -> id_func ( <args> )");
+        /////////////////////////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
+                                                                         &tmp_func->data.func->decl_attr.rets);
+        CHECK_INTERNAL_ERR(!ret, false);
+        CHECK_COMPATIBILITY();
+        ////////////////////////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
+                                                                         &tmp_func->data.func->decl_attr.argv);
+        CHECK_INTERNAL_ERR(!ret, false);
+        /////////////////////////////////////////////////////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args);
+
+        CHECK_COMPATIBILITY();
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
 
         return true;
     }
+
+    str_clear(&tps_left);
+    str_clear(&tps_right);
 
     print_rule("26. <init_assign> -> <expression>");
     return expression();
@@ -327,53 +567,93 @@ bool init_assign() {
 
 bool type_returns() {
     if (token.type == T_COLON) {
-        print_rule("27. <type_returns> -> : <type> <other_types>");
+        print_rule("27. <type_returns> -> : <type> <other_types_returns>");
 
         NEXT_TOKEN();
+        // add type of param to function in symtab //
+        FILL_TYPE(working_func == 1 ?
+                  &item->data.func->def_attr.rets :
+                  &item->data.func->decl_attr.rets);
+        /////////////////////////////////////////////
         NEXT_NONTERM(type);
 
-        return other_types();
+        return other_types_returns();
     }
 
     print_rule("28. <type_returns> -> e");
     return true;
 }
 
-bool other_types() {
+bool other_types_returns() {
     if (token.type == T_COMMA) {
-        print_rule("29. <other_types> -> , <type> <other_types>");
+        print_rule("29. <other_types_returns> -> , <type> <other_types_returns>");
 
         NEXT_TOKEN();
+        // add type of param to function in symtab //
+        FILL_TYPE(working_func == 1 ?
+                  &item->data.func->def_attr.rets :
+                  &item->data.func->decl_attr.rets);
+        /////////////////////////////////////////////
         NEXT_NONTERM(type);
 
-        return other_types();
+        return other_types_returns();
     }
 
-    print_rule("30. <other_types> -> e");
+    print_rule("30. <other_types_returns> -> e");
+    return true;
+}
+
+bool other_types_params() {
+    if (token.type == T_COMMA) {
+        print_rule("31. <other_types_params> -> , <type> <other_types_params>");
+
+        NEXT_TOKEN();
+        // add type of param to decl_function in symtab //
+        if (working_func == 0) {
+            FILL_TYPE(&item->data.func->decl_attr.argv);
+        }
+        //////////////////////////////////////////////////
+
+        NEXT_NONTERM(type);
+
+        return other_types_params();
+    }
+
+    print_rule("32. <other_types_params> -> e");
     return true;
 }
 
 bool params() {
     if (token.type == T_ID) {
-        print_rule("32. <params> -> id : <type> <other_params>");
+        print_rule("34. <params> -> id : <type> <other_params>");
 
-        ADD_VAR_TO_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+
+        // add type of param to def_function in symtab //
+        if (working_func == 1) {
+            FILL_TYPE(&item->data.func->def_attr.argv);
+        }
+
+        /////////////////////////////////////////////////
+        FILL_TYPE(&tmp_var->data.var->type);
+        /////////////////////////////////////////////////
+
         NEXT_NONTERM(type);
 
         return other_params();
     }
 
-    print_rule("31. <params> -> e");
+    print_rule("33. <params> -> e");
     return true;
 }
 
 bool other_params() {
     if (token.type == T_COMMA) {
-        print_rule("33. <other_params> -> , id : <type> <other_params>");
+        print_rule("35. <other_params> -> , id : <type> <other_params>");
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
@@ -383,45 +663,67 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+
+        // add type of param to def_function in symtab //
+        if (working_func == 1) {
+            FILL_TYPE(&item->data.func->def_attr.argv);
+        }
+        /////////////////////////////////////////////////
+
         NEXT_NONTERM(type);
 
         return other_params();
     }
 
-    print_rule("34. <other_params> -> e");
+    print_rule("36. <other_params> -> e");
     return true;
 }
 
 bool type_params() {
-    if (type()) {
-        print_rule("35. <type_params> -> <type> <other_types>");
+    // add type of param to decl_function in symtab //
+    if (working_func == 0) {
+        FILL_TYPE(&item->data.func->decl_attr.argv);
+    }
+    //////////////////////////////////////////////////
 
-        return other_types();
+    if (type()) {
+        print_rule("37. <type_params> -> <type> <other_types_params>");
+
+        return other_types_params();
     }
 
-    print_rule("36. <type_params> -> e");
+    print_rule("38. <type_params> -> e");
     return true;
 }
 
 bool args() {
     if (param_to_func()) {
-        print_rule("37. <args> -> <param_to_func> <other_args>");
+        print_rule("39. <args> -> <param_to_func> <other_args>");
 
         return other_args();
     }
 
-    print_rule("38. <args> -> e");
+    print_rule("40. <args> -> e");
     return true;
 }
 
 bool param_to_func() {
     if (token.type == T_ID) {
-        print_rule("39. <param_to_func> -> id_var");
+        print_rule("41. <param_to_func> -> id_var");
 
-        CHECK_ID(VAR);
+        tmp_var = FIND_VAR_IN_SYMTAB;
+
+        CHECK_SEM_DEF_ERR(!tmp_var);
+
+        ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
+        CHECK_INTERNAL_ERR(!ret, false);
     }
     else if (TOKEN_TERM()) {
-        print_rule("40. <param_to_func> -> term");
+        print_rule("42. <param_to_func> -> term");
+        ret = str_add_char(&tps_right, token.type == T_INT    ? 'I' :
+                                       token.type == T_STRING ? 'S' :
+                                       token.type == T_FLOAT  ? 'F' : 'N');
+        CHECK_INTERNAL_ERR(!ret, false);
     }
     else {
         return false;
@@ -433,18 +735,18 @@ bool param_to_func() {
 
 bool other_args() {
     if (token.type == T_COMMA) {
-        print_rule("41. <other_args> -> , <param_to_func> <other_args>");
+        print_rule("43. <other_args> -> , <param_to_func> <other_args>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(param_to_func);
         return other_args();
     }
 
-    print_rule("42. <other_args> -> e");
+    print_rule("44. <other_args> -> e");
     return true;
 }
 
-void init_default_funcs_ifj21() {
+bool init_default_funcs_ifj21() {
     string_t def_funcs[COUNT_DEF_FUNCS] = { {.length = 3, .alloc_size = 0, .str = "chr"      },
                                             {.length = 9, .alloc_size = 0, .str = "tointeger"},
                                             {.length = 5, .alloc_size = 0, .str = "reads"    },
@@ -454,9 +756,64 @@ void init_default_funcs_ifj21() {
                                             {.length = 6, .alloc_size = 0, .str = "substr"   },
                                             {.length = 3, .alloc_size = 0, .str = "ord"      }, };
 
+    char *argv[COUNT_DEF_FUNCS] = {"I", "F",  "",  "",  "", "...FSIN", "SFF", "SI"};
+    char *rets[COUNT_DEF_FUNCS] = {"S", "I", "S", "I", "F",        "",   "S",  "I"};
+
     for (int i = 0; i < COUNT_DEF_FUNCS; i++) {
-        symtab_add(&global_symtab, &(def_funcs[i]));
+        item = symtab_add(&global_symtab, &(def_funcs[i]));
+
+        if (!item) {
+            return false;
+        }
+
+        item->data.func = calloc(1, sizeof(func_t));
+        CHECK_INTERNAL_ERR(!item->data.func, false);
+
+        item->type = FUNC;
+        item->data.func->decl = true;
+        item->data.func->def = true;
+
+        if (!str_init(&item->data.func->def_attr.rets,  strlen(rets[i]) + 1) ||
+            !str_init(&item->data.func->decl_attr.rets, strlen(rets[i]) + 1) ||
+            !str_init(&item->data.func->def_attr.argv,  strlen(argv[i]) + 1) ||
+            !str_init(&item->data.func->decl_attr.argv, strlen(argv[i]) + 1))
+        {
+            return false;
+        }
+
+        for (int j = 0; argv[i][j] != '\0'; j++) {
+            if (!str_add_char(&item->data.func->def_attr.argv,  argv[i][j]) ||
+                !str_add_char(&item->data.func->decl_attr.argv, argv[i][j]))
+            {
+                return false;
+            }
+        }
+
+        for (int j = 0; rets[i][j] != '\0'; j++) {
+            if (!str_add_char(&item->data.func->def_attr.rets, rets[i][j]) ||
+                !str_add_char(&item->data.func->decl_attr.rets, rets[i][j]))
+            {
+                return false;
+            }
+        }
+
+        item->data.func->func_write = i == 5 ? true : false;
     }
+
+    return true;
+}
+
+bool check_def_of_decl_func() {
+    for (int i = 0; i < MAX_HT_SIZE; i++) {
+        item = global_symtab[i];
+
+        while (item) {
+            CHECK_SEM_DEF_ERR(item->data.func->decl == 1 && item->data.func->def == 0);
+            item = item->next;
+        }
+    }
+
+    return true;
 }
 
 int parser() {
@@ -465,12 +822,17 @@ int parser() {
     set_source_file(f);
 
     ret = str_init(&token.attr.id, 20);
-    if (!ret) {
-        return INTERNAL_ERR;
-    }
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
     local_symtbs.size = 0;
-    init_default_funcs_ifj21();
+
+    ret = init_default_funcs_ifj21();
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
+
+    ret = str_init(&tps_left, 5);
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
+    ret = str_init(&tps_right, 5);
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
     FIRST_TOKEN();
     ret = prolog();
@@ -479,6 +841,11 @@ int parser() {
         err = PARSER_ERR;
     }
 
+    ret = check_def_of_decl_func();
+
+end_parser:
+    str_free(&tps_right);
+    str_free(&tps_left);
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
     symtab_free(&global_symtab);
