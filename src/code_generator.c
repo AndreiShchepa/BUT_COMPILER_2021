@@ -4,7 +4,7 @@
 #include "queue.h"
 #include "symtable.h"
 
-#define FUNC_TOINTEGER 														\
+#define FUNC_TOINTEGER                                                        \
 "\nlabel $tointeger # tointeger(f : number) : integer						"\
 "\n	# start																	"\
 "\n	createframe			# new TF											"\
@@ -29,7 +29,7 @@
 "\n	popframe 			# LF => TF											"\
 "\n	return																	"
 
-#define FUNC_READI 														\
+#define FUNC_READI                                                        \
 "\nlabel $readi # readi() : integer										"\
 "\n	## start															"\
 "\n	createframe															"\
@@ -44,7 +44,7 @@
 "\n	popframe															"\
 "\n	return																"\
 
-#define FUNC_READN 														\
+#define FUNC_READN                                                        \
 "\nlabel $readn # readn() : number										"\
 "\n	# start																"\
 "\n	createframe															"\
@@ -59,7 +59,7 @@
 "\n	popframe															"\
 "\n	return																"\
 
-#define FUNC_READS 														\
+#define FUNC_READS                                                        \
 "\nlabel $reads # reads() : string										"\
 "\n	# start																"\
 "\n	createframe															"\
@@ -74,7 +74,7 @@
 "\n	popframe															"\
 "\n	return																"\
 
-#define FUNC_WRITE 																								\
+#define FUNC_WRITE                                                                                                \
 "\nlabel $write # write(... : string | integer | number | boolean)  -- podpora boolean pro bonusove rozsireni	"\
 "\n	# start																										"\
 "\n	createframe																									"\
@@ -107,7 +107,7 @@
 "\n	return																										"\
 
 
-#define FUNC_SUBSTR 														\
+#define FUNC_SUBSTR                                                        \
 "\nlabel $substr # substr(str : string, i : integer, j : integer) : string 	"\
 "\n	# start																	"\
 "\n	createframe																"\
@@ -175,7 +175,7 @@
 "\n	popframe																"\
 "\n	return																	"\
 
-#define FUNC_ORD 														\
+#define FUNC_ORD                                                        \
 "\nlabel $ord # ord(s : string, i : integer) : integer					"\
 "\n	# start																"\
 "\n	createframe															"\
@@ -210,7 +210,7 @@
 "\n	popframe															"\
 "\n	return																"\
 
-#define FUNC_CHR 														\
+#define FUNC_CHR                                                        \
 "\nlabel $chr # chr(i : integer) : string								"\
 "\n	## start															"\
 "\n	createframe															"\
@@ -244,18 +244,37 @@
 #define IFJ_CODE_START_LEN 10000
 #define INSTR_LEN 100
 
+#define INSTR_PRINT(string, var, symb_1, symb2)                                    \
+    unsigned instr_len = strlen(var) + strlen(symb_1) + strlen(symb_2) + INSTR_LEN; \
+    char instr[instr_len];                                                          \
+    if(sym2 == NULL) {                                                              \
+        sprintf(instr, string, queue->front->id->key_id, symb_1);                   \
+    } else {                                                                        \
+        sprintf(instr, string, queue->front->id->key_id, symb_1, symb_2);           \
+    }                                                                               \
+    str_concat_str2(&ifj_code, instr)
+
+#define STRING_PRINT(...)                     \
+    unsigned instr_len = strlen(var) + strlen(symb_1) + strlen(symb_2) + INSTR_LEN; \
+    char instr[instr_len];                    \
+    sprintf(instr, string, __VA_ARGS__);      \
+    str_concat_str2(&ifj_code, instr);
 
 /******************************************************************************
   *									GLOBAL VARS
 ******************************************************************************/
-string_t *ifj_code = NULL;
+string_t ifj_code;
+
 
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
 void gen_file_start() {
-	const char *code = "";
+    const char *code = "";
+}
 
+void gen_int2char(Queue *queue, token_t *symb_1) {
+    STRING_PRINT("\nINT2CHAR LF@%s LF@%s \0", queue->front->id->key_id, symb_1->attr.id, NULL);
 }
 
 void gen_func_label() {
@@ -263,44 +282,61 @@ void gen_func_label() {
 }
 
 void gen_init_built_ins() {
-	const char *code = "label"
+    STRING_PRINT(FUNC_TOINTEGER);
+    STRING_PRINT(FUNC_READI);
+    STRING_PRINT(FUNC_READN);
+    STRING_PRINT(FUNC_READS);
+    STRING_PRINT(FUNC_WRITE);
+    STRING_PRINT(FUNC_SUBSTR);
+    STRING_PRINT(FUNC_ORD);
+    STRING_PRINT(FUNC_CHR);
 }
 
 void gen_label_item() {
-	// TODO -
-	// defvar
-	// pop
+    // TODO -
+    // defvar
+    // pop
 }
 
-void gen_params() {
+void gen_while_start() {
 
 }
 
-void gen_param() {
-    sprintf(instr, "defvar LF@$%s", /*todo id*/);
+void gen_while_end() {
+
 }
 
-void gen_func_start(Queue *queue) {
-    string_t *instr = NULL;
-    str_init(instr, INSTR_LEN);
+void gen_param(/*TODO*/) {
+    STRING_PRINT("defvar LF@%s", /*TODO - func_name + id_param*/);
+}
 
-    sprintf(instr->str, "label@$%s", /*todo id*/);
-    str_concat
+void gen_if_start(/*TODO*/) {
+    STRING_PRINT("label if%s", /*TODO - func_name + id_of_if*/);
+}
 
-    sprintf(instr->str, "pushframe", /*todo id*/);
+void gen_if_else(/*TODO*/) {
+    STRING_PRINT("label else%s", /*TODO - func_name + id_of_if*/);
+}
 
+void gen_if_end(/*TODO*/) {
+    STRING_PRINT("label end%s", /*TODO - func_name + id_of_if*/);
+}
+
+void gen_func_start(/*TODO*/) {
+    STRING_PRINT("label@$%s%s%s", ocew,ewve,vw);
+    STRING_PRINT("pushframe", /*TODO id*/);
 }
 
 void gen_func_end() {
-    sprintf(instr, "popframe", /*todo id*/);
-    sprintf(instr, "return", /*todo id*/);
+    STRING_PRINT("\npopframe");
+    STRING_PRINT("\nreturn");
 }
 
 void code_gen() {
-	str_init(ifj_code, IFJ_CODE_START_LEN);
-	gen_init_built_ins();
-
-	return;
+    str_init(&ifj_code, IFJ_CODE_START_LEN);
+    // todo - header
+    gen_init_built_ins();
+    return;
 }
 
 

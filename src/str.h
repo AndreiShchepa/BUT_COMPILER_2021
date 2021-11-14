@@ -59,6 +59,18 @@ bool str_copy_str(string_t *s_dst, const string_t *s_src);
  */
 int str_cmp_str(const string_t *s1, const string_t *s2);
 
+
+/*
+ * TODO
+ */
+bool str_concat_str(string_t *s_dest, const string_t *s1, const string_t *s2);
+
+
+/*
+ * TODO
+ */
+bool str_concat_str2(string_t *s1, const char *s2);
+
 /*
  * @param s1 - dynamic string
  * @param s2 - const string

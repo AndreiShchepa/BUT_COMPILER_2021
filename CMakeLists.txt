@@ -67,6 +67,7 @@ set(COMPILER_SOURCES
 	src/scanner.c     src/scanner.h
 	src/parser.c      src/parser.h
 	src/expressions.c src/expressions.h
+	src/code_generator.c src/code_generator.h
 	${COMMON_SOURCES}
 	)
 

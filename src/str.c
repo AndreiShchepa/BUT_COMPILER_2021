@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "str.h"
 
 #define STR_LEN_INC 50
@@ -101,6 +102,25 @@ bool str_concat_str(
 	memcpy(s_dest->str, s1->str, s1->length);
 	memcpy(s_dest->str + s1->length, s2->str, s2->length + 1);
 
+	return true;
+}
+
+bool str_concat_str2(string_t *s1, const char *s2) {
+	if (!s1 || !s1->str || !s2)
+		return false;
+
+	uint32_t len = s1->length + strlen(s2);
+
+	if (len+1 >= s1->alloc_size) {
+		if(!(s1->str = (char*)realloc(s1->str, s1->alloc_size*2)))
+            return false;
+
+		s1->alloc_size = s1->alloc_size*2;
+	}
+
+    strcat(s1->str, s2);
+	s1->length = len;
+	s1->str[s1->length] = '\0';
 	return true;
 }
 
