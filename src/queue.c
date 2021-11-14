@@ -52,7 +52,7 @@ void queue_remove(Queue *queue){
     queue->front->next_element = NULL;
 }
 
-bool queue_add(Queue *queue, char *id){
+bool queue_add(Queue *queue, htab_item_t *id){
     QueueElementPtr *new_element =(QueueElementPtr *) calloc(1, sizeof(QueueElementPtr));
     if(!new_element){
         return false;
@@ -70,7 +70,7 @@ bool queue_add(Queue *queue, char *id){
     return true;
 }
 
-char* queue_front(Queue *queue){
+htab_item_t* queue_front(Queue *queue){
     if(queue_isEmpty(queue)){
         return NULL;
     }

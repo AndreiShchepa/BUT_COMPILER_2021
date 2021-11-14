@@ -14,7 +14,7 @@
 #include <stdbool.h>
 
 typedef struct QueueElement{
-    char *id;
+    htab_item_t *id;
     struct QueueElement *previous_element;
     struct QueueElement *next_element;
 } QueueElementPtr;
@@ -57,14 +57,14 @@ void queue_remove(Queue *queue);
  * @param id
  * @return On success True, otherwise False
  */
-bool queue_add(Queue *queue, char *id);
+bool queue_add(Queue *queue, htab_item_t *id);
 
 /**
  * @brief Return name of identifier
  * @param queue
  * @return When is empty NULL, otherwise name of identifier
  */
-char* queue_front(Queue *queue);
+htab_item_t* queue_front(Queue *queue);
 
 
 #endif // _QUEUE_H
