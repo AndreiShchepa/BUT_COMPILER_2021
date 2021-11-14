@@ -482,7 +482,7 @@ start_expr:
 
     if (nothing_todo) {
         Deallocate(list);
-        return true;
+        return false;
     }
 
     // If there is internal error such as failure to allocate,
