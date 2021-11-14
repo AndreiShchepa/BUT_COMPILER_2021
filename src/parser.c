@@ -92,7 +92,7 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             if (strcmp(item->data.func->def_attr.argv.str, item->data.func->decl_attr.argv.str) || \
                 strcmp(item->data.func->def_attr.rets.str, item->data.func->decl_attr.rets.str)) \
             { \
-                err = SEM_FUNC_ERR; \
+                err = SEM_DEF_ERR; \
                 return false; \
             } \
         }
