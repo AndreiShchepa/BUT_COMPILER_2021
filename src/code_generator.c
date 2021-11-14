@@ -1,4 +1,8 @@
+#include <string.h>
 #include "code_generator.h"
+#include "str.h"
+#include "queue.h"
+#include "symtable.h"
 
 #define FUNC_TOINTEGER 														\
 "\nlabel $tointeger # tointeger(f : number) : integer						"\
@@ -234,16 +238,69 @@
 "\n	return																"\
 
 
+/******************************************************************************
+  *									MACROS
+*****************************************************************************/
+#define IFJ_CODE_START_LEN 10000
+#define INSTR_LEN 100
 
 
+/******************************************************************************
+  *									GLOBAL VARS
+******************************************************************************/
+string_t *ifj_code = NULL;
 
+/******************************************************************************
+  *									FUNCTIONS
+******************************************************************************/
+void gen_file_start() {
+	const char *code = "";
 
+}
 
+void gen_func_label() {
 
-void code_gen_init_built_ins() {
-	
+}
+
+void gen_init_built_ins() {
+	const char *code = "label"
+}
+
+void gen_label_item() {
+	// TODO -
+	// defvar
+	// pop
+}
+
+void gen_params() {
+
+}
+
+void gen_param() {
+    sprintf(instr, "defvar LF@$%s", /*todo id*/);
+}
+
+void gen_func_start(Queue *queue) {
+    string_t *instr = NULL;
+    str_init(instr, INSTR_LEN);
+
+    sprintf(instr->str, "label@$%s", /*todo id*/);
+    str_concat
+
+    sprintf(instr->str, "pushframe", /*todo id*/);
+
+}
+
+void gen_func_end() {
+    sprintf(instr, "popframe", /*todo id*/);
+    sprintf(instr, "return", /*todo id*/);
 }
 
 void code_gen() {
+	str_init(ifj_code, IFJ_CODE_START_LEN);
+	gen_init_built_ins();
+
 	return;
 }
+
+
