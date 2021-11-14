@@ -843,6 +843,7 @@ int parser() {
 
     ret = check_def_of_decl_func();
 
+end_parser:
     str_free(&tps_right);
     str_free(&tps_left);
     str_free(&token.attr.id);

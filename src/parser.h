@@ -50,7 +50,7 @@
 #define FIRST_TOKEN() \
         err = get_next_token(&token); \
         if (err != NO_ERR) { \
-            return err; \
+            goto end_parser; \
         }
 
 // Check if type of token is id or some term
