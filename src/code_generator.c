@@ -244,48 +244,12 @@
 #define IFJ_CODE_START_LEN 10000
 #define INSTR_LEN 100
 
-#define INSTR_PRINT(string, var, symb_1, symb2)                                    \
-    unsigned instr_len = strlen(var) + strlen(symb_1) + strlen(symb_2) + INSTR_LEN; \
-    char instr[instr_len];                                                          \
-    if(sym2 == NULL) {                                                              \
-        sprintf(instr, string, queue->front->id->key_id, symb_1);                   \
-    } else {                                                                        \
-        sprintf(instr, string, queue->front->id->key_id, symb_1, symb_2);           \
-    }                                                                               \
-    str_concat_str2(&ifj_code, instr)
-
-#define STRING_PRINT(...)                                                           \
-    return;
-
-// macro for generating code with 3 operands
-#define OP_3(op, v1, v2, v3)                                                \
-    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) + strlen(v3); \
-    char instr[instr_len];                                                  \
-    sprintf(instr, "%s LF@%s LF@%s LF@%s", op, v1, v2, v3);
-
-// macro for generating code with 2 operands
-#define OP_2(op, v1, v2)                                        \
-    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) ; \
-    char instr[instr_len];                                      \
-    sprintf(instr, "%s LF@%s LF@%s", (op), (v1), (v2));
-
-// macro for generating code with 1 operands
-#define OP_1(op, v1)                                            \
-    unsigned instr_len = strlen(op) + strlen(v1);               \
-    char instr[instr_len];                                      \
-    (new_line)                                                  \
-        ? sprintf(instr, "%s LF@%s\n", (op), (v1));             \
-        : sprintf(instr, "%s LF@%s",   (op), (v1));             \
-    str_concat_str2(&ifj_code, instr);
-
-// macro for generating code with 0 operands
-#define OP_0(op, new_line)                                      \
-    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) ; \
-    char instr[instr_len];                                      \
-    (new_line)                                                  \
-        ? sprintf(instr, "%s\n", (op));                         \
-        : sprintf(instr, "%s",   (op));                         \
-    str_concat_str2(&ifj_code, instr);
+#define PRINT_INSTR(num ,fmt, ...)                                      \
+    do {                                                                \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];   \
+        sprintf(instr##num, (fmt), __VA_ARGS__);                        \
+        str_concat_str2(&ifj_code, instr##num);                         \
+    } while(0)
 
 /******************************************************************************
   *									GLOBAL VARS
@@ -303,7 +267,7 @@ void gen_file_start() {
 void gen_int2char(Queue *queue, token_t *symb_1) {
     (void )queue;
     (void )symb_1;
-    STRING_PRINT("\nINT2CHAR LF@%s LF@%s \0", queue->front->id->key_id, symb_1->attr.id, NULL);
+    PRINT_INSTR("\nINT2CHAR LF@%s LF@%s \0", queue->front->id->key_id, symb_1->attr.id, NULL);
 }
 
 void gen_func_label() {
@@ -311,14 +275,14 @@ void gen_func_label() {
 }
 
 void gen_init_built_ins() {
-    STRING_PRINT(FUNC_TOINTEGER);
-    STRING_PRINT(FUNC_READI);
-    STRING_PRINT(FUNC_READN);
-    STRING_PRINT(FUNC_READS);
-    STRING_PRINT(FUNC_WRITE);
-    STRING_PRINT(FUNC_SUBSTR);
-    STRING_PRINT(FUNC_ORD);
-    STRING_PRINT(FUNC_CHR);
+    PRINT_INSTR(FUNC_TOINTEGER);
+    PRINT_INSTR(FUNC_READI);
+    PRINT_INSTR(FUNC_READN);
+    PRINT_INSTR(FUNC_READS);
+    PRINT_INSTR(FUNC_WRITE);
+    PRINT_INSTR(FUNC_SUBSTR);
+    PRINT_INSTR(FUNC_ORD);
+    PRINT_INSTR(FUNC_CHR);
 }
 
 void gen_label_item() {
@@ -352,19 +316,26 @@ void gen_if_end(/*TODO*/) {
 }
 
 void gen_func_start(/*TODO*/) {
-    STRING_PRINT("label@$%s%s%s", ocew,ewve,vw);
-    STRING_PRINT("pushframe", /*TODO id*/);
+    PRINT_INSTR("label@$%s%s%s", ocew,ewve,vw);
+    PRINT_INSTR("label@$%s%s%s", ocew,ewve,vw);
+    PIRINT_INSTR("pushframe", /*TODO id*/);
 }
 
 void gen_func_end() {
-    STRING_PRINT("\npopframe");
-    STRING_PRINT("\nreturn");
+    PRINT_INSTR(0, "\nreturn", "");
 }
 
 void code_gen() {
     str_init(&ifj_code, IFJ_CODE_START_LEN);
-    OP_3("add", "a", "b", "c");
-    fputs(ifj_code.str, stdout);
+    PRINT_INSTR(1, "%s %d", "ahoj", 1);
+    PRINT_INSTR(2, "%s %d", "ahoj", 1);
+    fprintf(stdout, "%d", snprintf(NULL, 0, "%s", "sacqs\0"));
+
+    FILE *test_file = fopen("test_file.out", "w");
+    if (!test_file)
+        return;
+    fprintf(test_file, "%s", ifj_code.str);
+    fclose(test_file);
 
     // todo - header
 //    gen_init_built_ins();
