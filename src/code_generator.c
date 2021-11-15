@@ -3,6 +3,7 @@
 #include "str.h"
 #include "queue.h"
 #include "symtable.h"
+#include "parser.h"
 
 #define FUNC_TOINTEGER                                                        \
 "\nlabel $tointeger # tointeger(f : number) : integer						"\
@@ -255,8 +256,8 @@
   *									GLOBAL VARS
 ******************************************************************************/
 string_t ifj_code;
-
-
+extern Queue* queue_id;
+extern Queue* queue_expr;
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
@@ -340,6 +341,34 @@ void code_gen() {
     // todo - header
 //    gen_init_built_ins();
     return;
+
+void gen_expression(){
+    str_init(&ifj_code, IFJ_CODE_START_LEN);
+
+    while (!queue_isEmpty(queue_expr)){
+        if(queue_expr->front->token->type == T_ID){
+            PRINT_INSTR(1 ,"\nPUSHS LF@%s\0", queue_expr->front->token->attr.id.str)
+            queue_remove(queue_expr);
+        } else if(queue_expr->front->token->type == T_PLUS){
+            PRINT_INSTR(2, "\nADDS\0");
+            queue_remove(queue_expr);
+        } else if(queue_expr->front->token->type == T_MINUS){
+            PRINT_INSTR(3, "\nSUBS\0");
+            queue_remove(queue_expr);
+        } else if(queue_expr->front->token->type == T_MUL){
+            PRINT_INSTR(4, "\nMULS\0");
+            queue_remove(queue_expr);
+        } else if(queue_expr->front->token->type == T_DIV){
+            PRINT_INSTR(5, "\nDIVS");
+            queue_remove(queue_expr);
+        } else if(queue_expr->front->token->type == T_DIV_INT){
+            PRINT_INSTR(6, "\nIDIVS");
+            queue_remove(queue_expr);
+        }
+    }
+    PRINT_INSTR(6, "\nPOPS LF@%s");
+
+    FILE *testik = fopen("testik.out", "w");
+    fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);
+    fclose(testik);
 }
-
-

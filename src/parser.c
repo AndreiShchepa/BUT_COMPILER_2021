@@ -15,6 +15,8 @@
 #include "parser.h"
 #include "error.h"
 #include "str.h"
+#include "queue.h"
+#include "code_generator.h"
 
 token_t token;
 int err;
@@ -27,6 +29,8 @@ htab_item_t *tmp_func;
 string_t tps_left;
 string_t tps_right;
 bool working_func; // 0 - decl_fun, 1 - def_func
+Queue* queue_id;
+Queue* queue_expr;
 
 #define CHECK_INTERNAL_ERR(COND, ret) \
         if (COND) { \
@@ -816,10 +820,40 @@ bool check_def_of_decl_func() {
     return true;
 }
 
+void fill_queues(){
+    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_ID;
+    str_init(&(queue_expr->rear->token->attr.id), 1000);
+    queue_expr->rear->token->attr.id.str = "a\0";
+
+    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_ID;
+    str_init(&(queue_expr->rear->token->attr.id), 1000);
+    queue_expr->rear->token->attr.id.str = "b\0";
+
+    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_PLUS;
+
+    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_ID;
+    str_init(&(queue_expr->rear->token->attr.id), 1000);
+    queue_expr->rear->token->attr.id.str = "c\0";
+
+
+    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_MUL;
+
+
+    queue_add_id(queue_id, calloc(1, sizeof(htab_item_t)));
+    queue_id->rear->id->key_id = "x\0";
+}
+
 int parser() {
     FILE *f = stdin;
     err = NO_ERR;
     set_source_file(f);
+
+
 
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
@@ -833,6 +867,14 @@ int parser() {
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
     ret = str_init(&tps_right, 5);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
+
+    /* CODE EXPRESSION TEST */
+
+    queue_expr = queue_init();
+    queue_id = queue_init();
+    fill_queues();
+    gen_expression();
+    /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
     ret = prolog();
@@ -849,6 +891,8 @@ end_parser:
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
     symtab_free(&global_symtab);
+    queue_free(queue_expr);
+    queue_free(queue_id);
 
     return err;
 }

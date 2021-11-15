@@ -12,10 +12,11 @@
 #define _QUEUE_H
 
 #include <stdbool.h>
+#include "scanner.h"
 #include "symtable.h"
-
 typedef struct QueueElement{
     htab_item_t *id;
+    token_t *token;
     struct QueueElement *previous_element;
     struct QueueElement *next_element;
 } QueueElementPtr;
@@ -38,6 +39,11 @@ Queue* queue_init();
  */
 void queue_dispose(Queue *queue);
 
+/**
+ * @brief Free queue
+ * @param queue
+ */
+void queue_free(Queue *queue);
 
 /**
  * @brief Function to find out if queue is empty
@@ -47,7 +53,7 @@ void queue_dispose(Queue *queue);
 bool queue_isEmpty(Queue *queue);
 
 /**
- * @brief Remove element from the beginning of queue
+ * @brief Make queue empty
  * @param queue
  */
 void queue_remove(Queue *queue);
@@ -55,17 +61,34 @@ void queue_remove(Queue *queue);
 /**
  * @brief Add element from the end of queue
  * @param queue
- * @param id
  * @return On success True, otherwise False
  */
-bool queue_add(Queue *queue, htab_item_t *id);
+bool queue_add(Queue *queue);
+
+/**
+ * @brief Add element htab_item_t
+ * @param queue
+ * @param if
+ * @return On success True, otherwise False
+ */
+bool queue_add_id(Queue *queue, htab_item_t *id);
+
+/**
+* @brief Add element token_t
+* @param queue
+* @param token
+* @return On success True, otherwise False
+*/
+bool queue_add_token(Queue *queue, token_t *token);
+
+
 
 /**
  * @brief Return name of identifier
  * @param queue
  * @return When is empty NULL, otherwise name of identifier
  */
-htab_item_t* queue_front(Queue *queue);
+/*htab_item_t* queue_front(Queue *queue);*/ //todo
 
 
 #endif // _QUEUE_H
