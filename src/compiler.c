@@ -18,6 +18,7 @@
 
 int main() {
 
+
 int ret;
 
 #ifdef DEBUG_SCANNER

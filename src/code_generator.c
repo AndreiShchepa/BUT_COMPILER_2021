@@ -254,10 +254,37 @@
     }                                                                               \
     str_concat_str2(&ifj_code, instr)
 
-#define STRING_PRINT(...)                     \
-    unsigned instr_len = strlen(var) + strlen(symb_1) + strlen(symb_2) + INSTR_LEN; \
-    char instr[instr_len];                    \
-    sprintf(instr, string, __VA_ARGS__);      \
+#define STRING_PRINT(...)                                                           \
+    return;
+
+// macro for generating code with 3 operands
+#define OP_3(op, v1, v2, v3)                                                \
+    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) + strlen(v3); \
+    char instr[instr_len];                                                  \
+    sprintf(instr, "%s LF@%s LF@%s LF@%s", op, v1, v2, v3);
+
+// macro for generating code with 2 operands
+#define OP_2(op, v1, v2)                                        \
+    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) ; \
+    char instr[instr_len];                                      \
+    sprintf(instr, "%s LF@%s LF@%s", (op), (v1), (v2));
+
+// macro for generating code with 1 operands
+#define OP_1(op, v1)                                            \
+    unsigned instr_len = strlen(op) + strlen(v1);               \
+    char instr[instr_len];                                      \
+    (new_line)                                                  \
+        ? sprintf(instr, "%s LF@%s\n", (op), (v1));             \
+        : sprintf(instr, "%s LF@%s",   (op), (v1));             \
+    str_concat_str2(&ifj_code, instr);
+
+// macro for generating code with 0 operands
+#define OP_0(op, new_line)                                      \
+    unsigned instr_len = strlen(op) + strlen(v1) + strlen(v2) ; \
+    char instr[instr_len];                                      \
+    (new_line)                                                  \
+        ? sprintf(instr, "%s\n", (op));                         \
+        : sprintf(instr, "%s",   (op));                         \
     str_concat_str2(&ifj_code, instr);
 
 /******************************************************************************
@@ -270,10 +297,12 @@ string_t ifj_code;
   *									FUNCTIONS
 ******************************************************************************/
 void gen_file_start() {
-    const char *code = "";
+    return;
 }
 
 void gen_int2char(Queue *queue, token_t *symb_1) {
+    (void )queue;
+    (void )symb_1;
     STRING_PRINT("\nINT2CHAR LF@%s LF@%s \0", queue->front->id->key_id, symb_1->attr.id, NULL);
 }
 
@@ -334,8 +363,11 @@ void gen_func_end() {
 
 void code_gen() {
     str_init(&ifj_code, IFJ_CODE_START_LEN);
+    OP_3("add", "a", "b", "c");
+    fputs(ifj_code.str, stdout);
+
     // todo - header
-    gen_init_built_ins();
+//    gen_init_built_ins();
     return;
 }
 

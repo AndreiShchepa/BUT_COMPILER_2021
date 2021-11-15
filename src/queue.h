@@ -12,6 +12,7 @@
 #define _QUEUE_H
 
 #include <stdbool.h>
+#include "symtable.h"
 
 typedef struct QueueElement{
     htab_item_t *id;
