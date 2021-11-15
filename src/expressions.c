@@ -54,7 +54,7 @@ char Precedence_Table[][NUMBER_OF_OPERATORS] = {
         {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'c', '<', 'c'}, // $
 };
 
-char Chars[][LENGHT_OF_OPERATORS] = {
+char Chars[][LENGTH_OF_OPERATORS] = {
         {"#"}, {"*"}, {"/"}, {"//"},
         {"+"}, {"-"},
         {".."}, {"<"}, {"<="}, {">"}, {">="}, {"=="}, {"~="},
@@ -66,7 +66,7 @@ char Chars[][LENGHT_OF_OPERATORS] = {
 
 // We reversed the rules because when we copy from stack
 // from top to bottom the expression (E) will become )E(
-char Rules[][LENGHT_OF_RULES] = {
+char Rules[][LENGTH_OF_RULES] = {
         {"i"}, {")E("}, {"E+E"}, {"E-E"}, {"E*E"}, {"E/E"},
         {"E//E"}, {"E#"}, {"E<E"}, {"E<=E"}, {"E>E"},
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
@@ -257,7 +257,13 @@ bool Close(List * list) {
 //        printf("found rule: %s Expression Ei: %s Ej: %s\n", Array_To_Check_Against_Rules, Ei->data, Ej->data);
 //        printf("TYPES: %d %d \n", Ei->element_token.type, Ej->element_token.type);
         // We have found non-matching types, returning false and setting error to global variable
+        //todo what to do when its type is ID
         if(Ei->element_token.type != Ej->element_token.type){
+//        if(
+//                (Ei->element_token.type == T_STRING && Ej->element_token.type != T_STRING)  ||
+//                (Ei->element_token.type == T_INT    && Ej->element_token.type == T_STRING)  ||
+//                (Ei->element_token.type == T_FLOAT  && Ej->element_token.type == T_STRING))
+//        {
             err = SEM_ARITHM_REL_ERR;
             return false;
         }
@@ -275,6 +281,10 @@ bool Close(List * list) {
             // so we also need to "transition" token type
             //                  find = find->nextElement
             //                  <<   = E
+            //todo what do we want to copy, E+E left E or right E ?
+            // if Ei == number || Ej == number tak number else int
+            // else if Ei == string then string
+            // else int
             find->element_token.attr = find->nextElement->element_token.attr;
             find->element_token.type = find->nextElement->element_token.type;
             find->element_token.keyword = find->nextElement->element_token.keyword;
@@ -306,6 +316,7 @@ bool Close(List * list) {
                 err = SEM_ARITHM_REL_ERR;
                 return false;
             }
+            //todo are we doing e/e or e//e
 
             // We change << with E
             strcpy(find->data, "E");
