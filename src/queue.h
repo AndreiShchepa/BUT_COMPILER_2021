@@ -26,7 +26,6 @@ typedef struct queue{
     QueueElementPtr *rear;
 } Queue;
 
-
 /**
  * @brief Initialization of empty queue
  * @return On success pointer on queue, otherwise null
@@ -34,7 +33,7 @@ typedef struct queue{
 Queue* queue_init();
 
 /**
- * @brief Free queue
+ * @brief Empty queue
  * @param queue
  */
 void queue_dispose(Queue *queue);
@@ -53,7 +52,7 @@ void queue_free(Queue *queue);
 bool queue_isEmpty(Queue *queue);
 
 /**
- * @brief Make queue empty
+ * @brief Remove front element
  * @param queue
  */
 void queue_remove(Queue *queue);
@@ -80,15 +79,5 @@ bool queue_add_id(Queue *queue, htab_item_t *id);
 * @return On success True, otherwise False
 */
 bool queue_add_token(Queue *queue, token_t *token);
-
-
-
-/**
- * @brief Return name of identifier
- * @param queue
- * @return When is empty NULL, otherwise name of identifier
- */
-/*htab_item_t* queue_front(Queue *queue);*/ //todo
-
 
 #endif // _QUEUE_H

@@ -18,8 +18,7 @@
 
 int main() {
 #include "code_generator.h"
-    code_gen();
-    return 0;
+
 
 int ret;
 

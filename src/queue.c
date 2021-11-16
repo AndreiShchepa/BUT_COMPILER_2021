@@ -90,11 +90,3 @@ bool queue_add_token(Queue *queue, token_t *token) {
     }
     return false;
 }
-
-/*
-htab_item_t* queue_front(Queue *queue){
-    if(queue_isEmpty(queue)){
-        return NULL;
-    }
-    return queue->front->id;
-}*/

@@ -853,8 +853,6 @@ int parser() {
     err = NO_ERR;
     set_source_file(f);
 
-
-
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
