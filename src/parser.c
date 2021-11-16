@@ -39,6 +39,12 @@ Queue* queue_expr;
         }                               \
     } while(0)                          \
 
+#define QUEUE_ADD_ID(where_is_id_key) \
+    if (!queue_add_id(queue_id, (where_is_id_key))) {    \
+        err = INTERNAL_ERR;                             \
+        return false;                                   \
+    } \
+
 #define CHECK_INTERNAL_ERR(COND, ret) \
         if (COND) { \
             err = INTERNAL_ERR; \
@@ -242,6 +248,9 @@ add_func_def:
 
         NEXT_TOKEN();
         NEXT_NONTERM(params);
+//        init_cnt();
+        CODE_GEN(gen_params);
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
@@ -658,9 +667,10 @@ bool params() {
         /////////////////////////////////////////////////
 
         NEXT_NONTERM(type);
-
+        QUEUE_ADD_ID(tmp_var);
         return other_params();
     }
+//	CODE_GEN(gen_params);
 
     print_rule("33. <params> -> e");
     return true;
@@ -673,8 +683,9 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_VAR_TO_SYMTAB();
-        item->data.var->type
+//        ADD_VAR_TO_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB();
+        QUEUE_ADD_ID(FIND_VAR_IN_SYMTAB)
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -686,13 +697,10 @@ bool other_params() {
         }
         /////////////////////////////////////////////////
 
-
         NEXT_NONTERM(type);
 
         return other_params();
     }
-
-    // TODO - add params, params
 
     print_rule("36. <other_params> -> e");
     return true;
@@ -885,8 +893,8 @@ int parser() {
 
     queue_expr = queue_init();
     queue_id = queue_init();
-    fill_queues();
-    gen_expression();
+//    fill_queues();
+//    gen_expression();
     /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
@@ -906,6 +914,8 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
+
+    gen_testing_helper();
 
     return err;
 }

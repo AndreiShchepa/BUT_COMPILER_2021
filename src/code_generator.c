@@ -1,241 +1,5 @@
 #include "code_generator.h"
 
-/******************************************************************************
-  *									BUILT-IN FUNCS
-*****************************************************************************/
-#define FUNC_TOINTEGER                                                        \
-"\nlabel $tointeger # tointeger(f : number) : integer						"\
-"\n	# start																	"\
-"\n	createframe			# new TF											"\
-"\n	pushframe			# TF => LF											"\
-"\n																			"\
-"\n	# logic																	"\
-"\n	defvar		LF@ret1														"\
-"\n	defvar		LF@$tointeger_var_type										"\
-"\n																			"\
-"\n	pops 		LF@ret1														"\
-"\n	TYPE		LF@$tointeger_var_type LF@ret1								"\
-"\n																			"\
-"\n	jumpifneq 	$tointeger_end LF@$tointeger_var_type string@float			"\
-"\n																			"\
-"\n	label t_float															"\
-"\n	float2int 	LF@ret1 	LF@ret1											"\
-"\n	jump 		$tointeger_end												"\
-"\n																			"\
-"\n	## end																	"\
-"\n	label $tointeger_end													"\
-"\n	pushs LF@ret1															"\
-"\n	popframe 			# LF => TF											"\
-"\n	return																	"
-
-#define FUNC_READI                                                        \
-"\nlabel $readi # readi() : integer										"\
-"\n	## start															"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	## logic															"\
-"\n	defvar		LF@readi_ret1											"\
-"\n	read 		LF@readi_ret1 int										"\
-"\n	pushs 		LF@readi_ret1											"\
-"\n																		"\
-"\n	## end																"\
-"\n	popframe															"\
-"\n	return																"\
-
-#define FUNC_READN                                                        \
-"\nlabel $readn # readn() : number										"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@readn_ret1											"\
-"\n	read 		LF@readn_ret1 float										"\
-"\n	pushs 		LF@readn_ret1											"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"\
-
-#define FUNC_READS                                                        \
-"\nlabel $reads # reads() : string										"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@reads_ret1											"\
-"\n	read 		LF@reads_ret1 string									"\
-"\n	pushs  		LF@reads_ret1											"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"\
-
-#define FUNC_WRITE                                                                                                \
-"\nlabel $write # write(... : string | integer | number | boolean)  -- podpora boolean pro bonusove rozsireni	"\
-"\n	# start																										"\
-"\n	createframe																									"\
-"\n	pushframe																									"\
-"\n																												"\
-"\n	# logic																										"\
-"\n	defvar 		LF@write_var_type																				"\
-"\n	defvar 		LF@write_var_print																				"\
-"\n																												"\
-"\n	label $write_while1																							"\
-"\n	pops 		LF@write_var_print																				"\
-"\n	TYPE		LF@write_var_type 	LF@write_var_print 															"\
-"\n	jumpifeq 	$write_label_t_nil 	LF@write_var_type string@nil												"\
-"\n	jumpifeq 	$write_label_string	LF@write_var_type string@string												"\
-"\n	write 		LF@write_var_print																				"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	label $write_label_string																					"\
-"\n	jumpifeq 	$write_label_end	LF@write_var_print GF@bottom_of_stack										"\
-"\n	write 		LF@write_var_print																				"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	label 		$write_label_t_nil																				"\
-"\n	write 		string@nil																						"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	# end																										"\
-"\n	label $write_label_end																						"\
-"\n	popframe																									"\
-"\n	return																										"\
-
-
-#define FUNC_SUBSTR                                                        \
-"\nlabel $substr # substr(str : string, i : integer, j : integer) : string 	"\
-"\n	# start																	"\
-"\n	createframe																"\
-"\n	pushframe																"\
-"\n																			"\
-"\n	# logic																	"\
-"\n	defvar 	LF@substr_param1												"\
-"\n	defvar 	LF@substr_param2												"\
-"\n	defvar 	LF@substr_param3												"\
-"\n	defvar 	LF@substr_ret1													"\
-"\n	defvar 	LF@substr_len													"\
-"\n	defvar 	LF@substr_while_cnt												"\
-"\n	defvar 	LF@substr_char													"\
-"\n	defvar 	LF@substr_cmp													"\
-"\n																			"\
-"\n	pops 	LF@substr_param1												"\
-"\n	pops 	LF@substr_param2												"\
-"\n	pops 	LF@substr_param3												"\
-"\n	move 	LF@substr_ret1 		string@										"\
-"\n	strlen 	LF@substr_len 		LF@substr_param1							"\
-"\n	move 	LF@substr_while_cnt	int@0										"\
-"\n	move 	LF@substr_char 		string@										"\
-"\n	move 	LF@substr_cmp 		bool@false									"\
-"\n																			"\
-"\n	# j > i																	"\
-"\n	gt 			LF@substr_cmp 		LF@substr_param2 	LF@substr_param3	"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# i < 0																	"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param2 	int@0				"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# j < 0																	"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param3 	int@0				"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# i > len-1																"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param2 	LF@substr_len		"\
-"\n	JUMPIFNEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# j > len-1																"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param3 	LF@substr_len		"\
-"\n	JUMPIFNEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n																			"\
-"\n																			"\
-"\n	label $substr_while1													"\
-"\n	getchar  LF@substr_char 		LF@substr_param1 	LF@substr_param2	"\
-"\n	concat   LF@substr_ret1 		LF@substr_ret1		LF@substr_char		"\
-"\n	jumpifeq $substr_label_end 		LF@substr_param2 	LF@substr_param3	"\
-"\n	add 	 LF@substr_while_cnt	LF@substr_while_cnt int@1				"\
-"\n	add 	 LF@substr_param2 		LF@substr_param2 	int@1				"\
-"\n	jump 	 $substr_while1													"\
-"\n																			"\
-"\n	# end																	"\
-"\n	label $substr_label_end													"\
-"\n	clears																	"\
-"\n	pushs 	GF@bottom_of_stack												"\
-"\n	pushs 	LF@substr_ret1													"\
-"\n	jump 	$substr_label_end3												"\
-"\n																			"\
-"\n	# end 2																	"\
-"\n	label $substr_label_end2												"\
-"\n	clears																	"\
-"\n	pushs 	GF@bottom_of_stack												"\
-"\n	pushs 	nil@nil															"\
-"\n																			"\
-"\n	# end 3																	"\
-"\n	label $substr_label_end3												"\
-"\n	popframe																"\
-"\n	return																	"\
-
-#define FUNC_ORD                                                        \
-"\nlabel $ord # ord(s : string, i : integer) : integer					"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@ord_param1											"\
-"\n	defvar 		LF@ord_param2											"\
-"\n	defvar 		LF@ord_cmp												"\
-"\n	defvar 		LF@ord_ret1												"\
-"\n	defvar 		LF@ord_len												"\
-"\n																		"\
-"\n	pops 		LF@ord_param1											"\
-"\n	pops 		LF@ord_param2											"\
-"\n	move 		LF@ord_ret1 	bool@false								"\
-"\n	move 		LF@ord_ret1 	nil@nil									"\
-"\n	strlen		LF@ord_len 		LF@ord_param1							"\
-"\n																		"\
-"\n	gt 			LF@ord_cmp 		LF@ord_param2 	int@255					"\
-"\n	JUMPIFEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n	lt 			LF@ord_cmp 		LF@ord_param2 	int@0					"\
-"\n	JUMPIFEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n	lt 			LF@ord_cmp 		LF@ord_param2	LF@ord_len				"\
-"\n	JUMPIFNEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n																		"\
-"\n	stri2int 	LF@ord_ret1 LF@ord_param1 LF@ord_param2					"\
-"\n																		"\
-"\n	label $ord_label_end												"\
-"\n	pushs 		LF@ord_ret1												"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"\
-
-#define FUNC_CHR                                                        \
-"\nlabel $chr # chr(i : integer) : string								"\
-"\n	## start															"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@chr_param1											"\
-"\n	defvar 		LF@chr_ret1												"\
-"\n	defvar 		LF@chr_cmp												"\
-"\n																		"\
-"\n	pops 		LF@chr_param1											"\
-"\n	move 		LF@chr_ret1 	nil@nil									"\
-"\n																		"\
-"\n	gt 			LF@chr_cmp 		LF@chr_param1 	int@255					"\
-"\n	JUMPIFEQ 	$chr_label_end 	LF@chr_cmp 		bool@true				"\
-"\n	lt 			LF@chr_cmp 		LF@chr_param1 	int@0					"\
-"\n	JUMPIFEQ 	$chr_label_end 	LF@chr_cmp 		bool@true				"\
-"\n																		"\
-"\n	int2char 	LF@chr_ret1 	LF@chr_param1							"\
-"\n																		"\
-"\n	## end																"\
-"\n	label $chr_label_end												"\
-"\n	pushs 		LF@chr_ret1												"\
-"\n	popframe															"\
-"\n	return																"\
-
 //todo SKONTROLOVAT
 #define FUNC_DIV_ZERO   \
 "\nlabel $div_zero"     \
@@ -252,6 +16,7 @@
   *									MACROS
 *****************************************************************************/
 #define IFJ_CODE_START_LEN 10000
+#define MAX_FUNC_LEN       1000
 #define EOL "\n"
 #define EMPTY_STR ""
 #define NON_VAR "%s"
@@ -282,11 +47,27 @@ string_t ifj_code;
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
-
+cnts_t cnt = {.func_name.str = NULL};
 
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
+bool init_cnt() {
+    if (cnt.func_name.str) {
+        if (!str_init(&cnt.func_name, MAX_FUNC_LEN))
+            return false;
+    } else {
+        str_free(&cnt.func_name);
+        if (!str_init(&cnt.func_name, MAX_FUNC_LEN))
+            return false;
+    }
+    cnt.param_cnt = 0;
+    cnt.if_cnt    = 0;
+    cnt.while_cnt = 0;
+    cnt.deep      = 0;
+    return true;
+}
+
 bool gen_file_start() {
     return true;
 }
@@ -303,7 +84,7 @@ bool gen_func_label() {
 }
 
 bool gen_header() {
-    PRINT_INSTR(1, ".IFJcode21" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(1, ".IFJcode21" NON_VAR EOL EOL, EMPTY_STR);
     return true;
 }
 
@@ -335,11 +116,19 @@ bool gen_while_end() {
     return true;
 }
 
-bool gen_param(htab_item_t *htab_item) {
-    (void )htab_item;
-//    for (htab_item.)
-    PRINT_INSTR(1, "defvar LF@%s" EOL,"");
-    PRINT_INSTR(2, "defvar LF@%s" EOL,"");
+bool gen_params() {
+    QueueElementPtr *queue_elem = queue_id->front;
+    for (int i = 1; queue_elem; queue_elem = queue_elem->previous_element, i++) {
+        PRINT_INSTR(1, "defvar LF@%s"        EOL    , queue_elem->id->key_id);
+        PRINT_INSTR(1, "move LF@%s  LF@%dp " EOL EOL, queue_elem->id->key_id, i);
+    }
+    return true;
+}
+
+bool gen_param() {
+    PRINT_INSTR(1, "defvar LF@%s"       EOL, queue_id->front->id->key_id);
+    PRINT_INSTR(2, "move LF@%s LF@!p1"  EOL, queue_id->front->id->key_id);
+    cnt.param_cnt++;
     return true;
 }
 
@@ -362,9 +151,6 @@ bool gen_func_start(char *id) {
     PRINT_INSTR(1, "label $%s"                  EOL, id);
     PRINT_INSTR(2, "pushframe"          NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(3, "createframe"        NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(4, "defvar LF@&type"    NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(5, "defvar LF@&var1"    NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(6, "defvar LF@&var2"    NON_VAR EOL, EMPTY_STR);
     return true;
 }
 
@@ -384,51 +170,35 @@ bool code_gen_print_ifj_code21() {
     return true;
 }
 
-bool gen_expression() {
-    str_init(&ifj_code, IFJ_CODE_START_LEN);
-    PRINT_INSTR(1, EOL"PUSHS LF@%s" , EMPTY_STR);
-    PRINT_INSTR(2, EOL"ADDS" NON_VAR, EMPTY_STR);
-    PRINT_INSTR(3, EOL"SUBS" NON_VAR, EMPTY_STR);
-    PRINT_INSTR(5, EOL"DIVS" NON_VAR, EMPTY_STR);
-    PRINT_INSTR(6, EOL"IDIVS"NON_VAR, EMPTY_STR);
-    return true;
-}
-
-
 bool gen_init() {
     if (!str_init(&ifj_code, IFJ_CODE_START_LEN) ||
-        !gen_header()
-//        !gen_init_built_ins()
+        !gen_header()                            ||
+        !init_cnt()
+//      !gen_init_built_ins()
         ) {
         err = INTERNAL_ERR;
     }
 
+    PRINT_INSTR(4, "defvar GF@&type1" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(5, "defvar GF@&type2" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(6, "defvar GF@&var1"  NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(7, "defvar GF@&var2"  NON_VAR EOL, EMPTY_STR);
+
+    str_free(&cnt.func_name);
     return (err == NO_ERR);
 }
 
 bool gen_testing_helper() {
-    PRINT_INSTR(1, EOL"%s %d", "ahoj", 1);
-    PRINT_INSTR(2, EOL"%s %d", "ahoj", 1);
-    PRINT_INSTR(3, EOL"%s", ""); // new_line
-    PRINT_INSTR(4, EOL"%s", ""); // new_line
-    fprintf(stdout, "%d", snprintf(NULL, 0, "%s", "sacqs\0"));
-    gen_expression();
-
     FILE *test_file = fopen("test_file.out", "w");
     if (!test_file)
-        return;
+        return false;
     fprintf(test_file, "%s", ifj_code.str);
     fclose(test_file);
-
-    // todo - header
-    //    gen_init_built_ins();
-    return false;
+    return true;
 }
 
-void gen_heaher() {
-    PRINT_INSTR(1, "\n.Ifj LF@%s", queue_expr->front->token->attr.id.str);
-}
-void gen_expression() {
+#if 0
+bool gen_expression() {
     str_init(&ifj_code, IFJ_CODE_START_LEN);
 
     while (!queue_isEmpty(queue_expr)) {
@@ -514,7 +284,7 @@ void gen_expression() {
                 PRINT_INSTR(17, "\nnots%s", "");
                 break;
             case T_LENGTH:
-                
+
                 break;
             case T_CONCAT:
                 break;
@@ -529,3 +299,4 @@ void gen_expression() {
     fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);
     fclose(testik);
 }
+#endif

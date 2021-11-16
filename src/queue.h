@@ -19,6 +19,7 @@ typedef struct QueueElement{
     token_t *token;
     struct QueueElement *previous_element;
     struct QueueElement *next_element;
+    bool used;
 } QueueElementPtr;
 
 typedef struct queue{
