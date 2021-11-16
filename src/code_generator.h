@@ -16,9 +16,9 @@ typedef struct cnts_s {
     unsigned int while_cnt;
     unsigned int deep;
 } cnts_t;
+extern cnts_t cnt;
 
 bool init_cnt();
-bool reinit_cnt();
 bool gen_init_built_int();
 
 bool gen_while_start();
@@ -33,6 +33,11 @@ bool gen_if_end();
 
 bool gen_func_start(char *id);
 bool gen_func_end();
+
+bool gen_func_call_start();
+bool gen_func_call_args_var();
+bool gen_func_call_args_const();
+bool gen_func_call_label();
 
 bool code_gen_print_ifj_code21();
 

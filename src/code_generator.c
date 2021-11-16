@@ -30,6 +30,19 @@
         }                                                                   \
     } while(0)
 
+#ifdef DEBUG_INSTR
+	#define DEBUG_PRINT_INSTR(num, fmt, ...)                                \
+		do {                                                                \
+			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];   \
+			sprintf(instr##num, (fmt), __VA_ARGS__);                        \
+			if (!str_concat_str2(&ifj_code, instr##num)) {                  \
+				return false;                                               \
+			}                                                               \
+		} while(0)
+#else
+	#define DEBUG_PRINT_INSTR(num, fmt, ...)
+#endif // DEBUG_INSTR
+
 #define IS_NIL() \
 PRINT_INSTR(a, "\npops GF@$var2%s", "");\
 PRINT_INSTR(b, "\ntype GF@$type GF@$var2%s", "");\
@@ -40,6 +53,7 @@ PRINT_INSTR(f, "\njumpifeq GF@$type nil@$nil%s", "");\
 PRINT_INSTR(h, "\npushs GF@$var1%s", "");\
 PRINT_INSTR(i, "\npushs GF@$var2%s", "");
 
+
 /******************************************************************************
   *									GLOBAL VARS
 ******************************************************************************/
@@ -47,20 +61,13 @@ string_t ifj_code;
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
-cnts_t cnt = {.func_name.str = NULL};
+cnts_t cnt;
+
 
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
 bool init_cnt() {
-    if (cnt.func_name.str) {
-        if (!str_init(&cnt.func_name, MAX_FUNC_LEN))
-            return false;
-    } else {
-        str_free(&cnt.func_name);
-        if (!str_init(&cnt.func_name, MAX_FUNC_LEN))
-            return false;
-    }
     cnt.param_cnt = 0;
     cnt.if_cnt    = 0;
     cnt.while_cnt = 0;
@@ -109,6 +116,7 @@ bool gen_label_item() {
 }
 
 bool gen_while_start() {
+    PRINT_INSTR(1, "label $%s_while_%d"EOL, "", 1);
     return true;
 }
 
@@ -117,18 +125,23 @@ bool gen_while_end() {
 }
 
 bool gen_params() {
+    DEBUG_PRINT_INSTR(1, EOL"# params" NON_VAR EOL, EMPTY_STR);
+
     QueueElementPtr *queue_elem = queue_id->front;
-    for (int i = 1; queue_elem; queue_elem = queue_elem->previous_element, i++) {
-        PRINT_INSTR(1, "defvar LF@%s"        EOL    , queue_elem->id->key_id);
-        PRINT_INSTR(1, "move LF@%s  LF@%dp " EOL EOL, queue_elem->id->key_id, i);
+    for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
+        PRINT_INSTR(2, "defvar LF@%s"        EOL, queue_elem->id->key_id);
+        PRINT_INSTR(3, "move LF@%s  LF@%dp " EOL, queue_elem->id->key_id, i);
     }
+    DEBUG_PRINT_INSTR(3, EOL"# logic"NON_VAR EOL, EMPTY_STR);
+    queue_dispose(queue_id);
     return true;
 }
 
 bool gen_param() {
-    PRINT_INSTR(1, "defvar LF@%s"       EOL, queue_id->front->id->key_id);
-    PRINT_INSTR(2, "move LF@%s LF@!p1"  EOL, queue_id->front->id->key_id);
-    cnt.param_cnt++;
+//    PRINT_INSTR(1, "# params" NON_VAR EMPTY_STR EOL, queue_id->front->id->key_id);
+//    PRINT_INSTR(2, "defvar LF@%s"               EOL, queue_id->front->id->key_id);
+//    PRINT_INSTR(3, "move LF@%s LF@!p1"          EOL, queue_id->front->id->key_id);
+//    cnt.param_cnt++;
     return true;
 }
 
@@ -148,16 +161,52 @@ bool gen_if_end(/*TODO*/) {
 }
 
 bool gen_func_start(char *id) {
-    PRINT_INSTR(1, "label $%s"                  EOL, id);
-    PRINT_INSTR(2, "pushframe"          NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(3, "createframe"        NON_VAR EOL, EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, 	EOL"########################################################"   	NON_VAR, EOL);
+    PRINT_INSTR(2, "label $%s"          EOL, id);
+    PRINT_INSTR(3, "pushframe"  NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(4, "createframe"NON_VAR EOL, EMPTY_STR);
     return true;
 }
 
 bool gen_func_end() {
-    PRINT_INSTR(1, "popframe" NON_VAR, EOL);
-    PRINT_INSTR(2, "return"   NON_VAR, EOL);
+    DEBUG_PRINT_INSTR(1, EOL"# end" 	NON_VAR, EOL);
+    PRINT_INSTR(2,  "popframe" 	NON_VAR, EOL);
+    PRINT_INSTR(3, 	"return"   	NON_VAR, EOL);
+    DEBUG_PRINT_INSTR(3, 	"########################################################"   	NON_VAR, EOL);
     return true;
+}
+
+bool gen_func_call_start() {
+    DEBUG_PRINT_INSTR(1, EOL"# call_func" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(2, "createframe"    NON_VAR EOL, EMPTY_STR);
+    return true;
+}
+
+bool gen_func_call_args_var(htab_item_t *htab_item) {
+	PRINT_INSTR(1, "defvar TF@%dp"       EOL, cnt.param_cnt);
+    PRINT_INSTR(1, "move   TF@%dp LF@%s" EOL, cnt.param_cnt, htab_item->key_id);
+    cnt.param_cnt++;
+	return true;
+}
+
+bool gen_func_call_args_const(token_t *token) {
+    PRINT_INSTR(1, "defvar TF@%dp" EOL, cnt.param_cnt);
+	switch(token->type) {
+		case (T_INT)	: PRINT_INSTR(2, "move   TF@%dp float@%s" EOL, cnt.param_cnt, token->attr.id.str); break;
+		case (T_FLOAT)	: PRINT_INSTR(2, "move   TF@%dp float@%s" EOL, cnt.param_cnt, token->attr.id.str); break;
+		case (T_STRING)	: PRINT_INSTR(2, "move   TF@%dp string@%s"EOL, cnt.param_cnt, token->attr.id.str); break;
+		case (KW_NIL)	: PRINT_INSTR(2, "move   TF@%dp nil@nil"  EOL, cnt.param_cnt);                     break;
+		default: break;
+	}
+    cnt.param_cnt++;
+    return true;
+}
+
+bool gen_func_call_label() {
+    PRINT_INSTR(1, "call $%s" EOL, queue_id->rear->id->key_id);
+	queue_dispose(queue_id);
+    init_cnt();
+	return true;
 }
 
 bool code_gen_print_ifj_code21() {
@@ -192,7 +241,7 @@ bool gen_testing_helper() {
     FILE *test_file = fopen("test_file.out", "w");
     if (!test_file)
         return false;
-    fprintf(test_file, "%s", ifj_code.str);
+    fprintf(stdout, "%s", ifj_code.str);
     fclose(test_file);
     return true;
 }
@@ -299,4 +348,12 @@ bool gen_expression() {
     fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);
     fclose(testik);
 }
+//    QueueElementPtr *queue_func_name = queue_id->rear;
+//    QueueElementPtr *queue_elem = queue_id->rear->next_element;
+//     TODO - when variable and when constant
+//    for (int i = 1; queue_elem; queue_elem = queue_elem->next_element, i++) {
+//        PRINT_INSTR(3, "defvar LF@%dp"      EOL, i);
+//        PRINT_INSTR(4, "move LF@%dp TF@%s"  EOL, i, queue_elem->id->key_id);
+//    }
+
 #endif

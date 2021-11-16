@@ -34,7 +34,7 @@ Queue* queue_expr;
 
 #define CODE_GEN(callback, ...)         \
     do {                                \
-        if (!callback(__VA_ARGS__)) {   \
+        if (!(callback)(__VA_ARGS__)) {   \
             return false;               \
         }                               \
     } while(0)                          \
@@ -259,6 +259,7 @@ add_func_def:
 
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);
+		CODE_GEN(gen_func_end);
 
         DEL_SYMTAB();
 
@@ -267,7 +268,7 @@ add_func_def:
         return prog();
     }
     else if (token.type == T_ID) {
-        print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
+        print_rule("4.  <proG> -> id_func ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
         CHECK_SEM_DEF_ERR(!tmp_func);
@@ -277,10 +278,19 @@ add_func_def:
         CHECK_INTERNAL_ERR(!ret, false);
         ////////////////////////////////
 
+		////////////////////////////////
+		CODE_GEN(gen_func_call_start); 	// createframe
+		QUEUE_ADD_ID(tmp_func); 		// only for func name, args are printed individually
+		////////////////////////////////
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args);
+
+		////////////////////////////////
+		CODE_GEN(gen_func_call_label); // call label
+		////////////////////////////////
 
         CHECK_COMPATIBILITY();
 
@@ -742,6 +752,8 @@ bool param_to_func() {
 
         CHECK_SEM_DEF_ERR(!tmp_var);
 
+		CODE_GEN(gen_func_call_args_var, tmp_var);
+
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
     }
@@ -750,6 +762,10 @@ bool param_to_func() {
         ret = str_add_char(&tps_right, token.type == T_INT    ? 'I' :
                                        token.type == T_STRING ? 'S' :
                                        token.type == T_FLOAT  ? 'F' : 'N');
+		///////////////////////////////
+		CODE_GEN(gen_func_call_args_const, &token);
+		///////////////////////////////
+
         CHECK_INTERNAL_ERR(!ret, false);
     }
     else {
