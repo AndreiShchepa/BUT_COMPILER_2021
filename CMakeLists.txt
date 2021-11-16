@@ -11,7 +11,7 @@ include(GoogleTest)
 ###############################################################################
 # c preferences
 set(CC gcc)
-set(COVERAGE_FLAGS "-ftest-coverage -fprofile-arcs --coverage")
+set(COVERAGE_FLAGS "-ftest-coverage -fprofile-arcs")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -g -Wall -Wextra -Werror ${COVERAGE_FLAGS}")
 set(CMAKE_C_OUTPUT_EXTENSION_REPLACE ON)
 
@@ -58,6 +58,7 @@ set(COMMON_SOURCES
 	./src/debug.h
 	./src/error.h
 	./src/str.c src/str.h
+	./src/queue.c src/queue.h
 	)
 
 set(COMPILER_SOURCES

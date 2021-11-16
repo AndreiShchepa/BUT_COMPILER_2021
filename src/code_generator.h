@@ -18,4 +18,5 @@ void gen_main_end();
 
 void code_gen();
 
+void gen_expression();
 #endif // CODE_GENERATOR_H

@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include "scanner.h"
 #include "symtable.h"
+#include "queue.h"
 
 #define COUNT_DEF_FUNCS 8
 
@@ -61,7 +62,8 @@
 
 extern token_t token;
 extern int err;
-
+extern Queue* queue_id;
+extern Queue* queue_expr;
 /*
  * @brief process start of the code
  *
