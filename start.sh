@@ -42,11 +42,7 @@ if [ ! -d "build/" ]; then
     mkdir build
 fi
 
-cd build
-
-if [[ `basename $PWD`  != "build" ]]; then
-	exit 1
-fi
+cd build || exit 1
 
 for i in "${arr[@]}"
 do
