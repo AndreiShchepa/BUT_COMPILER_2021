@@ -658,7 +658,8 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ADD_VAR_TO_SYMTAB();
+        //ADD_VAR_TO_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB();
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
