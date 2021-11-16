@@ -37,6 +37,7 @@ set(CMAKE_BUILD_TYPE Debug)
 option(DEBUG_RULES   "Enable rules printing from parser"       OFF)
 option(DEBUG_SCANNER "Run only scanner"                        OFF)
 option(DEBUG_EXPR    "Enable debug for expressions processing" OFF)
+option(DEBUG_INSTR   "Print formated ifjcode21"                OFF)
 option(COMPILE_TESTS "Compile tests and code_coverage"		   OFF)
 
 if (DEBUG_RULES)
@@ -49,6 +50,10 @@ endif()
 
 if (DEBUG_EXPR)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_EXPR")
+endif()
+
+if (DEBUG_INSTR)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_INSTR")
 endif()
 
 
