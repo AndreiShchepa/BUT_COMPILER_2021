@@ -368,6 +368,11 @@ bool statement() {
                 " end <statement>");
 
         NEXT_TOKEN();
+
+		///////////////////////////////////
+        CODE_GEN(gen_while_label, item);
+		///////////////////////////////////
+
         NEXT_NONTERM(expression);
         EXPECTED_TOKEN(token.keyword == KW_DO);
 

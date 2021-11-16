@@ -21,6 +21,7 @@ extern cnts_t cnt;
 bool init_cnt();
 bool gen_init_built_int();
 
+bool gen_while_label();
 bool gen_while_start();
 bool gen_while_end();
 

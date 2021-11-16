@@ -1,5 +1,10 @@
 #include "code_generator.h"
 
+/******************************************************************************
+ *                                  TODO
+ *****************************************************************************/
+// TODO - check vars, params, if, while numbering - tests - redefinition
+
 //todo SKONTROLOVAT
 #define FUNC_DIV_ZERO   \
 "\nlabel $div_zero"     \
@@ -115,12 +120,26 @@ bool gen_label_item() {
     return true;
 }
 
+bool gen_while_label(htab_item_t *htab_item) {
+    PRINT_INSTR(0, "label $%s_while_%d"EOL, htab_item->key_id,  cnt.while_cnt);
+    cnt.while_cnt++;
+	return true;
+}
+
+bool gen_while_cond(/*TODO*/) {
+	// TODO
+    // PRINT_INSTR(0, "label $%s_while_%d_end"EOL, htab_item->key_id,  cnt.while_cnt);
+	// switch jumpifneq , jumpifeq etc.. label
+	return true;
+}
+
 bool gen_while_start() {
-    PRINT_INSTR(1, "label $%s_while_%d"EOL, "", 1);
     return true;
 }
 
-bool gen_while_end() {
+bool gen_while_end(htab_item_t *htab_item) {
+	cnt.while_cnt--;
+	PRINT_INSTR(0, "jump $%s_while_%d"EOL, htab_item->key_id, cnt.while_cnt);
     return true;
 }
 
