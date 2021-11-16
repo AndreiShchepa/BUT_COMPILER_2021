@@ -13,8 +13,11 @@
 #include <string.h>
 #include <stdint.h>
 #include "str.h"
+#include "error.h"
 
 #define STR_LEN_INC 50
+
+extern int err;
 
 bool str_init(string_t *s, const int init_size) {
 	s->str = calloc(init_size, sizeof(char));
@@ -106,14 +109,18 @@ bool str_concat_str(
 }
 
 bool str_concat_str2(string_t *s1, const char *s2) {
-	if (!s1 || !s1->str || !s2)
-		return false;
+	if (!s1 || !s1->str || !s2) {
+        err = INTERNAL_ERR;
+        return false;
+    }
 
 	uint32_t len = s1->length + strlen(s2);
 
 	if (len+1 >= s1->alloc_size) {
-		if(!(s1->str = (char*)realloc(s1->str, s1->alloc_size*2)))
+		if(!(s1->str = (char*)realloc(s1->str, s1->alloc_size*2))) {
+		    err = INTERNAL_ERR;
             return false;
+		}
 
 		s1->alloc_size = s1->alloc_size*2;
 	}

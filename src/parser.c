@@ -32,6 +32,13 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 Queue* queue_id;
 Queue* queue_expr;
 
+#define CODE_GEN(callback, ...)         \
+    do {                                \
+        if (!callback(__VA_ARGS__)) {   \
+            return false;               \
+        }                               \
+    } while(0)                          \
+
 #define CHECK_INTERNAL_ERR(COND, ret) \
         if (COND) { \
             err = INTERNAL_ERR; \
@@ -166,6 +173,7 @@ bool prolog() {
         EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
         NEXT_TOKEN();
 
+        CODE_GEN(gen_init);
         return prog();
     }
 
@@ -212,9 +220,12 @@ add_func_decl:
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        CODE_GEN(gen_func_start, token.attr.id.str);
 
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
+
+
 add_func_def:
         item->data.func->def = true;
         working_func = 1;
@@ -663,6 +674,7 @@ bool other_params() {
         EXPECTED_TOKEN(token.type == T_ID);
 
         ADD_VAR_TO_SYMTAB();
+        item->data.var->type
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -674,10 +686,13 @@ bool other_params() {
         }
         /////////////////////////////////////////////////
 
+
         NEXT_NONTERM(type);
 
         return other_params();
     }
+
+    // TODO - add params, params
 
     print_rule("36. <other_params> -> e");
     return true;

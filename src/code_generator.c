@@ -1,10 +1,8 @@
-#include <string.h>
 #include "code_generator.h"
-#include "str.h"
-#include "queue.h"
-#include "symtable.h"
-#include "parser.h"
 
+/******************************************************************************
+  *									BUILT-IN FUNCS
+*****************************************************************************/
 #define FUNC_TOINTEGER                                                        \
 "\nlabel $tointeger # tointeger(f : number) : integer						"\
 "\n	# start																	"\
@@ -254,14 +252,17 @@
   *									MACROS
 *****************************************************************************/
 #define IFJ_CODE_START_LEN 10000
-#define INSTR_LEN 100
 #define EOL "\n"
+#define EMPTY_STR ""
+#define NON_VAR "%s"
 
-#define PRINT_INSTR(num, fmt, ...)                                      \
-    do {                                                                \
-        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];   \
-        sprintf(instr##num, (fmt), __VA_ARGS__);                        \
-        str_concat_str2(&ifj_code, instr##num);                         \
+#define PRINT_INSTR(num, fmt, ...)                                          \
+    do {                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];       \
+        sprintf(instr##num, (fmt), __VA_ARGS__);                            \
+        if (!str_concat_str2(&ifj_code, instr##num)) {                      \
+            return false;                                                   \
+        }                                                                   \
     } while(0)
 
 #define IS_NIL() \
@@ -280,81 +281,138 @@ PRINT_INSTR(i, "\npushs GF@$var2%s", "");
 string_t ifj_code;
 extern Queue* queue_id;
 extern Queue* queue_expr;
+extern int err;
+
+
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
-void gen_file_start() {
-    return;
+bool gen_file_start() {
+    return true;
 }
 
-void gen_int2char(Queue *queue, token_t *symb_1) {
+bool gen_int2char(Queue *queue, token_t *symb_1) {
     (void )queue;
     (void )symb_1;
 //    PRINT_INSTR(0, "INT2CHAR LF@%s LF@%s", queue->front->id->key_id, symb_1->attr.id, NULL);
+    return true;
 }
 
-void gen_func_label() {
-
+bool gen_func_label() {
+    return true;
 }
 
-void gen_init_built_ins() {
-//    PRINT_INSTR(FUNC_TOINTEGER);
-//    PRINT_INSTR(FUNC_READI);
-//    PRINT_INSTR(FUNC_READN);
-//    PRINT_INSTR(FUNC_READS);
-//    PRINT_INSTR(FUNC_WRITE);
-//    PRINT_INSTR(FUNC_SUBSTR);
-//    PRINT_INSTR(FUNC_ORD);
-//    PRINT_INSTR(FUNC_CHR);
+bool gen_header() {
+    PRINT_INSTR(1, ".IFJcode21" NON_VAR EOL, EMPTY_STR);
+    return true;
 }
 
-void gen_label_item() {
+
+bool gen_init_built_ins() {
+    PRINT_INSTR(1, "%s", FUNC_TOINTEGER);
+    PRINT_INSTR(2, "%s", FUNC_READI);
+    PRINT_INSTR(3, "%s", FUNC_READN);
+    PRINT_INSTR(4, "%s", FUNC_READS);
+    PRINT_INSTR(5, "%s", FUNC_WRITE);
+    PRINT_INSTR(6, "%s", FUNC_SUBSTR);
+    PRINT_INSTR(7, "%s", FUNC_ORD);
+    PRINT_INSTR(8, "%s", FUNC_CHR);
+    return true;
+}
+
+bool gen_label_item() {
     // TODO -
     // defvar
     // pop
+    return true;
 }
 
-void gen_while_start() {
-
+bool gen_while_start() {
+    return true;
 }
 
-void gen_while_end() {
-
+bool gen_while_end() {
+    return true;
 }
 
-void gen_param(/*TODO*/) {
-//    PRINT_INSTR(0, "defvar LF@%s", ""/*TODO - func_name + id_param*/);
+bool gen_param(htab_item_t *htab_item) {
+    (void )htab_item;
+//    for (htab_item.)
+    PRINT_INSTR(1, "defvar LF@%s" EOL,"");
+    PRINT_INSTR(2, "defvar LF@%s" EOL,"");
+    return true;
 }
 
-void gen_if_start(/*TODO*/) {
-//    PRINT_INSTR(1, "label if%s", ""/*TODO - func_name + id_of_if*/);
+bool gen_if_start(/*TODO*/) {
+//    PRINT_INSTR(1, "label %s_if_%s", ""/*TODO - func_name + id_of_if*/);
+    return true;
 }
 
-void gen_if_else(/*TODO*/) {
+bool gen_if_else(/*TODO*/) {
 //    PRINT_INSTR(2, "label else%s", ""/*TODO - func_name + id_of_if*/);
+    return true;
 }
 
-void gen_if_end(/*TODO*/) {
+bool gen_if_end(/*TODO*/) {
 //    PRINT_INSTR(3, "label end%s", ""/*TODO - func_name + id_of_if*/);
+    return true;
 }
 
-void gen_func_start(/*TODO*/) {
-//    PRINT_INSTR(1, "label@$%s%s%s", "a", "a", "a");
-//    PRINT_INSTR(2, "label@$%s%s%s", "a", "a", "a");
-//    PRINT_INSTR(3, "pushframe%s", "\n" /*TODO id*/);
+bool gen_func_start(char *id) {
+    PRINT_INSTR(1, "label $%s"                  EOL, id);
+    PRINT_INSTR(2, "pushframe"          NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(3, "createframe"        NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(4, "defvar LF@&type"    NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(5, "defvar LF@&var1"    NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(6, "defvar LF@&var2"    NON_VAR EOL, EMPTY_STR);
+    return true;
 }
 
-void gen_func_end() {
-//    PRINT_INSTR(0, "return%s", "\n");
+bool gen_func_end() {
+    PRINT_INSTR(1, "popframe" NON_VAR, EOL);
+    PRINT_INSTR(2, "return"   NON_VAR, EOL);
+    return true;
 }
 
-void code_gen() {
+bool code_gen_print_ifj_code21() {
+    FILE *test_file = fopen("test_file.out", "w");
+    if (!test_file) {
+        return false;
+    }
+    fprintf(test_file, "%s", ifj_code.str);
+    fclose(test_file);
+    return true;
+}
+
+bool gen_expression() {
     str_init(&ifj_code, IFJ_CODE_START_LEN);
+    PRINT_INSTR(1, EOL"PUSHS LF@%s" , EMPTY_STR);
+    PRINT_INSTR(2, EOL"ADDS" NON_VAR, EMPTY_STR);
+    PRINT_INSTR(3, EOL"SUBS" NON_VAR, EMPTY_STR);
+    PRINT_INSTR(5, EOL"DIVS" NON_VAR, EMPTY_STR);
+    PRINT_INSTR(6, EOL"IDIVS"NON_VAR, EMPTY_STR);
+    return true;
+}
+
+
+bool gen_init() {
+    if (!str_init(&ifj_code, IFJ_CODE_START_LEN) ||
+        !gen_header()
+//        !gen_init_built_ins()
+        ) {
+        err = INTERNAL_ERR;
+    }
+
+    return (err == NO_ERR);
+}
+
+bool gen_testing_helper() {
     PRINT_INSTR(1, EOL"%s %d", "ahoj", 1);
     PRINT_INSTR(2, EOL"%s %d", "ahoj", 1);
     PRINT_INSTR(3, EOL"%s", ""); // new_line
     PRINT_INSTR(4, EOL"%s", ""); // new_line
     fprintf(stdout, "%d", snprintf(NULL, 0, "%s", "sacqs\0"));
+    gen_expression();
 
     FILE *test_file = fopen("test_file.out", "w");
     if (!test_file)
@@ -364,7 +422,7 @@ void code_gen() {
 
     // todo - header
     //    gen_init_built_ins();
-    return;
+    return false;
 }
 
 void gen_heaher() {

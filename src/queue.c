@@ -42,7 +42,6 @@ bool queue_isEmpty(Queue *queue){
     return (queue->front == NULL);
 }
 
-
 void queue_remove(Queue *queue){
     if(queue_isEmpty(queue)){
         return;
