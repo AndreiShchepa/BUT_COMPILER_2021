@@ -261,6 +261,10 @@ add_func_def:
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
         CHECK_SEM_DEF_ERR(!tmp_func);
+
+        // tmp_func = calling func
+        // tps_left = tmp_func.argv
+        // expected in tps_right types of arguments
         ////////////////////////////////
         ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
                                                                          &tmp_func->data.func->decl_attr.argv);
@@ -272,6 +276,9 @@ add_func_def:
         NEXT_TOKEN();
         NEXT_NONTERM(args);
 
+        // after argc() we have in tps_left expected types of argv
+        // in tps_right we have real types of argv
+        // do comparing of to arrays anc then clear
         CHECK_COMPATIBILITY();
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -377,20 +384,43 @@ bool statement() {
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
 
+        // now in tps_left je expected type of new id
         FILL_TYPE(&tmp_var->data.var->type);
         FILL_TYPE(&tps_left);
 
         NEXT_NONTERM(type);
         NEXT_NONTERM(def_var);
+        //ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
+        //                                                                &tmp_func->data.func->decl_attr.rets);
+        //CHECK_INTERNAL_ERR(!ret, false);
+
+        // we should check type compatibility
+        //CHECK_COMPATIBILITY();
 
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
         print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
 
+        //////////////////////////////////////////////////////////////////
+        ret = str_copy_str(&tps_left, item->data.func->def == true ? &item->data.func->def_attr.rets  :
+                                                                     &item->data.func->decl_attr.rets);
+
+        CHECK_INTERNAL_ERR(!ret, false);
+
+        uint64_t tmp_num_rets = item->data.func->def == true ? item->data.func->def_attr.rets.length :
+                                                               item->data.func->decl_attr.rets.length;
+        for (unsigned long int i = 0; i < tmp_num_rets; i++) {
+            ret = str_add_char(&tps_right, 'N');
+            CHECK_INTERNAL_ERR(!ret, false);
+        }
+        //////////////////////////////////////////////////////////////////
+
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
         NEXT_NONTERM(other_exp);
+
+        //CHECK_COMPATIBILITY();
 
         return statement();
     }
@@ -520,6 +550,10 @@ bool other_exp() {
         return other_exp();
     }
 
+    // check compatibility for expressions
+    // expressions are expected in tps_right
+    // vars are expected in tps_left
+    CHECK_COMPATIBILITY();
     print_rule("22. <other_exp> -> e");
     return true;
 }
@@ -548,11 +582,16 @@ bool init_assign() {
 
     if (token.type == T_ID && tmp_func) {
         print_rule("25. <init_assign> -> id_func ( <args> )");
+        // in tmp_func is calling function
+        // write to tps_right expected type return of calling func
+        // and do comparing of types with left_tps
         /////////////////////////////////////////////////////////////////////////
         ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
                                                                          &tmp_func->data.func->decl_attr.rets);
         CHECK_INTERNAL_ERR(!ret, false);
         CHECK_COMPATIBILITY();
+
+        // then we check expected argv for function
         ////////////////////////////////////////////////////////////////////////
         ret = str_copy_str(&tps_left, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.argv  :
                                                                          &tmp_func->data.func->decl_attr.argv);
@@ -565,6 +604,7 @@ bool init_assign() {
         NEXT_NONTERM(args);
 
         CHECK_COMPATIBILITY();
+        // nice, we check whole rule for type compatibility
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -572,11 +612,16 @@ bool init_assign() {
         return true;
     }
 
+    print_rule("26. <init_assign> -> <expression>");
+    NEXT_NONTERM(expression);
+
+    // comment next two lines, when expression will be ready
     str_clear(&tps_left);
     str_clear(&tps_right);
+    //
+    CHECK_COMPATIBILITY();
 
-    print_rule("26. <init_assign> -> <expression>");
-    return expression();
+    return true;
 }
 
 bool type_returns() {
@@ -730,11 +775,13 @@ bool param_to_func() {
 
         CHECK_SEM_DEF_ERR(!tmp_var);
 
+        // add to tps_right types of tokens
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
     }
     else if (TOKEN_TERM()) {
         print_rule("42. <param_to_func> -> term");
+        // add to tps_right types of tokens
         ret = str_add_char(&tps_right, token.type == T_INT    ? 'I' :
                                        token.type == T_STRING ? 'S' :
                                        token.type == T_FLOAT  ? 'F' : 'N');
