@@ -74,11 +74,12 @@ char Rules[][LENGTH_OF_RULES] = {
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
-#define GET_TYPE_ID(IDX) \
+#define GET_TYPE_ID(IDX, KEY) \
         do { \
-            var = FIND_VAR_IN_SYMTAB; \
+            printf("ccc %s\n", (KEY)); \
+            var = find_id_symtbs(&local_symtbs, (KEY)); \
             if (!var) {  \
-            err = SEM_DEF_ERR;             \
+                err = SEM_DEF_ERR;             \
             return false;             \
             } \
             types_E[IDX] = var->data.var->type.str[0]; \
@@ -218,6 +219,7 @@ void Dispose(ElementPtr Element) {
 }
 
 bool Insert(List * list, char * data) {
+    bool ret;
     if (list == NULL) {
         return 0;
     }
@@ -251,6 +253,13 @@ bool Insert(List * list, char * data) {
         Deallocate(list);
         return false;
     }
+    //ret = str_init(&TempElement_second->element_token.attr.id, 20); // CHECK_INTERNAL_ERR
+    //ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
+    //(void)ret;
+
+    //printf("NEW VALUE is %s\n", TempElement_second->element_token.attr.id.str);
+    //printf("TOKEN is %s\n", token.attr.id.str);
+
     // If we found expression character on stack without going through E
     if (flag == 0) {
         find->nextElement = TempElement_first;
@@ -285,8 +294,11 @@ bool Insert(List * list, char * data) {
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
     // If we are dealing not with character, but with an expression we copy the data of token into our structure
-    if((strcmp(data, "i")) == 0){
-        TempElement_second->element_token.attr = token.attr;
+    if((strcmp(data, "i")) == 0) {
+        ret = str_init(&TempElement_second->element_token.attr.id, 20); // CHECK_INTERNAL_ERR
+        ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
+        (void)ret;
+        //TempElement_second->element_token.attr = token.attr;
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
         // else we just set type to T_NONE so we can differentiate between an expression and a character
@@ -307,6 +319,7 @@ bool Close(List * list) {
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     ElementPtr find = list->lastElement;
+    printf("CLOSE %s\n", find->element_token.attr.id.str);
     ElementPtr Ei = NULL;
     ElementPtr Ej = NULL;
     CLEAR_TYPES_E();
@@ -337,17 +350,17 @@ bool Close(List * list) {
             Ei = Ej;
         }
         if (Ei->element_token.type == T_ID) {
-            GET_TYPE_ID(0);
+            GET_TYPE_ID(0, Ei->element_token.attr.id.str);
         } else {
             GET_TYPE_TERM(0);
         }
 
         if (Ej->element_token.type == T_ID) {
-            GET_TYPE_ID(1);
+            GET_TYPE_ID(1, Ej->element_token.attr.id.str);
         } else {
             GET_TYPE_TERM(1);
         }
-    } else {
+   } else {
         // todo There is no expression (missing E) i.e. <<+>>
 //        return false;
     }
@@ -467,7 +480,7 @@ bool expression() {
     list = Init(list);
 
     char precedence;
-
+    printf("%s - token\n", token.attr.id.str);
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
         nothing_todo = false;
 
@@ -490,6 +503,7 @@ start_expr:
                     data, token.attr.id.str, precedence);
 
         if (precedence == '<') {
+            printf("aaa\n");
             // If token is a variable or a string we put i on the stack instead
             // of copying the whole name of the variable or whole string
             if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
@@ -540,6 +554,7 @@ start_expr:
             // If we found something that doesnt have correct order, for example )(
             goto err_expr;
         }
+        printf("bbbbb\n");
         NEXT_TOKEN();
     }
 
