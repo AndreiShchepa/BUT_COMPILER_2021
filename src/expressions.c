@@ -78,7 +78,7 @@ char Rules[][LENGTH_OF_RULES] = {
         do { \
             var = FIND_VAR_IN_SYMTAB; \
             if (!var) {  \
-            err = SEM_ARITHM_REL_ERR;             \
+            err = SEM_DEF_ERR;             \
             return false;             \
             } \
             types_E[IDX] = var->data.var->type.str[0]; \
@@ -115,7 +115,8 @@ char Rules[][LENGTH_OF_RULES] = {
             { \
                 err = SEM_ARITHM_REL_ERR;                         \
                 return false;                \
-            } \
+            }               \
+            \
         } while(0);
 #define CHECK_COMPARISON() \
         do { \
@@ -127,7 +128,21 @@ char Rules[][LENGTH_OF_RULES] = {
                 return false; \
             } \
         } while(0);
-
+#define ASSIGN_TYPE() \
+        do {          \
+            if ((strcmp(types_E, "II") == 0) || (j >= 7 && j <= 13)) \
+            { \
+                find->element_token.type = T_INT;          \
+            } \
+            else if (strcmp(types_E, "SS") == 0) \
+            { \
+                find->element_token.type = T_STRING;          \
+            } \
+            else \
+            { \
+                find->element_token.type = T_FLOAT;          \
+            } \
+        } while(0);
 char types_E[2];
 htab_item_t *var;
 void print_stack_debug(List * list) {
@@ -307,14 +322,17 @@ bool Close(List * list) {
             } else {
                 Ei = find;
             }
+        } else if((strcmp(find->data, "i")) == 0){
+            Ej = find;
         }
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-    // If we went through closed rule containing both expressions, <E+E> i.e. and not just <i> <(E)> or <#E>
+
     if(Ej != NULL){
-        // Special case with rule #E where there is only one expression so Ei will stay NULL, we make sure Ei isn't NULL
-        // so we can call gen_code_LENGTH with arguments (Ei, Ej) without passing null pointer
+
+        // Special case with rule #E or <i> where there is only one expression so Ei will stay NULL, we make sure Ei isn't NULL
+        // so we can work without passing null pointer
         if(Ei == NULL){
             Ei = Ej;
         }
@@ -323,6 +341,7 @@ bool Close(List * list) {
         } else {
             GET_TYPE_TERM(0);
         }
+
         if (Ej->element_token.type == T_ID) {
             GET_TYPE_ID(1);
         } else {
@@ -336,30 +355,36 @@ bool Close(List * list) {
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
         if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
-            printf("We found those types: %s\n", types_E);
-            find->element_token.type = find->nextElement->element_token.type;
-
+            // Assigns type, if II, type == int, SS = string, else = float
+            ASSIGN_TYPE()
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
             if(j == 7 || j == 14){
-                CHECK_CONC_LENGHT();
+                CHECK_CONC_LENGHT()
+                // Special case where assign type would assign string due to #E being string operation, but
+                // the result of this operation is size in numbers
+                if(j == 7){
+                    find->element_token.type = T_INT;
+                }
                 // If we are doing comparison rules
             } else if(j >= 8 && j <= 13){
-                CHECK_COMPARISON();
+                find->element_token.type = T_INT;
+                CHECK_COMPARISON()
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter of what type the expression is
                 // #E = 7, E..E = 14 string operations
                 // and the type is string, that means we are trying to do number operation with strings
             } else if(j != 0 && j != 1){
-                CHECK_NUMBER();
+                CHECK_NUMBER()
             }
-
             // We change << with E
+            printf("Rule: %d TYPE of reduced expression: %d\n\n", j, find->element_token.type);
             strcpy(find->data, "E");
             // We delete everything after <<
             Dispose(find->nextElement);
             find->nextElement = NULL;
             list->lastElement = find;
+
             return true;
         }
     }
@@ -546,6 +571,7 @@ end_expr:
 
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
+        printf("expression type: %d\n", list->lastElement->element_token.type);
         Deallocate(list);
         return true;
     }
