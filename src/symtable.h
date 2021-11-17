@@ -26,27 +26,33 @@
 
 // Add new symtable to the end of the array of symtables
 #define ADD_SYMTAB() \
-        ret = add_symtab(&local_symtbs); \
-        if (!ret) { \
-            return false; \
-        }
+        do { \
+            ret = add_symtab(&local_symtbs); \
+            if (!ret) { \
+                return false; \
+            } \
+        } while(0);
 
 #define FIND_VAR_IN_SYMTAB find_id_symtbs(&local_symtbs, token.attr.id.str)
 
 #define FIND_FUNC_IN_SYMTAB symtab_find(&global_symtab, token.attr.id.str)
 
 #define CHECK_ID(EL) \
-        if (FIND_##EL##_IN_SYMTAB == false) { \
-            err = SEM_DEF_ERR; \
-            return false; \
-        }
+        do { \
+            if (FIND_##EL##_IN_SYMTAB == false) { \
+                err = SEM_DEF_ERR; \
+                return false; \
+            } \
+        } while(0);
 
 // Add ID_VAR to the local symtable
 // If ID_FUNC exists in, return false
 #define ADD_VAR_TO_SYMTAB() \
-        if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
-            return false; \
-        }
+        do { \
+            if (!symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id)) { \
+                return false; \
+            } \
+        } while(0);
 
 typedef enum type_id {
     VAR,

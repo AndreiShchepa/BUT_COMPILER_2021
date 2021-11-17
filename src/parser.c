@@ -29,95 +29,109 @@ string_t tps_right;
 bool working_func; // 0 - decl_fun, 1 - def_func
 
 #define CHECK_INTERNAL_ERR(COND, ret) \
-        if (COND) { \
-            err = INTERNAL_ERR; \
-            return ret; \
-        }
+        do { \
+            if (COND) { \
+                err = INTERNAL_ERR; \
+                return ret; \
+            } \
+        } while(0);
 
 #define CHECK_SEM_DEF_ERR(COND) \
-        if (COND) { \
-            err = SEM_DEF_ERR; \
-            return false; \
-        }
-
-#define FILL_TYPE(IDX) \
-        switch (token.keyword) { \
-            case KW_INTEGER: \
-                ret = str_add_char(IDX, 'I'); \
-                break; \
-            case KW_STRING: \
-                ret = str_add_char(IDX, 'S'); \
-                break; \
-            case KW_NUMBER: \
-                ret = str_add_char(IDX, 'F'); \
-                break; \
-            case KW_NIL: \
-                ret = str_add_char(IDX, 'N'); \
-                break; \
-            default: \
-                ret = str_add_char(IDX, 'U'); \
-                break; \
-        } \
-        CHECK_INTERNAL_ERR(!ret, false);
-
-#define ADD_FUNC_TO_SYMTAB(SUSPECT_REDECLARATION, LABEL) \
-        if (!symtab_add(&global_symtab, &token.attr.id)) { \
-            if (err == INTERNAL_ERR) { \
-                return false; \
-            } \
-            else if (err == SEM_DEF_ERR) { \
-                item = symtab_find(&global_symtab, token.attr.id.str); \
-                if (!item && err == INTERNAL_ERR) { \
-                    return false; \
-                } \
-                else if (SUSPECT_REDECLARATION) { \
-                    return false; \
-                } \
-                err = NO_ERR; \
-                goto LABEL; \
-            } \
-        } \
-        item = symtab_find(&global_symtab, token.attr.id.str); \
-        if (!item) { \
-            return false; \
-        } \
-        item->data.func = calloc(1, sizeof(func_t)); \
-        CHECK_INTERNAL_ERR(!item->data.func, false); \
-        item->data.func->decl = false; \
-        item->data.func->def = false; \
-        item->type = FUNC;
-
-#define CHECK_TPS_DEF_DECL_FUNCS() \
-        if (item->data.func->decl && item->data.func->def) { \
-            if (strcmp(item->data.func->def_attr.argv.str, item->data.func->decl_attr.argv.str) || \
-                strcmp(item->data.func->def_attr.rets.str, item->data.func->decl_attr.rets.str)) \
-            { \
+        do { \
+            if (COND) { \
                 err = SEM_DEF_ERR; \
                 return false; \
             } \
-        }
+        } while(0);
+
+#define FILL_TYPE(IDX) \
+        do { \
+            switch (token.keyword) { \
+                case KW_INTEGER: \
+                    ret = str_add_char(IDX, 'I'); \
+                    break; \
+                case KW_STRING: \
+                    ret = str_add_char(IDX, 'S'); \
+                    break; \
+                case KW_NUMBER: \
+                    ret = str_add_char(IDX, 'F'); \
+                    break; \
+                case KW_NIL: \
+                    ret = str_add_char(IDX, 'N'); \
+                    break; \
+                default: \
+                    ret = str_add_char(IDX, 'U'); \
+                    break; \
+            } \
+            CHECK_INTERNAL_ERR(!ret, false); \
+        } while(0);
+
+#define ADD_FUNC_TO_SYMTAB(SUSPECT_REDECLARATION, LABEL) \
+        do { \
+            if (!symtab_add(&global_symtab, &token.attr.id)) { \
+                if (err == INTERNAL_ERR) { \
+                    return false; \
+                } \
+                else if (err == SEM_DEF_ERR) { \
+                    item = symtab_find(&global_symtab, token.attr.id.str); \
+                    if (!item && err == INTERNAL_ERR) { \
+                        return false; \
+                    } \
+                    else if (SUSPECT_REDECLARATION) { \
+                        return false; \
+                    } \
+                    err = NO_ERR; \
+                    goto LABEL; \
+                } \
+            } \
+            item = symtab_find(&global_symtab, token.attr.id.str); \
+            if (!item) { \
+                return false; \
+            } \
+            item->data.func = calloc(1, sizeof(func_t)); \
+            CHECK_INTERNAL_ERR(!item->data.func, false); \
+            item->data.func->decl = false; \
+            item->data.func->def = false; \
+            item->type = FUNC; \
+        } while(0);
+
+#define CHECK_TPS_DEF_DECL_FUNCS() \
+        do { \
+            if (item->data.func->decl && item->data.func->def) { \
+                if (strcmp(item->data.func->def_attr.argv.str, item->data.func->decl_attr.argv.str) || \
+                    strcmp(item->data.func->def_attr.rets.str, item->data.func->decl_attr.rets.str)) \
+                { \
+                    err = SEM_DEF_ERR; \
+                    return false; \
+                } \
+            } \
+        } while(0);
 
 #define ALLOC_VAR_IN_SYMTAB() \
-        tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id); \
-        if (!tmp_var) { \
-            return false; \
-        } \
-        tmp_var->data.var = calloc(1, sizeof(var_t)); \
-        CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
-        tmp_var->type = VAR; \
-        tmp_var->data.var->init = true; \
-        tmp_var->data.var->val_nil = true; \
-        str_init(&tmp_var->data.var->type, 2);
+        do { \
+            tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id); \
+            if (!tmp_var) { \
+                return false; \
+            } \
+            tmp_var->data.var = calloc(1, sizeof(var_t)); \
+            CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
+            tmp_var->type = VAR; \
+            tmp_var->data.var->init = true; \
+            tmp_var->data.var->val_nil = true; \
+            str_init(&tmp_var->data.var->type, 2); \
+        } while(0);
 
 #define CHECK_COMPATIBILITY() \
-        if (!type_compatibility()) { \
-            err = SEM_FUNC_ERR; \
-            return false; \
-        } \
-        else { \
-            str_clear(&tps_left); \
-            str_clear(&tps_right); \
-        }
+        do { \
+            if (!type_compatibility()) { \
+                err = SEM_FUNC_ERR; \
+                return false; \
+            } \
+            else { \
+                str_clear(&tps_left); \
+                str_clear(&tps_right); \
+            } \
+        } while(0);
 
 bool type_compatibility() {
 
