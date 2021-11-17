@@ -74,7 +74,6 @@ char Rules[][LENGTH_OF_RULES] = {
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
-// TODO: Doplnit telo if
 #define GET_TYPE_ID(IDX) \
         do { \
             var = FIND_VAR_IN_SYMTAB; \
@@ -100,13 +99,32 @@ char Rules[][LENGTH_OF_RULES] = {
 
 #define CLEAR_TYPES_E() types_E[0] = types_E[1] = '\0';
 
-// TODO: Doplnit telo if
-#define CHECK_SUM_SUB_MUL() \
+#define CHECK_NUMBER() \
         do { \
             if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
                 strcmp(types_E, "FI") && strcmp(types_E, "FF")  ) \
             { \
                 err = SEM_ARITHM_REL_ERR; \
+                return false; \
+            } \
+        } while(0);
+
+#define CHECK_CONC_LENGHT() \
+        do { \
+            if (strcmp(types_E, "SS")) \
+            { \
+                err = SEM_ARITHM_REL_ERR;                         \
+                return false;                \
+            } \
+        } while(0);
+#define CHECK_COMPARISON() \
+        do { \
+            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
+                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
+                strcmp(types_E, "SS")) \
+            { \
+                err = SEM_ARITHM_REL_ERR; \
+                return false; \
             } \
         } while(0);
 
@@ -310,60 +328,34 @@ bool Close(List * list) {
         } else {
             GET_TYPE_TERM(1);
         }
-        printf("We found those types: %s\n", types_E);
     } else {
-        //todo v pravidlach neni ziadny expression
+        // todo There is no expression (missing E) i.e. <<+>>
+//        return false;
     }
     // We check against rules
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
         if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
-            // We cannot lose our token type because we are deleting
-            // everything after << and just copying E in the place of <<
-            // so we also need to "transition" token type
-            //                  find = find->nextElement
-            //                  <<   = E
-            find->element_token.attr = find->nextElement->element_token.attr;
+            printf("We found those types: %s\n", types_E);
             find->element_token.type = find->nextElement->element_token.type;
-            find->element_token.keyword = find->nextElement->element_token.keyword;
-            // If we are dealing with rules (E) and #E we need to copy token type from E, not from ( or #
-            // in other rules that doesnt occur because every other rules starts with E
-            if(j == 1 || j == 7){
-                //                  find = find->nextElement    ->nextElement
-                //                  <<   = (                    E
-                find->element_token.attr = find->nextElement->nextElement->element_token.attr;
-                find->element_token.type = find->nextElement->nextElement->element_token.type;
-                find->element_token.keyword = find->nextElement->nextElement->element_token.keyword;
-            }
-//            printf("TYPE IS: %d\n", find->element_token.type);
-            // We are already doing a check if we are operating two identical types together
-            // however there can be a situation where we are doing operation on two identical
-            // types yet we are doing an operation that doesnt belong to it i.e.
-            // 5..5 would have passed because both expressions are integers
-            // but operation .. is reserved only for strings so in this
-            // if statement we make sure that if rules #E = 7 and E..E = 14 were found
-            // the expressions are also strings
-            if((j == 7 || j == 14) && find->element_token.type != T_STRING){
-                err = SEM_ARITHM_REL_ERR;
-                return false;
+
+            // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
+            // found the expressions are also strings
+            if(j == 7 || j == 14){
+                CHECK_CONC_LENGHT();
+                // If we are doing comparison rules
+            } else if(j >= 8 && j <= 13){
+                CHECK_COMPARISON();
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter of what type the expression is
                 // #E = 7, E..E = 14 string operations
                 // and the type is string, that means we are trying to do number operation with strings
-            } else if(j != 0 && j != 1 && j != 7 && j != 14 && find->element_token.type == T_STRING){
-                err = SEM_ARITHM_REL_ERR;
-                return false;
+            } else if(j != 0 && j != 1){
+                CHECK_NUMBER();
             }
-
 
             // We change << with E
             strcpy(find->data, "E");
-            // If we found any other rule other than i and (E) we call gen code function,
-            // special case with #E where Ei == Ej
-            if(j != 0 && j != 1){
-//                (*gen_code_expressions[j])(Ei->element_token, Ej->element_token);
-//                printf("TYPES: %d %d\n", Ei->element_token.type, Ej->element_token.type);
-            }
             // We delete everything after <<
             Dispose(find->nextElement);
             find->nextElement = NULL;

@@ -57,6 +57,7 @@ typedef struct Element {
     // T_NONE will be used with everything else other than expressions
     // and thus making use of token different than in the rest of the program
     token_t element_token;
+    bool already_reduced;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;
