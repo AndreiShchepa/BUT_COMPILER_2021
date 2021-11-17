@@ -135,7 +135,8 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 
 bool type_compatibility() {
 
-    if(tmp_func->data.func->func_write) {
+    printf("SEg\n");
+    if(tmp_func != NULL && tmp_func->data.func->func_write) {
         for (long unsigned int i = 0; i < tps_right.length; i++) {
             if (tps_right.str[i] == 'U') {
                 err = SEM_FUNC_ERR;
@@ -145,6 +146,7 @@ bool type_compatibility() {
 
         return true;
     }
+    printf("SEg\n");
 
     if (tps_left.length > tps_right.length) {
         err = SEM_FUNC_ERR;
@@ -613,13 +615,18 @@ bool init_assign() {
     }
 
     print_rule("26. <init_assign> -> <expression>");
+    printf("ALALALAL\n");
     NEXT_NONTERM(expression);
-
+    printf("ALALALAL\n");
     // comment next two lines, when expression will be ready
-    str_clear(&tps_left);
-    str_clear(&tps_right);
+    //str_clear(&tps_left);
+    //str_clear(&tps_right);
     //
+    printf("%s - tps_left\n", tps_left.str);
+    printf("%s - tps_right\n", tps_right.str);
+    //if (tps_right == NULL || &tps_left = NULL) {printf("NULLLLLLLL\n");}
     CHECK_COMPATIBILITY();
+    printf("ALALALAL 20 2020 202\n");
 
     return true;
 }

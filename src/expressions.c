@@ -87,6 +87,7 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_TERM(IDX) \
         do {               \
             if((IDX) == 0){               \
+                printf("Tady?\n"); \
                 types_E[IDX] = Ei->element_token.type == T_INT    ? 'I' :      \
                                Ei->element_token.type == T_STRING ? 'S' :      \
                                Ei->element_token.type == T_FLOAT  ? 'F' : 'N'; \
@@ -478,6 +479,7 @@ bool expression() {
     list = Init(list);
 
     char precedence;
+    printf("Uvnitr expr\n");
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
         nothing_todo = false;
 
@@ -582,15 +584,18 @@ end_expr:
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
         printf("expression type: %d\n", list->lastElement->element_token.type);
-        ElementPtr Ei = NULL;
-        ElementPtr Ej = NULL;
-        CLEAR_TYPES_E()
-        GET_TYPE_TERM(0)
-        bool ret = str_add_char(&tps_right, types_E[0]);
+        //ElementPtr Ei = NULL;
+        //ElementPtr Ej = NULL;
+        //CLEAR_TYPES_E();
+        //GET_TYPE_TERM(0);
+        str_add_char(&tps_right, list->lastElement->element_token.type == T_INT ?    'I':
+                                 list->lastElement->element_token.type == T_STRING ? 'S':
+                                 list->lastElement->element_token.type == T_FLOAT ?  'F':
+                                                                                     'N');
 //        CHECK_INTERNAL_ERR(!ret, false);
 //todo deallocate token.arr
         Deallocate(list);
-        if (!ret) { err = INTERNAL_ERR; return false; }
+//        if (!ret) { err = INTERNAL_ERR; return false; }
         return true;
     }
 
