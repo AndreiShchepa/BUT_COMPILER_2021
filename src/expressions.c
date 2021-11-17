@@ -14,9 +14,11 @@
 #include "parser.h"
 #include "error.h"
 #include "expressions.h"
+#include "symtable.h"
 
 extern int err;
-
+extern string_t tps_right;
+extern arr_symtbs_t local_symtbs;
 char Precedence_Table[][NUMBER_OF_OPERATORS] = {
         //#    *    /    //   +    -    ..   <    <=   >    >=   ==   ~=   (    )    i    $
         {'<', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'}, // #
@@ -71,6 +73,37 @@ char Rules[][LENGTH_OF_RULES] = {
         {"E//E"}, {"E#"}, {"E<E"}, {"E<=E"}, {"E>E"},
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
+
+// TODO: Doplnit telo if
+#define GET_TYPE_ID(IDX) \
+        do { \
+            var = FIND_VAR_IN_SYMTAB; \
+            if (!var) { \
+            } \
+            types_E[IDX] = var->data.var->type.str[0]; \
+        } while(0);
+
+#define GET_TYPE_TERM(IDX) \
+        do { \
+            types_E[IDX] = token.type == T_INT    ? 'I' :      \
+                           token.type == T_STRING ? 'S' :      \
+                           token.type == T_FLOAT  ? 'F' : 'N'; \
+        } while(0);
+
+#define CLEAR_TYPES_E() types_E[0] = types_E[1] = '\0';
+
+// TODO: Doplnit telo if
+#define CHECK_SUM_SUB_MUL() \
+        do { \
+            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
+                strcmp(types_E, "FI") && strcmp(types_E, "FF")  ) \
+            { \
+                err = SEM_ARITHM_REL_ERR; \
+            } \
+        } while(0);
+
+char types_E[2];
+htab_item_t *var;
 
 void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
