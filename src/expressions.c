@@ -78,16 +78,24 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_ID(IDX) \
         do { \
             var = FIND_VAR_IN_SYMTAB; \
-            if (!var) { \
+            if (!var) {  \
+            err = SEM_ARITHM_REL_ERR;             \
+            return false;             \
             } \
             types_E[IDX] = var->data.var->type.str[0]; \
         } while(0);
 
 #define GET_TYPE_TERM(IDX) \
-        do { \
-            types_E[IDX] = token.type == T_INT    ? 'I' :      \
-                           token.type == T_STRING ? 'S' :      \
-                           token.type == T_FLOAT  ? 'F' : 'N'; \
+        do {               \
+            if((IDX) == 0){               \
+                types_E[IDX] = Ei->element_token.type == T_INT    ? 'I' :      \
+                               Ei->element_token.type == T_STRING ? 'S' :      \
+                               Ei->element_token.type == T_FLOAT  ? 'F' : 'N'; \
+            } else {       \
+                types_E[IDX] = Ej->element_token.type == T_INT    ? 'I' :      \
+                               Ej->element_token.type == T_STRING ? 'S' :      \
+                               Ej->element_token.type == T_FLOAT  ? 'F' : 'N'; \
+            }              \
         } while(0);
 
 #define CLEAR_TYPES_E() types_E[0] = types_E[1] = '\0';
@@ -104,7 +112,6 @@ char Rules[][LENGTH_OF_RULES] = {
 
 char types_E[2];
 htab_item_t *var;
-
 void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
@@ -269,6 +276,7 @@ bool Close(List * list) {
     ElementPtr find = list->lastElement;
     ElementPtr Ei = NULL;
     ElementPtr Ej = NULL;
+    CLEAR_TYPES_E();
 
     // We copy into our array until we dont find closing <<
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
@@ -285,25 +293,26 @@ bool Close(List * list) {
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-    // If we went through closed rule containing both expressions, <E+E> i.e. and not just <i>
-    if(Ei != NULL){
-//        printf("found rule: %s Expression Ei: %s Ej: %s\n", Array_To_Check_Against_Rules, Ei->data, Ej->data);
-//        printf("TYPES: %d %d \n", Ei->element_token.type, Ej->element_token.type);
-        // We have found non-matching types, returning false and setting error to global variable
-        //todo what to do when its type is ID
-        if(Ei->element_token.type != Ej->element_token.type){
-//        if(
-//                (Ei->element_token.type == T_STRING && Ej->element_token.type != T_STRING)  ||
-//                (Ei->element_token.type == T_INT    && Ej->element_token.type == T_STRING)  ||
-//                (Ei->element_token.type == T_FLOAT  && Ej->element_token.type == T_STRING))
-//        {
-            err = SEM_ARITHM_REL_ERR;
-            return false;
-        }
+    // If we went through closed rule containing both expressions, <E+E> i.e. and not just <i> <(E)> or <#E>
+    if(Ej != NULL){
         // Special case with rule #E where there is only one expression so Ei will stay NULL, we make sure Ei isn't NULL
         // so we can call gen_code_LENGTH with arguments (Ei, Ej) without passing null pointer
-    } else if(Ej != NULL){
-        Ei = Ej;
+        if(Ei == NULL){
+            Ei = Ej;
+        }
+        if (Ei->element_token.type == T_ID) {
+            GET_TYPE_ID(0);
+        } else {
+            GET_TYPE_TERM(0);
+        }
+        if (Ej->element_token.type == T_ID) {
+            GET_TYPE_ID(1);
+        } else {
+            GET_TYPE_TERM(1);
+        }
+        printf("We found those types: %s\n", types_E);
+    } else {
+        //todo v pravidlach neni ziadny expression
     }
     // We check against rules
     for(int j = 0; j < 15; j++) {
@@ -314,10 +323,6 @@ bool Close(List * list) {
             // so we also need to "transition" token type
             //                  find = find->nextElement
             //                  <<   = E
-            //todo what do we want to copy, E+E left E or right E ?
-            // if Ei == number || Ej == number tak number else int
-            // else if Ei == string then string
-            // else int
             find->element_token.attr = find->nextElement->element_token.attr;
             find->element_token.type = find->nextElement->element_token.type;
             find->element_token.keyword = find->nextElement->element_token.keyword;
@@ -349,7 +354,7 @@ bool Close(List * list) {
                 err = SEM_ARITHM_REL_ERR;
                 return false;
             }
-            //todo are we doing e/e or e//e
+
 
             // We change << with E
             strcpy(find->data, "E");
@@ -419,9 +424,6 @@ bool Check_Correct_Closure(List * list) {
     if (list != NULL) {
         // We just forcefully check if first element on stack
         // is $ and the second one E
-
-        // also should add if statements to check if
-        // we are not dealing with NULL pointer
         if ((strcmp(list->firstElement->data, "$") == 0) &&
             list->firstElement->nextElement != NULL &&
            (strcmp(list->firstElement->nextElement->data, "E") == 0))
