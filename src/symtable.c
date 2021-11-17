@@ -60,14 +60,16 @@ bool add_symtab(arr_symtbs_t *symtbs) {
     return true;
 }
 
-bool find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
+htab_item_t *find_id_symtbs(arr_symtbs_t *symtbs, const char *key) {
+    htab_item_t *item;
     for (int i = symtbs->size - 1; i >= 0; i--) {
-        if (symtab_find(&symtbs->htab[i], key)) {
-            return true;
+        item = symtab_find(&symtbs->htab[i], key);
+        if (item) {
+            return item;
         }
     }
 
-    return false;
+    return NULL;
 }
 
 void symtab_init(htable_t *table) {
@@ -169,6 +171,22 @@ void symtab_free(htable_t *table) {
         while (item) {
             item_free = item;
             item = item->next;
+            if (item_free->type == FUNC && item_free->data.func) {
+                if (item_free->data.func->def == true) {
+                    str_free(&item_free->data.func->def_attr.rets);
+                    str_free(&item_free->data.func->def_attr.argv);
+                }
+                if (item_free->data.func->decl == true) {
+                    str_free(&item_free->data.func->decl_attr.rets);
+                    str_free(&item_free->data.func->decl_attr.argv);
+                }
+                free(item_free->data.func);
+            }
+            else if (item_free->type == VAR && item_free->data.var) {
+                str_free(&item_free->data.var->type);
+                free(item_free->data.var);
+            }
+
             free(item_free->key_id);
             free(item_free);
         }
