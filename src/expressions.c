@@ -76,7 +76,6 @@ char Rules[][LENGTH_OF_RULES] = {
 
 #define GET_TYPE_ID(IDX, KEY) \
         do { \
-            printf("ccc %s\n", (KEY)); \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
             if (!var) {  \
                 err = SEM_DEF_ERR;             \
@@ -319,7 +318,6 @@ bool Close(List * list) {
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     ElementPtr find = list->lastElement;
-    printf("CLOSE %s\n", find->element_token.attr.id.str);
     ElementPtr Ei = NULL;
     ElementPtr Ej = NULL;
     CLEAR_TYPES_E();
@@ -480,7 +478,6 @@ bool expression() {
     list = Init(list);
 
     char precedence;
-    printf("%s - token\n", token.attr.id.str);
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
         nothing_todo = false;
 
@@ -503,7 +500,6 @@ start_expr:
                     data, token.attr.id.str, precedence);
 
         if (precedence == '<') {
-            printf("aaa\n");
             // If token is a variable or a string we put i on the stack instead
             // of copying the whole name of the variable or whole string
             if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
@@ -554,7 +550,6 @@ start_expr:
             // If we found something that doesnt have correct order, for example )(
             goto err_expr;
         }
-        printf("bbbbb\n");
         NEXT_TOKEN();
     }
 
@@ -587,7 +582,15 @@ end_expr:
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
         printf("expression type: %d\n", list->lastElement->element_token.type);
+        ElementPtr Ei = NULL;
+        ElementPtr Ej = NULL;
+        CLEAR_TYPES_E()
+        GET_TYPE_TERM(0)
+        bool ret = str_add_char(&tps_right, types_E[0]);
+//        CHECK_INTERNAL_ERR(!ret, false);
+//todo deallocate token.arr
         Deallocate(list);
+        if (!ret) { err = INTERNAL_ERR; return false; }
         return true;
     }
 
