@@ -78,24 +78,23 @@ char Rules[][LENGTH_OF_RULES] = {
         do { \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
             if (!var) {  \
-                err = SEM_DEF_ERR;             \
-            return false;             \
+                err = SEM_DEF_ERR; \
+                return false; \
             } \
             types_E[IDX] = var->data.var->type.str[0]; \
         } while(0);
 
 #define GET_TYPE_TERM(IDX) \
-        do {               \
-            if((IDX) == 0){               \
-                printf("Tady?\n"); \
+        do { \
+            if((IDX) == 0) { \
                 types_E[IDX] = Ei->element_token.type == T_INT    ? 'I' :      \
                                Ei->element_token.type == T_STRING ? 'S' :      \
                                Ei->element_token.type == T_FLOAT  ? 'F' : 'N'; \
-            } else {       \
+            } else { \
                 types_E[IDX] = Ej->element_token.type == T_INT    ? 'I' :      \
                                Ej->element_token.type == T_STRING ? 'S' :      \
                                Ej->element_token.type == T_FLOAT  ? 'F' : 'N'; \
-            }              \
+            } \
         } while(0);
 
 #define CLEAR_TYPES_E() types_E[0] = types_E[1] = '\0';
@@ -114,11 +113,11 @@ char Rules[][LENGTH_OF_RULES] = {
         do { \
             if (strcmp(types_E, "SS")) \
             { \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                \
-            }               \
-            \
+                err = SEM_ARITHM_REL_ERR; \
+                return false; \
+            } \
         } while(0);
+
 #define CHECK_COMPARISON() \
         do { \
             if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
@@ -129,23 +128,23 @@ char Rules[][LENGTH_OF_RULES] = {
                 return false; \
             } \
         } while(0);
+
 #define ASSIGN_TYPE() \
-        do {          \
-            if ((strcmp(types_E, "II") == 0) || (j >= 7 && j <= 13)) \
-            { \
-                find->element_token.type = T_INT;          \
+        do { \
+            if ((strcmp(types_E, "II") == 0) || (j >= 7 && j <= 13)) { \
+                find->element_token.type = T_INT; \
             } \
-            else if (strcmp(types_E, "SS") == 0) \
-            { \
-                find->element_token.type = T_STRING;          \
+            else if (strcmp(types_E, "SS") == 0) { \
+                find->element_token.type = T_STRING; \
             } \
-            else \
-            { \
-                find->element_token.type = T_FLOAT;          \
+            else { \
+                find->element_token.type = T_FLOAT; \
             } \
         } while(0);
+
 char types_E[2];
 htab_item_t *var;
+
 void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
@@ -253,12 +252,6 @@ bool Insert(List * list, char * data) {
         Deallocate(list);
         return false;
     }
-    //ret = str_init(&TempElement_second->element_token.attr.id, 20); // CHECK_INTERNAL_ERR
-    //ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
-    //(void)ret;
-
-    //printf("NEW VALUE is %s\n", TempElement_second->element_token.attr.id.str);
-    //printf("TOKEN is %s\n", token.attr.id.str);
 
     // If we found expression character on stack without going through E
     if (flag == 0) {
@@ -293,18 +286,30 @@ bool Insert(List * list, char * data) {
 
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
-    // If we are dealing not with character, but with an expression we copy the data of token into our structure
-    if((strcmp(data, "i")) == 0) {
-        ret = str_init(&TempElement_second->element_token.attr.id, 20); // CHECK_INTERNAL_ERR
+
+    // If we are dealing not with character,
+    // but with an expression we copy the data of token into our structure
+    if ((strcmp(data, "i")) == 0) {
+        ret = str_init(&TempElement_second->element_token.attr.id, 20);
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return false;
+        }
         ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
-        (void)ret;
-        //TempElement_second->element_token.attr = token.attr;
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return false;
+        }
+
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
-        // else we just set type to T_NONE so we can differentiate between an expression and a character
-    } else {
+        // else we just set type to T_NONE so we can
+        // differentiate between an expression and a character
+    }
+    else {
         TempElement_second->element_token.type = T_NONE;
     }
+
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
@@ -327,42 +332,51 @@ bool Close(List * list) {
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
         // We found Expression and the expression isn't in the form of "i" but "E" on stack
         // because we dont care about rule <i>
-        // Also because stack is other way around we firstly start pointing with Ej and then with Ei
-        if(find->element_token.type != T_NONE && (strcmp(find->data, "E")) == 0){
-            if(Ej == NULL){
+        // Also because stack is other way around
+        // we firstly start pointing with Ej and then with Ei
+        if (find->element_token.type != T_NONE && (strcmp(find->data, "E")) == 0) {
+            if (Ej == NULL) {
                 Ej = find;
-            } else {
+            }
+            else {
                 Ei = find;
             }
-        } else if((strcmp(find->data, "i")) == 0){
+        }
+        else if ((strcmp(find->data, "i")) == 0) {
             Ej = find;
         }
+
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
 
-    if(Ej != NULL){
-
-        // Special case with rule #E or <i> where there is only one expression so Ei will stay NULL, we make sure Ei isn't NULL
+    if (Ej != NULL) {
+        // Special case with rule #E or <i> where there is only one expression
+        // so Ei will stay NULL, we make sure Ei isn't NULL
         // so we can work without passing null pointer
-        if(Ei == NULL){
+        if (Ei == NULL) {
             Ei = Ej;
         }
+
         if (Ei->element_token.type == T_ID) {
             GET_TYPE_ID(0, Ei->element_token.attr.id.str);
-        } else {
+        }
+        else {
             GET_TYPE_TERM(0);
         }
 
         if (Ej->element_token.type == T_ID) {
             GET_TYPE_ID(1, Ej->element_token.attr.id.str);
-        } else {
+        }
+        else {
             GET_TYPE_TERM(1);
         }
-   } else {
-        // todo There is no expression (missing E) i.e. <<+>>
-//        return false;
     }
+    else {
+        // todo There is no expression (missing E) i.e. <<+>>
+        // return false;
+    }
+
     // We check against rules
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
@@ -371,26 +385,34 @@ bool Close(List * list) {
             ASSIGN_TYPE()
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
-            if(j == 7 || j == 14){
+            if (j == 7 || j == 14) {
                 CHECK_CONC_LENGHT()
-                // Special case where assign type would assign string due to #E being string operation, but
+                // Special case where assign type would assign string
+                // due to #E being string operation, but
                 // the result of this operation is size in numbers
-                if(j == 7){
+                if (j == 7) {
                     find->element_token.type = T_INT;
                 }
+
                 // If we are doing comparison rules
-            } else if(j >= 8 && j <= 13){
+            }
+            else if (j >= 8 && j <= 13) {
                 find->element_token.type = T_INT;
                 CHECK_COMPARISON()
                 // If we found any other rules other than
-                // i = 0, (E) = 1 operations where it doesn't matter of what type the expression is
+                // i = 0, (E) = 1 operations where it doesn't matter
+                // of what type the expression is
                 // #E = 7, E..E = 14 string operations
-                // and the type is string, that means we are trying to do number operation with strings
-            } else if(j != 0 && j != 1){
+                // and the type is string, that means we are trying
+                // to do number operation with strings
+            }
+            else if(j != 0 && j != 1){
                 CHECK_NUMBER()
             }
+
             // We change << with E
-            printf("Rule: %d TYPE of reduced expression: %d\n\n", j, find->element_token.type);
+            // printf("Rule: %d TYPE of reduced expression: %d\n\n",
+            // j, find->element_token.type);
             strcpy(find->data, "E");
             // We delete everything after <<
             Dispose(find->nextElement);
@@ -441,7 +463,8 @@ bool Push(List * list, char * data) {
     TempElement->nextElement = NULL;
     list->lastElement = TempElement;
 
-    // Copy onto the stack and we also copy T_NONE into token because there will never be situation
+    // Copy onto the stack and we also copy T_NONE into token
+    // because there will never be situation
     // where we just arbitrary copy i onto the stack because
     // there doesnt exist precedence rule "=" with expressions, only with characters
     TempElement->element_token.type = T_NONE;
@@ -472,17 +495,27 @@ void Deallocate(List * list) {
     }
 }
 
-bool expression() {
-    bool nothing_todo = true;
+#define FIRST_SYMBOL_NO_IN_EXPR \
+        token.type != T_L_ROUND_BR && token.type != T_LENGTH && \
+        token.type != T_ID         && token.type != T_STRING && \
+        token.type != T_FLOAT      && token.type != T_INT    && \
+        token.keyword != KW_NIL
+
+bool expression(bool bool_condition, bool bool_empty) {
+    (void)bool_condition;
+    bool ret;
     char data[3] = {"$"};
     List * list = NULL;
     list = Init(list);
 
     char precedence;
-    printf("Uvnitr expr\n");
-    while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
-        nothing_todo = false;
 
+    if (FIRST_SYMBOL_NO_IN_EXPR) {
+        Deallocate(list);
+        return bool_empty == true ? true : false;
+    }
+
+    while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
 start_expr:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
@@ -555,11 +588,6 @@ start_expr:
         NEXT_TOKEN();
     }
 
-    if (nothing_todo) {
-        Deallocate(list);
-        return false;
-    }
-
     // If there is internal error such as failure to allocate,
     // list will free itself which means none of the functions
     // will do anything and eventually we will learn
@@ -583,19 +611,17 @@ end_expr:
 
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
-        printf("expression type: %d\n", list->lastElement->element_token.type);
-        //ElementPtr Ei = NULL;
-        //ElementPtr Ej = NULL;
-        //CLEAR_TYPES_E();
-        //GET_TYPE_TERM(0);
-        str_add_char(&tps_right, list->lastElement->element_token.type == T_INT ?    'I':
-                                 list->lastElement->element_token.type == T_STRING ? 'S':
-                                 list->lastElement->element_token.type == T_FLOAT ?  'F':
-                                                                                     'N');
-//        CHECK_INTERNAL_ERR(!ret, false);
-//todo deallocate token.arr
+        //printf("expression type: %d\n", list->lastElement->element_token.type);
+        ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT ?    'I':
+                                       list->lastElement->element_token.type == T_STRING ? 'S':
+                                       list->lastElement->element_token.type == T_FLOAT ?  'F':
+                                                                                           'N');
         Deallocate(list);
-//        if (!ret) { err = INTERNAL_ERR; return false; }
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return false;
+        }
+
         return true;
     }
 

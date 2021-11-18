@@ -41,7 +41,7 @@
 // Call function for expected nonterminal,
 // in case of error return false
 #define NEXT_NONTERM(nonterm) \
-        ret = (nonterm)(); \
+        ret = (nonterm); \
         if (!ret) { \
             return false; \
         }

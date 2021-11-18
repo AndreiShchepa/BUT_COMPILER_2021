@@ -135,8 +135,7 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 
 bool type_compatibility() {
 
-    printf("SEg\n");
-    if(tmp_func != NULL && tmp_func->data.func->func_write) {
+    if (tmp_func != NULL && tmp_func->data.func->func_write) {
         for (long unsigned int i = 0; i < tps_right.length; i++) {
             if (tps_right.str[i] == 'U') {
                 err = SEM_FUNC_ERR;
@@ -146,7 +145,6 @@ bool type_compatibility() {
 
         return true;
     }
-    printf("SEg\n");
 
     if (tps_left.length > tps_right.length) {
         err = SEM_FUNC_ERR;
@@ -209,10 +207,10 @@ add_func_decl:
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(type_params);
+        NEXT_NONTERM(type_params());
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(type_returns);
+        NEXT_NONTERM(type_returns());
 
         CHECK_TPS_DEF_DECL_FUNCS();
 
@@ -242,14 +240,14 @@ add_func_def:
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        NEXT_NONTERM(params);
+        NEXT_NONTERM(params());
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(type_returns);
+        NEXT_NONTERM(type_returns());
 
         CHECK_TPS_DEF_DECL_FUNCS();
 
-        NEXT_NONTERM(statement);
+        NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         DEL_SYMTAB();
@@ -276,7 +274,7 @@ add_func_def:
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(args);
+        NEXT_NONTERM(args());
 
         // after argc() we have in tps_left expected types of argv
         // in tps_right we have real types of argv
@@ -329,13 +327,14 @@ bool statement() {
                 " end <statement>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression);
+        // can be empty ???
+        NEXT_NONTERM(expression(true, true));
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement);
+        NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
 
         DEL_SYMTAB();
@@ -343,7 +342,7 @@ bool statement() {
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement);
+        NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         DEL_SYMTAB();
@@ -357,13 +356,14 @@ bool statement() {
                 " end <statement>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression);
+        // can be empty ???
+        NEXT_NONTERM(expression(true, true));
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        NEXT_NONTERM(statement);
+        NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         DEL_SYMTAB();
@@ -390,14 +390,8 @@ bool statement() {
         FILL_TYPE(&tmp_var->data.var->type);
         FILL_TYPE(&tps_left);
 
-        NEXT_NONTERM(type);
-        NEXT_NONTERM(def_var);
-        //ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
-        //                                                                &tmp_func->data.func->decl_attr.rets);
-        //CHECK_INTERNAL_ERR(!ret, false);
-
-        // we should check type compatibility
-        //CHECK_COMPATIBILITY();
+        NEXT_NONTERM(type());
+        NEXT_NONTERM(def_var());
 
         return statement();
     }
@@ -409,20 +403,23 @@ bool statement() {
                                                                      &item->data.func->decl_attr.rets);
 
         CHECK_INTERNAL_ERR(!ret, false);
-
-        uint64_t tmp_num_rets = item->data.func->def == true ? item->data.func->def_attr.rets.length :
-                                                               item->data.func->decl_attr.rets.length;
-        for (unsigned long int i = 0; i < tmp_num_rets; i++) {
-            ret = str_add_char(&tps_right, 'N');
-            CHECK_INTERNAL_ERR(!ret, false);
-        }
         //////////////////////////////////////////////////////////////////
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression);
-        NEXT_NONTERM(other_exp);
+        NEXT_NONTERM(expression(false, true));
+        NEXT_NONTERM(other_exp());
 
-        //CHECK_COMPATIBILITY();
+        if (tps_right.length > tps_left.length) {
+            err = SEM_FUNC_ERR;
+            return false;
+        }
+
+        //int64_t dif = tps_left.length - tps_right.length;
+        for (uint64_t i = 0; i < tps_left.length; i++) {
+            str_add_char(&tps_right, 'N');
+        }
+
+        CHECK_COMPATIBILITY();
 
         return statement();
     }
@@ -443,7 +440,7 @@ bool statement() {
             EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
 
-            NEXT_NONTERM(args);
+            NEXT_NONTERM(args());
 
             CHECK_COMPATIBILITY();
 
@@ -461,7 +458,7 @@ bool statement() {
             CHECK_INTERNAL_ERR(!ret, false);
 
             NEXT_TOKEN();
-            NEXT_NONTERM(vars);
+            NEXT_NONTERM(vars());
         }
         else {
             err = SEM_DEF_ERR;
@@ -510,10 +507,8 @@ bool type_expr() {
         print_rule("19. <type_expr> -> id_func ( <args> )");
 
         ////////////////////////////////////////////////////////////
-        ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets  :
+        ret = str_copy_str(&tps_right, tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets :
                                                                          &tmp_func->data.func->decl_attr.rets);
-        //printf("left  = %s\n", tps_left.str);
-        //printf("right = %s\n", tps_right.str);
         CHECK_INTERNAL_ERR(!ret, false);
         CHECK_COMPATIBILITY();
         /////////////////////////////////////////////////////
@@ -525,7 +520,7 @@ bool type_expr() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(args);
+        NEXT_NONTERM(args());
 
         CHECK_COMPATIBILITY();
 
@@ -538,8 +533,11 @@ bool type_expr() {
     str_clear(&tps_left);
     print_rule("20. <type_expr> -> <expression> <other_exp>");
 
-    NEXT_NONTERM(expression);
-    return other_exp();
+    NEXT_NONTERM(expression(false, false));
+    NEXT_NONTERM(other_exp());
+
+    CHECK_COMPATIBILITY();
+    return true;
 }
 
 bool other_exp() {
@@ -547,7 +545,7 @@ bool other_exp() {
         print_rule("21. <other_exp> -> , <expression> <other_exp>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(expression);
+        NEXT_NONTERM(expression(false, false));
 
         return other_exp();
     }
@@ -555,7 +553,11 @@ bool other_exp() {
     // check compatibility for expressions
     // expressions are expected in tps_right
     // vars are expected in tps_left
-    CHECK_COMPATIBILITY();
+
+    //printf("left  = %s\n", tps_left.str);
+    //printf("right = %s\n", tps_right.str);
+
+    //CHECK_COMPATIBILITY();
     print_rule("22. <other_exp> -> e");
     return true;
 }
@@ -603,7 +605,7 @@ bool init_assign() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(args);
+        NEXT_NONTERM(args());
 
         CHECK_COMPATIBILITY();
         // nice, we check whole rule for type compatibility
@@ -615,18 +617,12 @@ bool init_assign() {
     }
 
     print_rule("26. <init_assign> -> <expression>");
-    printf("ALALALAL\n");
-    NEXT_NONTERM(expression);
-    printf("ALALALAL\n");
+    NEXT_NONTERM(expression(false, false));
     // comment next two lines, when expression will be ready
     //str_clear(&tps_left);
     //str_clear(&tps_right);
     //
-    printf("%s - tps_left\n", tps_left.str);
-    printf("%s - tps_right\n", tps_right.str);
-    //if (tps_right == NULL || &tps_left = NULL) {printf("NULLLLLLLL\n");}
     CHECK_COMPATIBILITY();
-    printf("ALALALAL 20 2020 202\n");
 
     return true;
 }
@@ -641,7 +637,7 @@ bool type_returns() {
                   &item->data.func->def_attr.rets :
                   &item->data.func->decl_attr.rets);
         /////////////////////////////////////////////
-        NEXT_NONTERM(type);
+        NEXT_NONTERM(type());
 
         return other_types_returns();
     }
@@ -660,7 +656,7 @@ bool other_types_returns() {
                   &item->data.func->def_attr.rets :
                   &item->data.func->decl_attr.rets);
         /////////////////////////////////////////////
-        NEXT_NONTERM(type);
+        NEXT_NONTERM(type());
 
         return other_types_returns();
     }
@@ -680,7 +676,7 @@ bool other_types_params() {
         }
         //////////////////////////////////////////////////
 
-        NEXT_NONTERM(type);
+        NEXT_NONTERM(type());
 
         return other_types_params();
     }
@@ -708,7 +704,7 @@ bool params() {
         FILL_TYPE(&tmp_var->data.var->type);
         /////////////////////////////////////////////////
 
-        NEXT_NONTERM(type);
+        NEXT_NONTERM(type());
 
         return other_params();
     }
@@ -737,7 +733,7 @@ bool other_params() {
         }
         /////////////////////////////////////////////////
 
-        NEXT_NONTERM(type);
+        NEXT_NONTERM(type());
 
         return other_params();
     }
@@ -807,7 +803,7 @@ bool other_args() {
         print_rule("43. <other_args> -> , <param_to_func> <other_args>");
 
         NEXT_TOKEN();
-        NEXT_NONTERM(param_to_func);
+        NEXT_NONTERM(param_to_func());
         return other_args();
     }
 

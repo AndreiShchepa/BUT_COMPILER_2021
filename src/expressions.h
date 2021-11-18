@@ -69,7 +69,7 @@ typedef struct {
     ElementPtr lastElement;
 } List;
 
-bool expression();
+bool expression(bool bool_condition, bool bool_empty);
 
 /*
  * @brief The first initialization, we create the stack and
