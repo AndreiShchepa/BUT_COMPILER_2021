@@ -295,17 +295,19 @@ bool Insert(List * list, char * data) {
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
         // TODO: vycistit nejakym zpusobem tuto pamet
-        ret = str_init(&TempElement_second->element_token.attr.id, 20);
-        if (!ret) {
-            err = INTERNAL_ERR;
-            return false;
+        if(token.type == T_ID){
+            ret = str_init(&TempElement_second->element_token.attr.id, 20);
+            if (!ret) {
+                err = INTERNAL_ERR;
+                return false;
+            }
+            ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
+            if (!ret) {
+                err = INTERNAL_ERR;
+                return false;
+            }
+            printf("Im mallocing ID, %s\n", TempElement_second->element_token.attr.id.str);
         }
-        ret = str_copy_str(&TempElement_second->element_token.attr.id, &token.attr.id);
-        if (!ret) {
-            err = INTERNAL_ERR;
-            return false;
-        }
-
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
         strcpy(TempElement_second->data, data);
