@@ -212,8 +212,8 @@ void Dispose(ElementPtr Element) {
     while (TempElement != NULL) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
+        // We previously saved the names of the variables, we need to free them
         if(DelElement->element_token.type == T_ID){
-            printf("Im freeing ID, %s\n", DelElement->element_token.attr.id.str);
             str_free(&DelElement->element_token.attr.id);
         }
         free(DelElement);
@@ -294,7 +294,7 @@ bool Insert(List * list, char * data) {
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
-        // TODO: vycistit nejakym zpusobem tuto pamet
+        // If we are dealing with variable we also save the name of the variable to be able to look into symtab
         if(token.type == T_ID){
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             if (!ret) {
@@ -306,7 +306,6 @@ bool Insert(List * list, char * data) {
                 err = INTERNAL_ERR;
                 return false;
             }
-            printf("Im mallocing ID, %s\n", TempElement_second->element_token.attr.id.str);
         }
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
