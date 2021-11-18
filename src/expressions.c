@@ -212,6 +212,10 @@ void Dispose(ElementPtr Element) {
     while (TempElement != NULL) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
+        if(DelElement->element_token.type == T_ID){
+            printf("Im freeing ID, %s\n", DelElement->element_token.attr.id.str);
+            str_free(&DelElement->element_token.attr.id);
+        }
         free(DelElement);
         DelElement = NULL;
     }
