@@ -98,6 +98,7 @@ typedef enum token_type {
     T_COMMA,
     T_COLON,
     T_CONCAT,
+    T_COMPARE_RES,
     T_NONE // init value
 } token_type_t;
 

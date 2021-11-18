@@ -87,13 +87,15 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_TERM(IDX) \
         do { \
             if((IDX) == 0) { \
-                types_E[IDX] = Ei->element_token.type == T_INT    ? 'I' :      \
-                               Ei->element_token.type == T_STRING ? 'S' :      \
-                               Ei->element_token.type == T_FLOAT  ? 'F' : 'N'; \
+                types_E[IDX] = Ei->element_token.type == T_INT          ? 'I' :      \
+                               Ei->element_token.type == T_STRING       ? 'S' :      \
+                               Ei->element_token.type == T_FLOAT        ? 'F' :      \
+                               Ei->element_token.type == T_COMPARE_RES  ? 'C' : 'N'; \
             } else { \
-                types_E[IDX] = Ej->element_token.type == T_INT    ? 'I' :      \
-                               Ej->element_token.type == T_STRING ? 'S' :      \
-                               Ej->element_token.type == T_FLOAT  ? 'F' : 'N'; \
+                types_E[IDX] = Ej->element_token.type == T_INT          ? 'I' :      \
+                               Ej->element_token.type == T_STRING       ? 'S' :      \
+                               Ej->element_token.type == T_FLOAT        ? 'F' :      \
+                               Ej->element_token.type == T_COMPARE_RES  ? 'C' : 'N'; \
             } \
         } while(0);
 
@@ -131,11 +133,14 @@ char Rules[][LENGTH_OF_RULES] = {
 
 #define ASSIGN_TYPE() \
         do { \
-            if ((strcmp(types_E, "II") == 0) || (j >= 7 && j <= 13)) { \
-                find->element_token.type = T_INT; \
+            if ((j >= 8 && j <= 13) || strcmp(types_E, "CC") == 0) { \
+                find->element_token.type = T_COMPARE_RES; \
             } \
             else if (strcmp(types_E, "SS") == 0) { \
                 find->element_token.type = T_STRING; \
+            } \
+            else if ((strcmp(types_E, "II") == 0) || j == 7){ \
+                find->element_token.type = T_INT; \
             } \
             else { \
                 find->element_token.type = T_FLOAT; \
@@ -149,10 +154,12 @@ void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
         printf("%s", PrintElement->data);
+//        printf("(%s;", PrintElement->data);
+//        printf("%d) ", PrintElement->element_token.type);
         PrintElement = PrintElement->nextElement;
     }
 
-    printf("\n");
+    printf("\n\n");
 }
 
 // Return on which index we can find our precedence rule
@@ -310,6 +317,7 @@ bool Insert(List * list, char * data) {
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
         strcpy(TempElement_second->data, data);
+        TempElement_second->already_reduced = 0;
         // else we just set type to T_NONE so we can
         // differentiate between an expression and a character
     }
@@ -388,8 +396,9 @@ bool Close(List * list) {
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
         if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
-            // Assigns type, if II, type == int, SS = string, else = float
+            // Assigns type, if Comparing type == compare, if II type == int, SS = string else = float
             ASSIGN_TYPE()
+//            printf("Robim s types: %s a ASSIGN_TYPE: %d\n", types_E, find->element_token.type);
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
             if (j == 7 || j == 14) {
@@ -404,12 +413,7 @@ bool Close(List * list) {
                 // If we are doing comparison rules
             }
             else if (j >= 8 && j <= 13) {
-                find->element_token.type = T_NONE;
                 CHECK_COMPARISON();
-                // TODO: podivat se na zasobnik. Pokud mame $E, to je pohoda.
-                // Znamena, ze meli jsme pouze jeden operator pro pororovnani (co je good).
-                // Jinak nastav chybu SEM_ARITHM_REL_ERR a vrat false
-
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter
                 // of what type the expression is
@@ -422,12 +426,12 @@ bool Close(List * list) {
             }
 
             // We change << with E
-            // printf("Rule: %d TYPE of reduced expression: %d\n\n",
-            // j, find->element_token.type);
             strcpy(find->data, "E");
             // We delete everything after <<
             Dispose(find->nextElement);
             find->nextElement = NULL;
+            // The resulting expression is combination of 2 other expressions
+            find->already_reduced = 1;
             list->lastElement = find;
 
             return true;
