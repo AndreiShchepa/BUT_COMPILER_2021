@@ -109,7 +109,7 @@ char Rules[][LENGTH_OF_RULES] = {
             } \
         } while(0);
 
-#define CHECK_CONC_LENGHT() \
+#define CHECK_CONC_LENGTH() \
         do { \
             if (strcmp(types_E, "SS")) \
             { \
@@ -290,6 +290,7 @@ bool Insert(List * list, char * data) {
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
+        // TODO: vycistit nejakym zpusobem tuto pamet
         ret = str_init(&TempElement_second->element_token.attr.id, 20);
         if (!ret) {
             err = INTERNAL_ERR;
@@ -303,6 +304,7 @@ bool Insert(List * list, char * data) {
 
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
+        strcpy(TempElement_second->data, data);
         // else we just set type to T_NONE so we can
         // differentiate between an expression and a character
     }
@@ -386,7 +388,7 @@ bool Close(List * list) {
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
             if (j == 7 || j == 14) {
-                CHECK_CONC_LENGHT()
+                CHECK_CONC_LENGTH();
                 // Special case where assign type would assign string
                 // due to #E being string operation, but
                 // the result of this operation is size in numbers
@@ -397,8 +399,12 @@ bool Close(List * list) {
                 // If we are doing comparison rules
             }
             else if (j >= 8 && j <= 13) {
-                find->element_token.type = T_INT;
-                CHECK_COMPARISON()
+                find->element_token.type = T_NONE;
+                CHECK_COMPARISON();
+                // TODO: podivat se na zasobnik. Pokud mame $E, to je pohoda.
+                // Znamena, ze meli jsme pouze jeden operator pro pororovnani (co je good).
+                // Jinak nastav chybu SEM_ARITHM_REL_ERR a vrat false
+
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter
                 // of what type the expression is
@@ -407,7 +413,7 @@ bool Close(List * list) {
                 // to do number operation with strings
             }
             else if(j != 0 && j != 1){
-                CHECK_NUMBER()
+                CHECK_NUMBER();
             }
 
             // We change << with E
@@ -501,6 +507,10 @@ void Deallocate(List * list) {
         token.type != T_FLOAT      && token.type != T_INT    && \
         token.keyword != KW_NIL
 
+#define SYMBOLS_FOR_CONDITION \
+        token.type == T_LT || token.type == T_GT || token.type == T_LE || \
+        token.type == T_GE || token.type == T_EQ || token.type == T_NEQ   \
+
 bool expression(bool bool_condition, bool bool_empty) {
     (void)bool_condition;
     bool ret;
@@ -516,6 +526,13 @@ bool expression(bool bool_condition, bool bool_empty) {
     }
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
+        if (!bool_condition) {
+            if (SYMBOLS_FOR_CONDITION) {
+                err = SEM_TYPE_COMPAT_ERR;
+                return false;
+            }
+        }
+
 start_expr:
         // Look what char is on top of the stack (+, -, <= etc.)
         Top(list, data);
