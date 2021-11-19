@@ -14,7 +14,6 @@ typedef struct cnts_s {
     unsigned int param_cnt;
     unsigned int if_cnt;
     unsigned int while_cnt;
-    unsigned int continue_cnt;
     unsigned int deep;
 } cnts_t;
 extern cnts_t cnt;
