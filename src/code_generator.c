@@ -5,16 +5,24 @@
  *****************************************************************************/
 // TODO - check vars, params, if, while numbering - tests - redefinition
 
-//todo SKONTROLOVAT
+
 #define FUNC_DIV_ZERO   \
 "\nlabel $div_zero"     \
-"\n	## start"           \
 "\n exit int@9"
 
 #define FUNC_OP_NIL     \
 "\nlabel $op_nil"     \
-"\n	## start"           \
 "\n exit int@8"
+
+#define RETYPING_VAR1 \
+"\nlabel $retyping_var1" \
+"\n int2float GF@var1 GF@var1" \
+"return"
+
+#define RETYPING_VAR2 \
+"\nlabel $retyping_var2" \
+"\n int2float GF@var2 GF@var2" \
+"return"
 
 
 /******************************************************************************
@@ -35,17 +43,27 @@
         }                                                                   \
     } while(0)
 
-#define IS_NIL(num) \
-PRINT_INSTR(a, "\n\npops GF@$var2%s", "");                          \
-PRINT_INSTR(b, "\n\npops GF@$var1%s", "");                          \
-PRINT_INSTR(c, "\ntype GF@$type1 GF@$var2%s", "");                  \
-PRINT_INSTR(d, "\njumpifeq $op_nil GF@$type1 string@nil%s", "");    \
-PRINT_INSTR(e, "\njumpifeq $op_nil GF@$type2 string@nil%s", "");    \
-PRINT_INSTR(f, "\n\njumpifeq $continue%d GF@$type1 GF@$type2%s", (num), "");    \
-PRINT_INSTR(g, "\ncall$retyping%s", "");                                \
-PRINT_INSTR(h, "\n\nlabel $continue%s", "");                         \
-PRINT_INSTR(i, "\n\npushs GF@$var1%s", "");                             \
-PRINT_INSTR(j, "\npushs GF@$var2%s", "");
+
+
+
+
+#define TYPE_CHECK() \
+PRINT_INSTR(a, "pops GF@&var2" NON_VAR EOL, EMPTY_STR);                                             \
+PRINT_INSTR(b, "pops GF@&var1" NON_VAR EOL , EMPTY_STR);                                            \
+PRINT_INSTR(c, "type GF@&type1 GF@&var1" NON_VAR EOL, EMPTY_STR);                                   \
+PRINT_INSTR(c, "type GF@&type2 GF@&var2" NON_VAR EOL EOL, EMPTY_STR);                               \
+PRINT_INSTR(d, "jumpifeq $op_nil GF@&type1 string@nil" NON_VAR EOL, EMPTY_STR);                     \
+PRINT_INSTR(e, "jumpifeq $op_nil GF@&type2 string@nil" NON_VAR EOL, EMPTY_STR);                     \
+PRINT_INSTR(f, "jumpifeq $%s$%d$%d$continue_end GF@&type1 GF@&type2" EOL EOL, cnt.func_name.str,    \
+            cnt.continue_cnt, cnt.deep);                                                            \
+PRINT_INSTR(f, "jumpifeq $%s$%d$%d$continue_mid GF@&type1 string@float" EOL, cnt.func_name.str,     \
+            cnt.continue_cnt, cnt.deep);                                                            \
+PRINT_INSTR(g, "call $retyping_var1" NON_VAR EOL EOL, EMPTY_STR);                                   \
+PRINT_INSTR(h, "label $%s$%d$%d$continue_mid" EOL, cnt.func_name.str, cnt.continue_cnt, cnt.deep);  \
+PRINT_INSTR(g, "call $retyping_var2" NON_VAR EOL EOL, EMPTY_STR);                                   \
+PRINT_INSTR(h, "label $%s$%d$%d$continue_end" EOL, cnt.func_name.str, cnt.continue_cnt, cnt.deep);  \
+PRINT_INSTR(i, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);                                            \
+PRINT_INSTR(j, "pushs GF@&var2" NON_VAR EOL EOL, EMPTY_STR);
 
 #define IS_DIV_ZERO() \
 PRINT_INSTR(aa, "\n\npops GF@$var2%s", "");              \
@@ -84,6 +102,7 @@ bool init_cnt() {
     cnt.if_cnt    = 0;
     cnt.while_cnt = 0;
     cnt.deep      = 0;
+    cnt.continue_cnt = 0;
     return true;
 }
 
@@ -272,93 +291,92 @@ bool gen_testing_helper() {
     return true;
 }
 
-#if 0
-bool gen_expression() {
-    str_init(&ifj_code, IFJ_CODE_START_LEN);
 
+bool gen_expression() {
     while (!queue_isEmpty(queue_expr)) {
         switch (queue_expr->front->token->type) {
             case T_ID:
-                PRINT_INSTR(1, "\npushs LF@%s", queue_expr->front->token->attr.id.str);
+                PRINT_INSTR(1, "pushs LF@&%s" EOL, queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
-                PRINT_INSTR(2, "\npushs int@%llu", queue_expr->front->token->attr.num_i);
+                PRINT_INSTR(2, "\npushs int@%llu" EOL, queue_expr->front->token->attr.num_i);
                 break;
             case T_FLOAT:
-                PRINT_INSTR(1, "\npushs float@%f", queue_expr->front->token->attr.num_f);
+                PRINT_INSTR(3, "\npushs float@%f" EOL, queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
-                PRINT_INSTR(1, "\npushs string@%s", queue_expr->front->token->attr.id.str);
+                PRINT_INSTR(4, "\npushs string@%s" EOL, queue_expr->front->token->attr.id.str);
                 break;
             case T_NONE: //todo nil???
-                PRINT_INSTR(1, "\npushs nil@nil%s", "");
+                PRINT_INSTR(5, "pushs nil@nil" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_PLUS:
-                IS_NIL(1);
-                PRINT_INSTR(2, "\nadds%s", "");
+                TYPE_CHECK();
+                PRINT_INSTR(6, "adds" NON_VAR EOL, EMPTY_STR);
                 break;
+
             case T_MINUS:
-                IS_NIL(2);
-                PRINT_INSTR(3, "\nsubs%s", "");
+                TYPE_CHECK();
+                PRINT_INSTR(7, "subs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_MUL:
-                IS_NIL(3);
-                PRINT_INSTR(4, "\nmuls%s", "");
+                TYPE_CHECK();
+                PRINT_INSTR(8, "muls" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_DIV:
-                IS_NIL(4);
+                TYPE_CHECK();
                 IS_DIV_ZERO();
-                PRINT_INSTR(5, "\ndivs%s", "");
+                PRINT_INSTR(9, "divs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_DIV_INT:
-                IS_NIL(5);
+                TYPE_CHECK();
                 IS_DIV_ZERO();
-                PRINT_INSTR(6, "\nidivs%s", "");
+                PRINT_INSTR(10, "idivs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LT:
-                IS_NIL(6);
-                PRINT_INSTR(7, "\nlts%s", "");
+                //IS_NIL();
+                PRINT_INSTR(11, "lts" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_GT:
-                IS_NIL(7);
-                PRINT_INSTR(8, "\ngts%s", "");
+                //IS_NIL();
+                PRINT_INSTR(12, "gts" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LE:
-                IS_NIL(8);
-                PRINT_INSTR(9, "\npops GF@$var2%s", "");
-                PRINT_INSTR(9, "\npops GF@$var1%s", "");
+                //IS_NIL();
+                PRINT_INSTR(13, "\npops GF@$var2%s", "");
+                PRINT_INSTR(14, "\npops GF@$var1%s", "");
 
-                PRINT_INSTR(9, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(9, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(9, "\nlts%s", "");
+                PRINT_INSTR(15, "\npushs GF@$var1%s", "");
+                PRINT_INSTR(16, "\npushs GF@$var2%s", "");
+                PRINT_INSTR(17, "\nlts%s", "");
 
-                PRINT_INSTR(9, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(9, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(10, "\neqs%s", "");
+                PRINT_INSTR(18, "\npushs GF@$var1%s", "");
+                PRINT_INSTR(19, "\npushs GF@$var2%s", "");
+                PRINT_INSTR(20, "\neqs%s", "");
 
-                PRINT_INSTR(11, "\nors%s", "");
+                PRINT_INSTR(21, "\nors%s", "");
                 break;
             case T_GE:
-               // IS_NIL();
-                PRINT_INSTR(9, "\npops GF@$var2%s", "");
-                PRINT_INSTR(9, "\npops GF@$var1%s", "");
+                // IS_NIL();
+                PRINT_INSTR(22, "\npops GF@$var2%s", "");
+                PRINT_INSTR(23, "\npops GF@$var1%s", "");
 
-                PRINT_INSTR(9, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(9, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(9, "\ngts%s", "");
+                PRINT_INSTR(24, "\npushs GF@$var1%s", "");
+                PRINT_INSTR(25, "\npushs GF@$var2%s", "");
+                PRINT_INSTR(26, "\ngts%s", "");
 
-                PRINT_INSTR(9, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(9, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(10, "\neqs%s", "");
+                PRINT_INSTR(27, "\npushs GF@$var1%s", "");
+                PRINT_INSTR(28, "\npushs GF@$var2%s", "");
+                PRINT_INSTR(29, "\neqs%s", "");
 
-                PRINT_INSTR(11, "\nors%s", "");
+                PRINT_INSTR(30, "\nors%s", "");
                 break;
             case T_EQ:
-                PRINT_INSTR(15, "\neqs%s", "");
+                PRINT_INSTR(31, "\neqs%s", "");
                 break;
             case T_NEQ:
-                PRINT_INSTR(16, "\neqs%s", "");
-                PRINT_INSTR(17, "\nnots%s", "");
+                PRINT_INSTR(32, "\neqs%s", "");
+                PRINT_INSTR(33, "\nnots%s", "");
                 break;
             case T_LENGTH:
                 //IS_NIL(); // todo??
@@ -376,13 +394,8 @@ bool gen_expression() {
     FILE *testik = fopen("testik.out", "w");
     fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);
     fclose(testik);
+    return true;
 }
-//    QueueElementPtr *queue_func_name = queue_id->rear;
-//    QueueElementPtr *queue_elem = queue_id->rear->next_element;
-//     TODO - when variable and when constant
-//    for (int i = 1; queue_elem; queue_elem = queue_elem->next_element, i++) {
-//        PRINT_INSTR(3, "defvar LF@%dp"      EOL, i);
-//        PRINT_INSTR(4, "move LF@%dp TF@%s"  EOL, i, queue_elem->id->key_id);
-//    }
 
-#endif
+
+
