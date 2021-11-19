@@ -17,7 +17,6 @@
 #include "str.h"
 
 int main() {
-#include "code_generator.h"
 
 
 int ret;

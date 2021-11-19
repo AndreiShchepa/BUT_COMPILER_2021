@@ -29,6 +29,8 @@
     #define print_stack_expr(list)
 #endif
 
+#include "scanner.h"
+
 // Check if type of token belongs to expression
 #define TOKEN_ID_EXPRESSION() token.type    == T_ID         || \
                               token.type    == T_INT        || \
@@ -52,6 +54,9 @@
                               token.type    == T_CONCAT
 
 typedef struct Element {
+    // T_NONE will be used with everything else other than expressions
+    // and thus making use of token different than in the rest of the program
+    token_t element_token;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;

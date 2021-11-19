@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set_dbg_cmake() {
-    params="$params -DDEBUG_$1=on"
+    params="$params -DDEBUG_$1=ON"
 }
 
 set_compile_opts() {
@@ -24,6 +24,9 @@ for i in "$@"; do
 		TESTS)
             set_compile_opts "$i"
             ;;
+		INSTR)
+            set_dbg_cmake "$i"
+			;;
          *)
             ;;
     esac
@@ -39,7 +42,7 @@ if [ ! -d "build/" ]; then
     mkdir build
 fi
 
-cd build
+cd build || exit 1
 
 for i in "${arr[@]}"
 do

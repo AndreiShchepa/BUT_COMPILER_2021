@@ -122,6 +122,7 @@ List * Init(List * list) {
 
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$");
+    TempElement->element_token.type = T_NONE;
     return list;
 }
 
@@ -210,6 +211,13 @@ bool Insert(List * list, char * data) {
 
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
+    // If we are dealing not with character, but with an expression we copy the data of token into our structure
+    if((strcmp(data, "i")) == 0){
+        TempElement_second->element_token.type = token.type;
+        // else we just set type to T_NONE so we can differentiate between an expression and a character
+    } else {
+        TempElement_second->element_token.type = T_NONE;
+    }
     strcpy(TempElement_second->data, data);
 
     print_stack_expr(list);
@@ -224,17 +232,54 @@ bool Close(List * list) {
     char Array_To_Check_Against_Rules[5] = {'\0'};
 
     ElementPtr find = list->lastElement;
+    ElementPtr Ei = NULL;
+    ElementPtr Ej = NULL;
 
     // We copy into our array until we dont find closing <<
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
+        // We found Expression and the expression isn't in the form of "i" but "E" on stack
+        // because we dont care about rule <i>
+        // Also because stack is other way around we firstly start pointing with Ej and then with Ei
+        if(find->element_token.type != T_NONE && (strcmp(find->data, "E")) == 0){
+            if(Ej == NULL){
+                Ej = find;
+            } else {
+                Ei = find;
+            }
+        }
         strcat(Array_To_Check_Against_Rules, find->data);
         find = find->previousElement;
     }
-
+    // If we went through closed rule containing both expressions, <E+E> i.e. and not just <i>
+    if(Ei != NULL){
+//        printf("found rule: %s Expression Ei: %s Ej: %s\n", Array_To_Check_Against_Rules, Ei->data, Ej->data);
+//        printf("TYPES: %d %d \n", Ei->element_token.type, Ej->element_token.type);
+        // We have found non-matching types, returning false and setting error to global variable
+        if(Ei->element_token.type != Ej->element_token.type){
+            err = SEM_ARITHM_REL_ERR;
+            return false;
+        }
+    }
     // We check against rules
     for(int j = 0; j < 15; j++) {
         // If we found correct rule
         if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
+            // todo call gen_code_func(Ei, Ej)[j];
+
+            // We cannot lose our token type because we are deleting
+            // everything after << and just copying E in the place of <<
+            // so we also need to "transition" token type
+            //                  find = find->nextElement
+            //                  <<   = E
+            find->element_token.type = find->nextElement->element_token.type;
+            // If we are dealing with rules (E) and #E we need to copy token type from E, not from ( or #
+            // in other rules that doesnt occur because every other rules starts with E
+            if(j == 1 || j == 7){
+                //                  find = find->nextElement    ->nextElement
+                //                  <<   = (                    E
+                find->element_token.type = find->nextElement->nextElement->element_token.type;
+            }
+//            printf("TYPE IS: %d\n", find->element_token.type);
             // We delete everything after <<
             Dispose(find->nextElement);
 
@@ -242,8 +287,24 @@ bool Close(List * list) {
             strcpy(find->data, "E");
             find->nextElement = NULL;
             list->lastElement = find;
-
-            // We were successful in finding a rule
+            // We are already doing a check if we are operating two identical types together
+            // however there can be a situation where we are doing operation on two identical
+            // types yet we are doing an operation that doesnt belong to it i.e.
+            // 5..5 would have passed because both expressions are integers
+            // but operation .. is reserved only for strings so in this
+            // if statement we make sure that if rules #E = 7 and E..E = 14 were found
+            // the expressions are also strings
+            if((j == 7 || j == 14) && find->element_token.type != T_STRING){
+                err = SEM_ARITHM_REL_ERR;
+                return false;
+                // If we found any other rules other than
+                // i = 0, (E) = 1 operations where it doesn't matter of what type the expression is
+                // #E = 7, E..E = 14 string operations
+                // and the type is string, that means we are trying to do number operation with strings
+            } else if(j != 0 && j != 1 && j != 7 && j != 14 && find->element_token.type == T_STRING){
+                err = SEM_ARITHM_REL_ERR;
+                return false;
+            }
             return true;
         }
     }
@@ -288,7 +349,10 @@ bool Push(List * list, char * data) {
     TempElement->nextElement = NULL;
     list->lastElement = TempElement;
 
-    // Copy onto the stack
+    // Copy onto the stack and we also copy T_NONE into token because there will never be situation
+    // where we just arbitrary copy i onto the stack because
+    // there doesnt exist precedence rule "=" with expressions, only with characters
+    TempElement->element_token.type = T_NONE;
     strcpy(TempElement->data, data);
     return true;
 }
@@ -399,7 +463,6 @@ start_expr:
             // If we found something that doesnt have correct order, for example )(
             goto err_expr;
         }
-
         NEXT_TOKEN();
     }
 
@@ -429,8 +492,8 @@ end_expr:
         print_stack_expr(list);
     }
 
-    // If we were successful in reducing the expression
-    if (Check_Correct_Closure(list)) {
+    // If we were successful in reducing the expression and there wasn't any error
+    if (Check_Correct_Closure(list) && err == NO_ERR) {
         Deallocate(list);
         return true;
     }

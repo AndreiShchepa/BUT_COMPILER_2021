@@ -32,6 +32,19 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 Queue* queue_id;
 Queue* queue_expr;
 
+#define CODE_GEN(callback, ...)         \
+    do {                                \
+        if (!(callback)(__VA_ARGS__)) {   \
+            return false;               \
+        }                               \
+    } while(0)                          \
+
+#define QUEUE_ADD_ID(where_is_id_key) \
+    if (!queue_add_id(queue_id, (where_is_id_key))) {    \
+        err = INTERNAL_ERR;                             \
+        return false;                                   \
+    } \
+
 #define CHECK_INTERNAL_ERR(COND, ret) \
         if (COND) { \
             err = INTERNAL_ERR; \
@@ -166,6 +179,7 @@ bool prolog() {
         EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
         NEXT_TOKEN();
 
+        CODE_GEN(gen_init);
         return prog();
     }
 
@@ -212,9 +226,12 @@ add_func_decl:
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+        CODE_GEN(gen_func_start, token.attr.id.str);
 
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
+
+
 add_func_def:
         item->data.func->def = true;
         working_func = 1;
@@ -231,6 +248,9 @@ add_func_def:
 
         NEXT_TOKEN();
         NEXT_NONTERM(params);
+//        init_cnt();
+        CODE_GEN(gen_params);
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(type_returns);
@@ -239,6 +259,7 @@ add_func_def:
 
         NEXT_NONTERM(statement);
         EXPECTED_TOKEN(token.keyword == KW_END);
+		CODE_GEN(gen_func_end);
 
         DEL_SYMTAB();
 
@@ -247,7 +268,7 @@ add_func_def:
         return prog();
     }
     else if (token.type == T_ID) {
-        print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
+        print_rule("4.  <proG> -> id_func ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
         CHECK_SEM_DEF_ERR(!tmp_func);
@@ -257,10 +278,19 @@ add_func_def:
         CHECK_INTERNAL_ERR(!ret, false);
         ////////////////////////////////
 
+		////////////////////////////////
+		CODE_GEN(gen_func_call_start); 	// createframe
+		QUEUE_ADD_ID(tmp_func); 		// only for func name, args are printed individually
+		////////////////////////////////
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args);
+
+		////////////////////////////////
+		CODE_GEN(gen_func_call_label); // call label
+		////////////////////////////////
 
         CHECK_COMPATIBILITY();
 
@@ -338,6 +368,11 @@ bool statement() {
                 " end <statement>");
 
         NEXT_TOKEN();
+
+		///////////////////////////////////
+        CODE_GEN(gen_while_label, item);
+		///////////////////////////////////
+
         NEXT_NONTERM(expression);
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
@@ -647,9 +682,10 @@ bool params() {
         /////////////////////////////////////////////////
 
         NEXT_NONTERM(type);
-
+        QUEUE_ADD_ID(tmp_var);
         return other_params();
     }
+//	CODE_GEN(gen_params);
 
     print_rule("33. <params> -> e");
     return true;
@@ -662,7 +698,9 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ALLOC_VAR_IN_SYMTAB()
+//        ADD_VAR_TO_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB();
+        QUEUE_ADD_ID(FIND_VAR_IN_SYMTAB)
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -719,6 +757,8 @@ bool param_to_func() {
 
         CHECK_SEM_DEF_ERR(!tmp_var);
 
+		CODE_GEN(gen_func_call_args_var, tmp_var);
+
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
     }
@@ -727,6 +767,10 @@ bool param_to_func() {
         ret = str_add_char(&tps_right, token.type == T_INT    ? 'I' :
                                        token.type == T_STRING ? 'S' :
                                        token.type == T_FLOAT  ? 'F' : 'N');
+		///////////////////////////////
+		CODE_GEN(gen_func_call_args_const, &token);
+		///////////////////////////////
+
         CHECK_INTERNAL_ERR(!ret, false);
     }
     else {
@@ -870,8 +914,8 @@ int parser() {
 
     queue_expr = queue_init();
     queue_id = queue_init();
-    fill_queues();
-    gen_expression();
+//    fill_queues();
+//    gen_expression();
     /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
@@ -891,6 +935,8 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
+
+    gen_testing_helper();
 
     return err;
 }
