@@ -245,7 +245,7 @@
 "\n exit int@9"
 
 #define FUNC_OP_NIL     \
-"\nlabel $div_zero"     \
+"\nlabel $op_nil"     \
 "\n	## start"           \
 "\n exit int@8"
 
@@ -264,15 +264,22 @@
         str_concat_str2(&ifj_code, instr##num);                         \
     } while(0)
 
-#define IS_NIL() \
-PRINT_INSTR(a, "\npops GF@$var2%s", "");\
-PRINT_INSTR(b, "\ntype GF@$type GF@$var2%s", "");\
-PRINT_INSTR(c, "\njumpifeq GF@$type nil@$nil%s", "");\
-PRINT_INSTR(d, "\npops GF@$var1%s", "");\
-PRINT_INSTR(e, "\ntype GF@$type GF@$var2%s", "");\
-PRINT_INSTR(f, "\njumpifeq GF@$type nil@$nil%s", "");\
-PRINT_INSTR(h, "\npushs GF@$var1%s", "");\
-PRINT_INSTR(i, "\npushs GF@$var2%s", "");
+#define IS_NIL(num) \
+PRINT_INSTR(a, "\n\npops GF@$var2%s", "");                          \
+PRINT_INSTR(b, "\n\npops GF@$var1%s", "");                          \
+PRINT_INSTR(c, "\ntype GF@$type1 GF@$var2%s", "");                  \
+PRINT_INSTR(d, "\njumpifeq $op_nil GF@$type1 string@nil%s", "");    \
+PRINT_INSTR(e, "\njumpifeq $op_nil GF@$type2 string@nil%s", "");    \
+PRINT_INSTR(f, "\n\njumpifeq $continue%d GF@$type1 GF@$type2%s", (num), "");    \
+PRINT_INSTR(g, "\ncall$retyping%s", "");                                \
+PRINT_INSTR(h, "\n\nlabel $continue%s", "");                         \
+PRINT_INSTR(i, "\n\npushs GF@$var1%s", "");                             \
+PRINT_INSTR(j, "\npushs GF@$var2%s", "");
+
+#define IS_DIV_ZERO() \
+PRINT_INSTR(aa, "\n\npops GF@$var2%s", "");              \
+PRINT_INSTR(bb, "\njumpifeq $div_zero GF@$var2 int@0%s", ""); \
+PRINT_INSTR(cc, "\npushs GF@$var2%s", "");
 
 /******************************************************************************
   *									GLOBAL VARS
@@ -367,9 +374,6 @@ void code_gen() {
     return;
 }
 
-void gen_heaher() {
-    PRINT_INSTR(1, "\n.Ifj LF@%s", queue_expr->front->token->attr.id.str);
-}
 void gen_expression() {
     str_init(&ifj_code, IFJ_CODE_START_LEN);
 
@@ -379,7 +383,7 @@ void gen_expression() {
                 PRINT_INSTR(1, "\npushs LF@%s", queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
-                PRINT_INSTR(1, "\npushs int@%llu", queue_expr->front->token->attr.num_i);
+                PRINT_INSTR(2, "\npushs int@%llu", queue_expr->front->token->attr.num_i);
                 break;
             case T_FLOAT:
                 PRINT_INSTR(1, "\npushs float@%f", queue_expr->front->token->attr.num_f);
@@ -387,39 +391,41 @@ void gen_expression() {
             case T_STRING:
                 PRINT_INSTR(1, "\npushs string@%s", queue_expr->front->token->attr.id.str);
                 break;
-            case T_NONE: //todo nil???  AND WHAT BOOL
+            case T_NONE: //todo nil???
                 PRINT_INSTR(1, "\npushs nil@nil%s", "");
                 break;
             case T_PLUS:
-                IS_NIL();
+                IS_NIL(1);
                 PRINT_INSTR(2, "\nadds%s", "");
                 break;
             case T_MINUS:
-                IS_NIL();
+                IS_NIL(2);
                 PRINT_INSTR(3, "\nsubs%s", "");
                 break;
             case T_MUL:
-                IS_NIL();
+                IS_NIL(3);
                 PRINT_INSTR(4, "\nmuls%s", "");
                 break;
             case T_DIV:
-                IS_NIL();
+                IS_NIL(4);
+                IS_DIV_ZERO();
                 PRINT_INSTR(5, "\ndivs%s", "");
                 break;
             case T_DIV_INT:
-                IS_NIL();
+                IS_NIL(5);
+                IS_DIV_ZERO();
                 PRINT_INSTR(6, "\nidivs%s", "");
                 break;
             case T_LT:
-                IS_NIL();
+                IS_NIL(6);
                 PRINT_INSTR(7, "\nlts%s", "");
                 break;
             case T_GT:
-                IS_NIL();
+                IS_NIL(7);
                 PRINT_INSTR(8, "\ngts%s", "");
                 break;
             case T_LE:
-                IS_NIL();
+                IS_NIL(8);
                 PRINT_INSTR(9, "\npops GF@$var2%s", "");
                 PRINT_INSTR(9, "\npops GF@$var1%s", "");
 
@@ -434,7 +440,7 @@ void gen_expression() {
                 PRINT_INSTR(11, "\nors%s", "");
                 break;
             case T_GE:
-                IS_NIL();
+               // IS_NIL();
                 PRINT_INSTR(9, "\npops GF@$var2%s", "");
                 PRINT_INSTR(9, "\npops GF@$var1%s", "");
 
@@ -456,16 +462,17 @@ void gen_expression() {
                 PRINT_INSTR(17, "\nnots%s", "");
                 break;
             case T_LENGTH:
-                
+                //IS_NIL(); // todo??
                 break;
             case T_CONCAT:
+                //IS_NIL(); // todo??
                 break;
             default:
                 break;
         }
         queue_remove(queue_expr);
     }
-    PRINT_INSTR(18, "\nPOPS LF@%s", queue_id->front->id->key_id);
+    PRINT_INSTR(18, "\npops LF@%s", queue_id->front->id->key_id);
 
     FILE *testik = fopen("testik.out", "w");
     fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);

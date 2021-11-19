@@ -194,3 +194,4 @@ void symtab_free(htable_t *table) {
         (*table)[i] = NULL;
     }
 }
+
