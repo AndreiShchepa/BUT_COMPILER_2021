@@ -88,7 +88,7 @@ char Rules[][LENGTH_OF_RULES] = {
         do { \
                 TempElement_second->type =  token.type == T_INT          ? 'I' :      \
                                             token.type == T_STRING       ? 'S' :      \
-                                            token.type == T_FLOAT        ? 'F' : 'N'; \
+                                            token.type == T_FLOAT        ? 'F' : 'X'; \
         } while(0);
 #define GET_TYPE_TERM(IDX) \
         do { \
@@ -226,7 +226,7 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if(DelElement->type == 'X'){
+        if(DelElement->element_token.type == T_ID){
             str_free(&DelElement->element_token.attr.id);
         }
         free(DelElement);
@@ -320,7 +320,7 @@ bool Insert(List * list, char * data) {
                 return false;
             }
         }
-        // todo assign correct type
+        // Fill values into element
         ASSIGN_TYPE_FROM_TOKEN();
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
@@ -382,15 +382,19 @@ bool Close(List * list) {
             Ei = Ej;
         }
 
-        if (Ei->type == 'X') {
+        if (Ei->element_token.type == T_ID) {
             GET_TYPE_ID(0, Ei->element_token.attr.id.str);
+            // Change type from X (ID) into float / int / string
+            Ei->type = var->data.var->type.str[0];
         }
         else {
             GET_TYPE_TERM(0);
         }
 
-        if (Ej->type == 'X') {
+        if (Ej->element_token.type == T_ID) {
             GET_TYPE_ID(1, Ej->element_token.attr.id.str);
+            // Change type from X (ID) into float / int / string
+            Ej->type = var->data.var->type.str[0];
         }
         else {
             GET_TYPE_TERM(1);
@@ -398,7 +402,6 @@ bool Close(List * list) {
     }
     else {
         // else <i>
-
     }
 
     // We check against rules
@@ -490,6 +493,7 @@ bool Push(List * list, char * data) {
     // where we just arbitrary copy i onto the stack because
     // there doesnt exist precedence rule "=" with expressions, only with characters
     TempElement->type = 'N';
+    TempElement->element_token.type = token.type;
     strcpy(TempElement->data, data);
     return true;
 }
