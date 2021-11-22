@@ -287,4 +287,89 @@ bool gen_expression();
 "\n	label $chr_label_end												"\
 "\n	pushs 		LF@chr_ret1												"\
 "\n	popframe															"\
-"\n	return																"\
+"\n	return																"                                             \
+
+
+/******************************************************************************
+  *									AUXILIARY FUNCS
+*****************************************************************************/
+
+
+
+#define FUNC_OP_NIL     \
+"\nlabel $op_nil"       \
+"\nexit int@8\n"
+
+#define FUNC_RETYPING_VAR1      \
+"\nlabel $retyping_var1"        \
+"\nint2float GF@&var1 GF@&var1" \
+"\nreturn\n"
+
+#define FUNC_RETYPING_VAR2          \
+"\nlabel $retyping_var2"            \
+"\nint2float GF@&var2 GF@&var2"     \
+"\nreturn\n"
+
+#define FUNC_CHECK_OP                                         \
+"\nlabel $check_op"                                           \
+"\npops GF@&var2"                                             \
+"\npops GF@&var1"                                             \
+"\ntype GF@&type1 GF@&var1"                                   \
+"\ntype GF@&type2 GF@&var2"                                   \
+"\njumpifeq $op_nil GF@&type1 string@nil"                     \
+"\njumpifeq $op_nil GF@&type2 string@nil"                     \
+"\njumpifeq $continue_end_op GF@&type1 GF@&type2"             \
+"\njumpifeq $continue_mid_op GF@&type1 string@float"          \
+"\ncall $retyping_var1"                                       \
+"\nlabel $continue_mid_op"                                    \
+"\ncall $retyping_var2"                                       \
+"\nlabel $continue_end_op"                                    \
+"\npushs GF@&var1"                                            \
+"\npushs GF@&var2"                                            \
+"\nreturn\n"
+
+#define FUNC_CHECK_DIV                                          \
+"\nlabel $check_div"                                            \
+"\npops GF@&var2"                                               \
+"\npops GF@&var1"                                               \
+"\ntype GF@&type1 GF@&var1"                                     \
+"\ntype GF@&type2 GF@&var2"                                     \
+"\njumpifeq $op_nil GF@&type1 string@nil"                       \
+"\njumpifeq $op_nil GF@&type2 string@nil"                       \
+"\njumpifeq $continue_mid_div GF@&type1 string@int"             \
+"\njumpifeq $continue_end_div GF@&type2 string@float"           \
+"\ncall $retyping_var2"                                         \
+"\njump $continue_end_div"                                      \
+"\nlabel $continue_mid_div"                                     \
+"\ncall $retyping_var1"                                         \
+"\njumpifeq $continue_end_div GF@&type2 string@float"           \
+"\ncall $retyping_var2"                                         \
+"\nlabel $continue_end_div"                                     \
+"\njumpifeq $div_zero_error GF@&var2 int@0"                     \
+"\npushs GF@&var1"                                              \
+"\npushs GF@&var2"                                              \
+"\nreturn"                                                      \
+"\nlabel $div_zero_error"                                       \
+"\nexit int@9\n"
+
+
+#define FUNC_CHECK_COMP                                       \
+"\nlabel $check_comp"                                         \
+"\npops GF@&var2"                                             \
+"\npops GF@&var1"                                             \
+"\ntype GF@&type1 GF@&var1"                                   \
+"\ntype GF@&type2 GF@&var2"                                   \
+"\njumpifeq $continue_end_comp GF@&type1 string@nil"          \
+"\njumpifeq $continue_end_comp GF@&type2 string@nil"          \
+"\njumpifeq $continue_mid_comp GF@&type1 string@int"          \
+"\njumpifeq $continue_end_comp GF@&type2 string@float"        \
+"\ncall $retyping_var2"                                       \
+"\njump $continue_end_comp"                                   \
+"\nlabel $continue_mid_comp"                                  \
+"\ncall $retyping_var1"                                       \
+"\njumpifeq $continue_end_comp GF@&type2 string@float"        \
+"\ncall $retyping_var2"                                       \
+"\nlabel $continue_end_comp"                                  \
+"\npushs GF@&var1"                                            \
+"\npushs GF@&var2"                                            \
+"\nreturn\n"

@@ -1,51 +1,10 @@
 #include "code_generator.h"
+#include <stdlib.h>
 
 /******************************************************************************
  *                                  TODO
  *****************************************************************************/
 // TODO - check vars, params, if, while numbering - tests - redefinition
-
-
-#define FUNC_DIV_ZERO                           \
-"label $div_zero"                               \
-"pops GF@$var2"                                 \
-"jumpifeq $div_zero_error GF@$var2 int@0"       \
-"pushs GF@$var2"                                \
-"return"                                        \
-"label $div_zero_error"                         \
-"exit int@9"
-
-#define FUNC_OP_NIL     \
-"\nlabel $op_nil"     \
-"\n exit int@8"
-
-#define RETYPING_VAR1 \
-"\nlabel $retyping_var1" \
-"\n int2float GF@var1 GF@var1" \
-"return"
-
-#define RETYPING_VAR2 \
-"\nlabel $retyping_var2" \
-"\n int2float GF@var2 GF@var2" \
-"return"
-
-#define CHECK_OP() \
-"label $check_op"                                         \
-"pops GF@&var2"                                             \
-"pops GF@&var1"                                             \
-"type GF@&type1 GF@&var1"                                   \
-"type GF@&type2 GF@&var2"                                   \
-"jumpifeq $op_nil GF@&type1 string@nil"                     \
-"jumpifeq $op_nil GF@&type2 string@nil"                     \
-"jumpifeq $continue_end GF@&type1 GF@&type2"                \
-"jumpifeq $continue_mid GF@&type1 string@float"             \
-"call $retyping_var1"                                       \
-"label $%s$%d$%d$continue_mid"                              \
-"call $retyping_var2"                                       \
-"label $%s$%d$%d$continue_end"                              \
-"pushs GF@&var1"                                            \
-"pushs GF@&var2"                                            \
-"return"
 
 
 /******************************************************************************
@@ -65,14 +24,6 @@
             return false;                                                   \
         }                                                                   \
     } while(0)
-
-
-
-
-
-
-
-#define IS_DIV_ZERO() \
 
 #ifdef DEBUG_INSTR
 	#define DEBUG_PRINT_INSTR(num, fmt, ...)                                \
@@ -96,6 +47,7 @@ string_t ifj_code;
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
+extern arr_symtbs_t local_symtbs;
 cnts_t cnt;
 
 
@@ -127,19 +79,26 @@ bool gen_func_label() {
 
 bool gen_header() {
     PRINT_INSTR(1, ".IFJcode21" NON_VAR EOL EOL, EMPTY_STR);
+    PRINT_INSTR(1, "jump $main" NON_VAR EOL EOL, EMPTY_STR);
     return true;
 }
 
 
 bool gen_init_built_ins() {
-    PRINT_INSTR(1, "%s", FUNC_TOINTEGER);
+    /*PRINT_INSTR(1, "%s", FUNC_TOINTEGER);
     PRINT_INSTR(2, "%s", FUNC_READI);
     PRINT_INSTR(3, "%s", FUNC_READN);
     PRINT_INSTR(4, "%s", FUNC_READS);
     PRINT_INSTR(5, "%s", FUNC_WRITE);
     PRINT_INSTR(6, "%s", FUNC_SUBSTR);
     PRINT_INSTR(7, "%s", FUNC_ORD);
-    PRINT_INSTR(8, "%s", FUNC_CHR);
+    PRINT_INSTR(8, "%s", FUNC_CHR);*/
+    PRINT_INSTR(10, "%s", FUNC_RETYPING_VAR1);
+    PRINT_INSTR(11, "%s", FUNC_RETYPING_VAR2);
+    PRINT_INSTR(12, "%s", FUNC_CHECK_OP);
+    PRINT_INSTR(13, "%s", FUNC_CHECK_COMP);
+    PRINT_INSTR(14, "%s", FUNC_OP_NIL);
+    PRINT_INSTR(15, "%s", FUNC_CHECK_DIV);
     return true;
 }
 
@@ -271,8 +230,8 @@ bool code_gen_print_ifj_code21() {
 bool gen_init() {
     if (!str_init(&ifj_code, IFJ_CODE_START_LEN) ||
         !gen_header()                            ||
-        !init_cnt()
-//      !gen_init_built_ins()
+        !init_cnt()                              ||
+        !gen_init_built_ins()
         ) {
         err = INTERNAL_ERR;
     }
@@ -281,6 +240,9 @@ bool gen_init() {
     PRINT_INSTR(5, "defvar GF@&type2" NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(6, "defvar GF@&var1"  NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(7, "defvar GF@&var2"  NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(8, "\n\n\nlabel $main" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(9, "createframe"  NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(10, "pushframe"  NON_VAR EOL, EMPTY_STR);
 
     str_free(&cnt.func_name);
     return (err == NO_ERR);
@@ -295,111 +257,122 @@ bool gen_testing_helper() {
     return true;
 }
 
-
 bool gen_expression() {
+    htab_item_t *tmp;
+    str_init(&cnt.func_name,100);
+    cnt.func_name.str = "main\0";
     while (!queue_isEmpty(queue_expr)) {
         switch (queue_expr->front->token->type) {
             case T_ID:
-                PRINT_INSTR(1, "pushs LF@&%s" EOL, queue_expr->front->token->attr.id.str);
+                tmp = find_id_symtbs(&local_symtbs, queue_expr->front->token->attr.id.str);
+                if(!tmp){
+                    //todo error
+                    tmp = calloc(1, sizeof(htab_item_t)); //todo vymazat
+                    tmp->deep = 1; //todo vymazat
+                }
+                PRINT_INSTR(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
-                PRINT_INSTR(2, "\npushs int@%llu" EOL, queue_expr->front->token->attr.num_i);
+                PRINT_INSTR(2, "\npushs int@%llu" EOL, queue_expr->front->token->attr.num_i); //ubuntu chce lu
                 break;
             case T_FLOAT:
-                PRINT_INSTR(3, "\npushs float@%f" EOL, queue_expr->front->token->attr.num_f);
+                // todo format (asi je treba skontrolovat)
+                PRINT_INSTR(3, "\npushs float@%a" EOL, queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
                 PRINT_INSTR(4, "\npushs string@%s" EOL, queue_expr->front->token->attr.id.str);
                 break;
-            case T_NONE: //todo nil???
-                PRINT_INSTR(5, "pushs nil@nil" NON_VAR EOL, EMPTY_STR);
+            case T_KEYWORD:
+                if(queue_expr->front->token->keyword == KW_NIL){
+                    PRINT_INSTR(5, "pushs nil@nil" NON_VAR EOL, EMPTY_STR);
+                }
+                // todo else what??
                 break;
             case T_PLUS:
-                PRINT_INSTR(, "call $check_op" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(6, "adds" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(6, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(7, "adds" NON_VAR EOL, EMPTY_STR);
                 break;
-
             case T_MINUS:
-                PRINT_INSTR(, "call $check_op" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(7, "subs" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(8, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(9, "subs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_MUL:
-                PRINT_INSTR(, "call $check_op" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(8, "muls" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(10, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(11, "muls" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_DIV:
-                PRINT_INSTR(, "call $check_op" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(, "call $div_zero" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(9, "divs" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(12, "call $check_div" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(13, "divs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_DIV_INT:
-                PRINT_INSTR(, "call $check_op" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(, "call $div_zero" NON_VAR EOL, EMPTY_STR);
-                PRINT_INSTR(10, "idivs" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(14, "call $check_div" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(15, "idivs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LT:
-                PRINT_INSTR(, "call $check_comp" NON_VAR EOL, EMPTY_STR); //IS_NIL();
-                PRINT_INSTR(11, "lts" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(16, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(17, "lts" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_GT:
-                PRINT_INSTR(, "call $check_comp" NON_VAR EOL, EMPTY_STR); // todo IS_NIL();
-                PRINT_INSTR(12, "gts" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(18, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(19, "gts" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LE:
-                PRINT_INSTR(, "call $check_comp" NON_VAR EOL, EMPTY_STR); // todo IS_NIL();
-                PRINT_INSTR(13, "\npops GF@$var2%s", "");
-                PRINT_INSTR(14, "\npops GF@$var1%s", "");
+                PRINT_INSTR(20, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(21, "pops GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(22, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(23, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(24, "pushs GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(25, "lts" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(26, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(27, "pushs GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(28, "eqs" NON_VAR EOL, EMPTY_STR);
 
-                PRINT_INSTR(15, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(16, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(17, "\nlts%s", "");
-
-                PRINT_INSTR(18, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(19, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(20, "\neqs%s", "");
-
-                PRINT_INSTR(21, "\nors%s", "");
+                PRINT_INSTR(29, "ors" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_GE:
-                PRINT_INSTR(, "call $check_comp" NON_VAR EOL, EMPTY_STR); // todo IS_NIL();
-                PRINT_INSTR(22, "\npops GF@$var2%s", "");
-                PRINT_INSTR(23, "\npops GF@$var1%s", "");
-
-                PRINT_INSTR(24, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(25, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(26, "\ngts%s", "");
-
-                PRINT_INSTR(27, "\npushs GF@$var1%s", "");
-                PRINT_INSTR(28, "\npushs GF@$var2%s", "");
-                PRINT_INSTR(29, "\neqs%s", "");
-
-                PRINT_INSTR(30, "\nors%s", "");
+                PRINT_INSTR(30, "call $check_op" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(31, "pops GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(32, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(33, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(34, "pushs GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(35, "gts" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(36, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(37, "pushs GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(38, "neqs" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(39, "ors" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_EQ:
-                PRINT_INSTR(31, "\neqs%s", "");
+                PRINT_INSTR(40, "call $check_comp" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(41, "eqs" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_NEQ:
-                PRINT_INSTR(32, "\neqs%s", "");
-                PRINT_INSTR(33, "\nnots%s", "");
+                PRINT_INSTR(42, "call $check_comp" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(43, "eqs" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(44, "nots" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LENGTH:
-                //IS_NIL(); // todo??
+                // todo nejake mozne errors? alebo pretypovania?
+                PRINT_INSTR(45, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(46, "strlen GF@&var1 GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(47, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_CONCAT:
-                //IS_NIL(); // todo??
+                // todo nejake mozne errors? alebo pretypovania?
+                PRINT_INSTR(48, "pops GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(49, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(50, "concat GF@&var1 GF@&var1 GF@&var2" NON_VAR EOL, EMPTY_STR);
+                PRINT_INSTR(51, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
                 break;
             default:
                 break;
         }
         queue_remove(queue_expr);
     }
-    PRINT_INSTR(18, "\npops LF@%s", queue_id->front->id->key_id);
-
+    PRINT_INSTR(52, "\npops LF@%s", queue_id->front->id->key_id);
+    PRINT_INSTR(53, "\nwrite LF@x"  NON_VAR EOL, EMPTY_STR);
     FILE *testik = fopen("testik.out", "w");
-    fprintf(testik, "toto je ifj21: \n%s", ifj_code.str);
+    fprintf(testik, "%s", ifj_code.str);
     fclose(testik);
     return true;
 }
-
-
 
