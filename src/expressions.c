@@ -133,13 +133,19 @@ char Rules[][LENGTH_OF_RULES] = {
 
 #define ASSIGN_TYPE() \
         do { \
-            if ((j >= 8 && j <= 13) || strcmp(types_E, "CC") == 0) { \
+            if (rule == 5) { \
+                find->element_token.type = T_FLOAT; \
+            } \
+            else if (rule == 7) { \
+                find->element_token.type = T_INT; \
+            } \
+            else if ((rule >= 8 && rule <= 13) || strcmp(types_E, "CC") == 0) { \
                 find->element_token.type = T_COMPARE_RES; \
             } \
             else if (strcmp(types_E, "SS") == 0) { \
                 find->element_token.type = T_STRING; \
             } \
-            else if ((strcmp(types_E, "II") == 0) || j == 7){ \
+            else if ((strcmp(types_E, "II") == 0)){ \
                 find->element_token.type = T_INT; \
             } \
             else { \
@@ -153,9 +159,9 @@ htab_item_t *var;
 void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
-        printf("%s", PrintElement->data);
-//        printf("(%s;", PrintElement->data);
-//        printf("%d) ", PrintElement->element_token.type);
+//        printf("%s", PrintElement->data);
+        printf("(%s;", PrintElement->data);
+        printf("%d) ", PrintElement->element_token.type);
         PrintElement = PrintElement->nextElement;
     }
 
@@ -393,26 +399,18 @@ bool Close(List * list) {
     }
 
     // We check against rules
-    for(int j = 0; j < 15; j++) {
+    for(int rule = 0; rule < 15; rule++) {
         // If we found correct rule
-        if (strcmp(Array_To_Check_Against_Rules, Rules[j]) == 0) {
+        if (strcmp(Array_To_Check_Against_Rules, Rules[rule]) == 0) {
             // Assigns type, if Comparing type == compare, if II type == int, SS = string else = float
             ASSIGN_TYPE()
-//            printf("Robim s types: %s a ASSIGN_TYPE: %d\n", types_E, find->element_token.type);
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
-            if (j == 7 || j == 14) {
+            if (rule == 7 || rule == 14) {
                 CHECK_CONC_LENGTH();
-                // Special case where assign type would assign string
-                // due to #E being string operation, but
-                // the result of this operation is size in numbers
-                if (j == 7) {
-                    find->element_token.type = T_INT;
-                }
-
                 // If we are doing comparison rules
             }
-            else if (j >= 8 && j <= 13) {
+            else if (rule >= 8 && rule <= 13) {
                 CHECK_COMPARISON();
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter
@@ -421,9 +419,15 @@ bool Close(List * list) {
                 // and the type is string, that means we are trying
                 // to do number operation with strings
             }
-            else if(j != 0 && j != 1){
+            else if(rule != 0 && rule != 1){
                 CHECK_NUMBER();
+                // Special case where we are trying to divide with rule // for integers and the values are not integers
+                if(rule == 6 && strcmp(types_E, "II") != 0){
+                    err = SEM_ARITHM_REL_ERR;
+                    return false;
+                }
             }
+            printf("Robim s types: %s a ASSIGN_TYPE: %d\n", types_E, find->element_token.type);
 
             // We change << with E
             strcpy(find->data, "E");
