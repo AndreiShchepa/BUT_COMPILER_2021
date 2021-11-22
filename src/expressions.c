@@ -134,21 +134,27 @@ char Rules[][LENGTH_OF_RULES] = {
 #define ASSIGN_TYPE() \
         do { \
             if (rule == 5) { \
+                find->element_token.type = T_FLOAT; \
                 find->type = 'F'; \
             } \
             else if (rule == 7) { \
+                find->element_token.type = T_INT; \
                 find->type = 'I'; \
             } \
             else if ((rule >= 8 && rule <= 13) || strcmp(types_E, "CC") == 0) { \
+                find->element_token.type = T_NONE; \
                 find->type = 'C'; \
             } \
             else if (strcmp(types_E, "SS") == 0) { \
+                find->element_token.type = T_STRING; \
                 find->type = 'S'; \
             } \
             else if ((strcmp(types_E, "II") == 0)){ \
+                find->element_token.type = T_INT; \
                 find->type = 'I'; \
             } \
             else { \
+                find->element_token.type = T_FLOAT; \
                 find->type = 'F'; \
             } \
         } while(0);
@@ -161,7 +167,12 @@ void print_stack_debug(List * list) {
     while (PrintElement != NULL) {
 //        printf("%s", PrintElement->data);
         printf("(%s\t", PrintElement->data);
-        printf("%c\t%d\tReduced:%d)\n", PrintElement->type, PrintElement->element_token.type, PrintElement->already_reduced);
+        printf("%c\t%d\tReduced:%d)", PrintElement->type, PrintElement->element_token.type, PrintElement->already_reduced);
+        if(PrintElement->element_token.type == T_ID){
+            printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
+        } else {
+            printf("\n");
+        }
         PrintElement = PrintElement->nextElement;
     }
 
@@ -209,6 +220,8 @@ List * Init(List * list) {
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$");
     TempElement->type = 'N';
+    TempElement->element_token.type = T_NONE;
+
     return list;
 }
 
@@ -304,6 +317,7 @@ bool Insert(List * list, char * data) {
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
     TempElement_first->type = 'N';
+    TempElement_first->element_token.type = T_NONE;
 
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
@@ -352,7 +366,6 @@ bool Close(List * list) {
     ElementPtr Ei = NULL;
     ElementPtr Ej = NULL;
     CLEAR_TYPES_E();
-
     // We copy into our array until we dont find closing <<
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
         // We found Expression and the expression isn't in the form of "i" but "E" on stack
@@ -429,6 +442,7 @@ bool Close(List * list) {
             else if(rule != 0 && rule != 1){
                 CHECK_NUMBER();
                 // Special case where we are trying to divide with rule // for integers and the values are not integers
+
                 if(rule == 6 && strcmp(types_E, "II") != 0){
                     err = SEM_ARITHM_REL_ERR;
                     return false;
@@ -445,7 +459,7 @@ bool Close(List * list) {
                         err = INTERNAL_ERR;
                         return false;
                     }
-                    ret = str_copy_str(&find->element_token.attr.id, &token.attr.id);
+                    ret = str_copy_str(&find->element_token.attr.id, &list->lastElement->element_token.attr.id);
                     if (!ret) {
                         err = INTERNAL_ERR;
                         return false;
@@ -454,6 +468,7 @@ bool Close(List * list) {
             } else {
                 find->already_reduced = 1;
             }
+
             printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
             // We change << with E
             strcpy(find->data, "E");
