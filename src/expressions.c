@@ -160,8 +160,8 @@ void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
 //        printf("%s", PrintElement->data);
-        printf("(%s;", PrintElement->data);
-        printf("%c) ", PrintElement->type);
+        printf("(%s\t", PrintElement->data);
+        printf("%c\t%d\tReduced:%d)\n", PrintElement->type, PrintElement->element_token.type, PrintElement->already_reduced);
         PrintElement = PrintElement->nextElement;
     }
 
@@ -303,6 +303,7 @@ bool Insert(List * list, char * data) {
 
     TempElement_second->nextElement = NULL;
     strcpy(TempElement_first->data, "<<");
+    TempElement_first->type = 'N';
 
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
@@ -433,15 +434,33 @@ bool Close(List * list) {
                     return false;
                 }
             }
+            // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
+            if(rule == 0){
+                find->element_token.type = list->lastElement->element_token.type;
+                find->element_token.keyword = list->lastElement->element_token.keyword;
+                if(list->lastElement->element_token.type == T_ID){
+                    bool ret;
+                    ret = str_init(&find->element_token.attr.id, 20);
+                    if (!ret) {
+                        err = INTERNAL_ERR;
+                        return false;
+                    }
+                    ret = str_copy_str(&find->element_token.attr.id, &token.attr.id);
+                    if (!ret) {
+                        err = INTERNAL_ERR;
+                        return false;
+                    }
+                }
+            } else {
+                find->already_reduced = 1;
+            }
             printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
-
             // We change << with E
             strcpy(find->data, "E");
             // We delete everything after <<
             Dispose(find->nextElement);
             find->nextElement = NULL;
             // The resulting expression is combination of 2 other expressions
-            find->already_reduced = 1;
             list->lastElement = find;
 
             return true;
@@ -636,7 +655,7 @@ start_expr:
         return false;
     }
 
-    print_dbg_msg_single("reduction: ");
+    print_dbg_msg_single("reduction:\n");
     print_stack_expr(list);
 
 end_expr:
