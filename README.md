@@ -37,9 +37,31 @@ chmod +x run_tests.sh
 name - your name which you use in name of files  
 expected_err - what error you want to test  
 valgrind - optional param for testing memory errors  
+scanner_tests - google tests for scanner with code coverage  
+code_coverage - after test open code coverage  
+all - run all possible tests for compiler with code coverage  
 
 **Supporting errors:**  
 0 - correct file without any errors  
 2 - wrong file with syntax erors  
 3..7 - wrong file with semantic errors  
 
+**Examples**
+```shell
+./run_tests.sh andrei 0 valgrind
+```
+```shell
+./run_tests.sh andrei 6
+```
+```shell
+./run_tests.sh "*" 2 valgrind
+```
+```shell
+./run_tests.sh andrei 6 code_coverage
+```
+```shell
+./run_tests.sh scanner_tests
+```
+```shell
+./run_tests.sh all
+```

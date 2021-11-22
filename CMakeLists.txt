@@ -71,13 +71,13 @@ set(COMPILER_SOURCES
 	)
 
 set(SCANNER_TESTS_SOURCES
-	./tests/scannerTests.cpp
+	./scanner_tests/scannerTests.cpp
 	./src/scanner.c ./src/scanner.h
 	${COMMON_SOURCES}
 	)
 
 set(RETURN_CODES_TESTS_SOURCES
-	./tests/returnCodesTests.cpp
+	./scanner_tests/returnCodesTests.cpp
 	./src/scanner.c ./src/scanner.h
 	${COMMON_SOURCES}
 	)
@@ -94,7 +94,7 @@ target_link_libraries(${PROJECT_NAME})
 if (COMPILE_TESTS)
 	FetchContent_Declare(googletest
 		GIT_REPOSITORY https://github.com/google/googletest.git
-		GIT_TAG master
+		GIT_TAG main
 		)
 	FetchContent_MakeAvailable(googletest)
 	enable_testing()

@@ -4,15 +4,69 @@ RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
 
-cd build/ && rm -rf * && cmake .. && make && cd ..
-
 name=$1
 expected_err=$2
 valgrind_en=$3
 folder=""
+code_coverage=$3
+rm_out="1>/dev/null 2>/dev/null"
 err_files=0
 err_memory=0
 all_files=0
+
+code_coverage_scanner()
+{
+    cd build && rm -rf *
+    cmake -DCOMPILE_TESTS=on -DDEBUG_SCANNER=on .. 1>/dev/null 2>/dev/null && make 1>/dev/null 2>/dev/null && ./scannerTests
+    cd CMakeFiles/scannerTests.dir/src
+    gcovr -b --filter ../../../../src/ --json > code1.json
+}
+
+code_coverage_other()
+{
+    NUM=$1
+    cd build/CMakeFiles/compiler.dir/src
+    gcovr -b --filter ../../../../src/ --json > code"$NUM".json
+}
+
+if [[ "$name" == "scanner_tests" ]]; then
+    code_coverage_scanner
+
+    gcovr --filter ../../../../src/ --add-tracefile code1.json --html --html-details -o code_coverage.html
+    open code_coverage.html
+    exit 0
+fi
+
+if [[ "$name" == "all" ]]; then
+    code_coverage_scanner
+
+    cp code1.json ../../../../ && cd ../../../ && rm -rf *
+    cmake .. 1>/dev/null 2>/dev/null && make 1>/dev/null 2>/dev/null && cd ..
+
+    for NUM_TEST in 0 2 3 4 5 6 7
+    do
+        echo "******** RET_VALUE = $NUM_TEST ********"
+        ./run_tests.sh "*" "$NUM_TEST"
+        echo "*******************************"
+        echo ""
+
+        code_coverage_other $NUM_TEST
+
+        cp code"$NUM_TEST".json ../../../../ && cd ../../../../
+    done
+
+    mkdir html
+    gcovr --filter src/ --add-tracefile code0.json --add-tracefile code1.json --add-tracefile code2.json \
+                        --add-tracefile code3.json --add-tracefile code4.json --add-tracefile code5.json \
+                        --add-tracefile code6.json --add-tracefile code7.json \
+                        --html --html-details -o html/code_coverage.html
+
+    open html/code_coverage.html
+    rm *.json && rm -rf html/
+    exit 0
+fi
+
+cd build/ && rm -rf * && cmake .. 1>/dev/null 2>/dev/null && make 1>/dev/null 2>/dev/null && cd ..
 
 echo ""
 if [[ "$expected_err" -eq "0" ]]; then
@@ -88,3 +142,11 @@ else
         printf "Errors with memory were not enabled\n"
     fi
 fi
+
+if [[ "$code_coverage" == "code_coverage" ]]; then
+    code_coverage_other 0
+    gcovr --filter ../../../../src/ --add-tracefile code0.json --html --html-details -o code_coverage.html
+    open code_coverage.html
+fi
+
+exit 0
