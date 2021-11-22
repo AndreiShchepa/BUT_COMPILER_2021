@@ -9,46 +9,66 @@ set_compile_opts() {
 }
 
 params=""
+execute=1
+in=""
+out=0
 
-for i in "$@"; do
-    case $i in
-        RULES)
-            set_dbg_cmake "$i"
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        "RULES")
+            set_dbg_cmake "$1"
             ;;
-        SCANNER)
-            set_dbg_cmake "$i"
+        "SCANNER")
+            set_dbg_cmake "$1"
             ;;
-        EXPR)
-            set_dbg_cmake "$i"
+        "EXPR")
+            set_dbg_cmake "$1"
             ;;
-		TESTS)
-            set_compile_opts "$i"
+		"TESTS")
+            set_compile_opts "$1"
             ;;
-		INSTR)
-            set_dbg_cmake "$i"
+		"INSTR")
+            set_dbg_cmake "$1"
 			;;
-         *)
+		"-e0")
+			execute=0
+			;;
+		*".tl")
+		    in="$1"
+			;;
+        "--out")
+            out=1
             ;;
     esac
+    shift
 done
 
 declare -a arr=("rm -rf *"
                 "cmake $params .."
                 "make -j16"
-                "./compiler <../$1"
+                "./compiler <../$in"
                 "cd ..")
+
+if [ "$execute" -eq 0 ]; then
+    unset "arr[3]"
+fi
 
 if [ ! -d "build/" ]; then
     mkdir build
+fi
+
+if [ "$out" -eq 1 ];then
+    arr[3]="./compiler <../$in >../$in.out"
 fi
 
 cd build || exit 1
 
 for i in "${arr[@]}"
 do
-    eval "$i"
-    if [ $? != 0 ]; then
-        echo -e "\nERROR"
-        exit 1
-    fi
+#   echo "$i"
+     eval "$i"
+     if [ $? != 0 ]; then
+         echo -e "\nERROR"
+         exit 1
+     fi
 done
