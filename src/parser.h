@@ -64,6 +64,7 @@ extern token_t token;
 extern int err;
 extern Queue* queue_id;
 extern Queue* queue_expr;
+extern arr_symtbs_t local_symtbs;
 /*
  * @brief process start of the code
  *

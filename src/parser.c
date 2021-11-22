@@ -866,27 +866,18 @@ bool check_def_of_decl_func() {
 
 void fill_queues(){
     queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_ID;
+    queue_expr->rear->token->type = T_STRING;
     str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "a\0";
+    queue_expr->rear->token->attr.id.str = "aAHOJ\0";
 
     queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_ID;
+    queue_expr->rear->token->type = T_STRING;
     str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "b\0";
-
-    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_PLUS;
-
-    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_ID;
-    str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "c\0";
+    queue_expr->rear->token->attr.id.str = "andrejko\0";
 
 
     queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_MUL;
-
+    queue_expr->rear->token->type = T_CONCAT;
 
     queue_add_id(queue_id, calloc(1, sizeof(htab_item_t)));
     queue_id->rear->id->key_id = "x\0";
@@ -911,11 +902,12 @@ int parser() {
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
     /* CODE EXPRESSION TEST */
-
     queue_expr = queue_init();
     queue_id = queue_init();
-//    fill_queues();
-//    gen_expression();
+    gen_init();
+    fill_queues();
+    gen_expression();
+    printf("%a",5.0);
     /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
@@ -936,7 +928,7 @@ end_parser:
     queue_free(queue_expr);
     queue_free(queue_id);
 
-    gen_testing_helper();
+    //gen_testing_helper();
 
     return err;
 }

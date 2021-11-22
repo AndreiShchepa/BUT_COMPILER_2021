@@ -95,6 +95,7 @@ typedef union data {
 } data_t;
 
 typedef struct htab_item {
+    unsigned long long deep;
     char* key_id;
     type_id_t type;
     data_t data;
