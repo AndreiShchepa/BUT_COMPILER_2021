@@ -84,18 +84,18 @@ char Rules[][LENGTH_OF_RULES] = {
             types_E[IDX] = var->data.var->type.str[0]; \
         } while(0);
 
+#define ASSIGN_TYPE_FROM_TOKEN() \
+        do { \
+                TempElement_second->type =  token.type == T_INT          ? 'I' :      \
+                                            token.type == T_STRING       ? 'S' :      \
+                                            token.type == T_FLOAT        ? 'F' : 'N'; \
+        } while(0);
 #define GET_TYPE_TERM(IDX) \
         do { \
             if((IDX) == 0) { \
-                types_E[IDX] = Ei->element_token.type == T_INT          ? 'I' :      \
-                               Ei->element_token.type == T_STRING       ? 'S' :      \
-                               Ei->element_token.type == T_FLOAT        ? 'F' :      \
-                               Ei->element_token.type == T_COMPARE_RES  ? 'C' : 'N'; \
+                types_E[IDX] = Ei->type; \
             } else { \
-                types_E[IDX] = Ej->element_token.type == T_INT          ? 'I' :      \
-                               Ej->element_token.type == T_STRING       ? 'S' :      \
-                               Ej->element_token.type == T_FLOAT        ? 'F' :      \
-                               Ej->element_token.type == T_COMPARE_RES  ? 'C' : 'N'; \
+                types_E[IDX] = Ej->type; \
             } \
         } while(0);
 
@@ -134,22 +134,22 @@ char Rules[][LENGTH_OF_RULES] = {
 #define ASSIGN_TYPE() \
         do { \
             if (rule == 5) { \
-                find->element_token.type = T_FLOAT; \
+                find->type = 'F'; \
             } \
             else if (rule == 7) { \
-                find->element_token.type = T_INT; \
+                find->type = 'I'; \
             } \
             else if ((rule >= 8 && rule <= 13) || strcmp(types_E, "CC") == 0) { \
-                find->element_token.type = T_COMPARE_RES; \
+                find->type = 'C'; \
             } \
             else if (strcmp(types_E, "SS") == 0) { \
-                find->element_token.type = T_STRING; \
+                find->type = 'S'; \
             } \
             else if ((strcmp(types_E, "II") == 0)){ \
-                find->element_token.type = T_INT; \
+                find->type = 'I'; \
             } \
             else { \
-                find->element_token.type = T_FLOAT; \
+                find->type = 'F'; \
             } \
         } while(0);
 
@@ -161,7 +161,7 @@ void print_stack_debug(List * list) {
     while (PrintElement != NULL) {
 //        printf("%s", PrintElement->data);
         printf("(%s;", PrintElement->data);
-        printf("%d) ", PrintElement->element_token.type);
+        printf("%c) ", PrintElement->type);
         PrintElement = PrintElement->nextElement;
     }
 
@@ -208,7 +208,7 @@ List * Init(List * list) {
 
     // We add $ as the first element of stack
     strcpy(list->firstElement->data, "$");
-    TempElement->element_token.type = T_NONE;
+    TempElement->type = 'N';
     return list;
 }
 
@@ -226,7 +226,7 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if(DelElement->element_token.type == T_ID){
+        if(DelElement->type == 'X'){
             str_free(&DelElement->element_token.attr.id);
         }
         free(DelElement);
@@ -320,6 +320,8 @@ bool Insert(List * list, char * data) {
                 return false;
             }
         }
+        // todo assign correct type
+        ASSIGN_TYPE_FROM_TOKEN();
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
         strcpy(TempElement_second->data, data);
@@ -328,7 +330,8 @@ bool Insert(List * list, char * data) {
         // differentiate between an expression and a character
     }
     else {
-        TempElement_second->element_token.type = T_NONE;
+        TempElement_second->type = 'N';
+        TempElement_second->element_token.type = token.type;
     }
 
     strcpy(TempElement_second->data, data);
@@ -379,14 +382,14 @@ bool Close(List * list) {
             Ei = Ej;
         }
 
-        if (Ei->element_token.type == T_ID) {
+        if (Ei->type == 'X') {
             GET_TYPE_ID(0, Ei->element_token.attr.id.str);
         }
         else {
             GET_TYPE_TERM(0);
         }
 
-        if (Ej->element_token.type == T_ID) {
+        if (Ej->type == 'X') {
             GET_TYPE_ID(1, Ej->element_token.attr.id.str);
         }
         else {
@@ -427,7 +430,7 @@ bool Close(List * list) {
                     return false;
                 }
             }
-            printf("Robim s types: %s a ASSIGN_TYPE: %d\n", types_E, find->element_token.type);
+            printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
 
             // We change << with E
             strcpy(find->data, "E");
@@ -486,7 +489,7 @@ bool Push(List * list, char * data) {
     // because there will never be situation
     // where we just arbitrary copy i onto the stack because
     // there doesnt exist precedence rule "=" with expressions, only with characters
-    TempElement->element_token.type = T_NONE;
+    TempElement->type = 'N';
     strcpy(TempElement->data, data);
     return true;
 }
@@ -641,7 +644,7 @@ end_expr:
 
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
-        //printf("expression type: %d\n", list->lastElement->element_token.type);
+        //printf("expression type: %c\n", list->lastElement.type);
         ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT ?    'I':
                                        list->lastElement->element_token.type == T_STRING ? 'S':
                                        list->lastElement->element_token.type == T_FLOAT ?  'F':

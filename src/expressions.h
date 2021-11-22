@@ -58,6 +58,7 @@ typedef struct Element {
     // and thus making use of token different than in the rest of the program
     token_t element_token;
     bool already_reduced;
+    char type;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;
