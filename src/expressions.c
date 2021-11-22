@@ -355,7 +355,7 @@ bool Close(List * list) {
         // because we dont care about rule <i>
         // Also because stack is other way around
         // we firstly start pointing with Ej and then with Ei
-        if (find->element_token.type != T_NONE && (strcmp(find->data, "E")) == 0) {
+        if ((strcmp(find->data, "E")) == 0) {
             if (Ej == NULL) {
                 Ej = find;
             }
@@ -394,8 +394,8 @@ bool Close(List * list) {
         }
     }
     else {
-        // todo There is no expression (missing E) i.e. <<+>>
-        // return false;
+        // else <i>
+
     }
 
     // We check against rules
