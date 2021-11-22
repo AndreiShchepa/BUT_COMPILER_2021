@@ -50,6 +50,10 @@ bool code_gen();
 bool gen_testing_helper();
 
 bool gen_expression();
+
+bool  gen_if_eval();
+
+bool gen_if_end_jump();
 #endif // CODE_GENERATOR_H
 
 

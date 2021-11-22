@@ -341,20 +341,25 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression);
+        gen_expression(); // todo Andrej
+        gen_if_eval(); // todo Andrej
+        gen_if_start(); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
         NEXT_NONTERM(statement);
+        gen_if_end_jump(); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
-
         DEL_SYMTAB();
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
+        gen_if_else(); // todo Andrej
         NEXT_NONTERM(statement);
+        gen_if_end(); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         DEL_SYMTAB();

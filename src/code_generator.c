@@ -153,22 +153,35 @@ bool gen_param() {
     return true;
 }
 
-bool gen_if_start(/*TODO*/) {
-//    PRINT_INSTR(1, "label %s_if_%s", ""/*TODO - func_name + id_of_if*/);
+bool gen_if_start() {
+    cnt.if_cnt++;
+    PRINT_INSTR(1, "label $%s$%d$if$" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
-bool gen_if_else(/*TODO*/) {
-//    PRINT_INSTR(2, "label else%s", ""/*TODO - func_name + id_of_if*/);
+bool gen_if_else() {
+    PRINT_INSTR(2, "label $%s$%d$$else$" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
 bool gen_if_end(/*TODO*/) {
-//    PRINT_INSTR(3, "label end%s", ""/*TODO - func_name + id_of_if*/);
+    PRINT_INSTR(3, "label $%s$%d$if_end$" EOL, cnt.func_name.str, cnt.if_cnt);
+    return true;
+}
+
+bool gen_if_eval() {
+    PRINT_INSTR(1, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+    PRINT_INSTR(2, "jumpifneq $%s$%d$$else$ GF@&type1 string@nil" EOL, cnt.func_name.str, cnt.if_cnt);
+    return true;
+}
+
+bool gen_if_end_jump() {
+    PRINT_INSTR(2, "jump $%s$%d$if_end$" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
 bool gen_func_start(char *id) {
+    cnt.if_cnt = 0;
     DEBUG_PRINT_INSTR(1, 	EOL"########################################################"   	NON_VAR, EOL);
     PRINT_INSTR(2, "label $%s"          EOL, id);
     PRINT_INSTR(3, "pushframe"  NON_VAR EOL, EMPTY_STR);
@@ -375,4 +388,6 @@ bool gen_expression() {
     fclose(testik);
     return true;
 }
+
+
 
