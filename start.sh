@@ -17,6 +17,7 @@ compile=0            # compile project
 compile_to_lua=0     # compile code in tests_code_gen to lua code
 compile_to_ifjcode=0 # compile code in tests_code_gen to lua code
 valgrind=0           # run valgrind with input file
+help=0
 clean=0              # clean tests_code_gen directory, remove compiled codes
 
 while [ "$#" -gt 0 ]; do
@@ -36,7 +37,7 @@ while [ "$#" -gt 0 ]; do
     "INSTR")
         set_dbg_cmake "$1"
         ;;
-    "-exec")
+    "--exec")
         exec=1
         ;;
     *".tl")
@@ -60,9 +61,20 @@ while [ "$#" -gt 0 ]; do
     "--valgrind")
         valgrind=1
         ;;
+    "--help")
+        help=1
+        ;;
     esac
     shift
 done
+
+if [ "$help" -eq 1 ]; then
+    echo "./start                                       # does nothing"
+    echo "./start --compile filename.tl --exec --out    # compile execute and stdout print to file_basename.ifjcode"
+    echo "./start --compile filename.tl --exec          # compile execute and print to stdout"
+    echo "./start --compile filename.tl                 # just compile"
+    exit 0
+fi
 
 if [ ! -d "build/" ]; then
     mkdir build
@@ -76,7 +88,7 @@ if [ "$compile" -eq 1 ] || [ "$exec" -eq 1 ]; then
     eval "make -j16"
     if [ "$exec" -eq 1 ] && [ "$out" -eq 1 ]; then
         eval "./compiler <../$in >../${in%.*}.ifjcode"
-    else
+    elif [ "$exec" -eq 1 ]; then
         eval "./compiler <../$in"
     fi
     cd .. || exit 1
