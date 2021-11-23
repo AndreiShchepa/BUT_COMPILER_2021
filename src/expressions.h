@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #define INDEX_OF_IDENTIFICATOR 15
 #define NUMBER_OF_OPERATORS 17
-#define LENGHT_OF_OPERATORS 3
-#define LENGHT_OF_RULES 5
+#define LENGTH_OF_OPERATORS 3
+#define LENGTH_OF_RULES 5
 
 #define GET_ID(data) Get_Index_Of_String((data))
 
@@ -57,6 +57,8 @@ typedef struct Element {
     // T_NONE will be used with everything else other than expressions
     // and thus making use of token different than in the rest of the program
     token_t element_token;
+    bool already_reduced;
+    char type;
     char data[3];
     struct Element *previousElement;
     struct Element *nextElement;
@@ -68,7 +70,7 @@ typedef struct {
     ElementPtr lastElement;
 } List;
 
-bool expression();
+bool expression(bool bool_condition, bool bool_empty);
 
 /*
  * @brief The first initialization, we create the stack and
