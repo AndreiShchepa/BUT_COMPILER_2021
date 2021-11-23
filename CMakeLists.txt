@@ -77,13 +77,13 @@ set(COMPILER_SOURCES
 	)
 
 set(SCANNER_TESTS_SOURCES
-	./tests/scannerTests.cpp
+	./scanner_tests/scannerTests.cpp
 	./src/scanner.c ./src/scanner.h
 	${COMMON_SOURCES}
 	)
 
 set(RETURN_CODES_TESTS_SOURCES
-	./tests/returnCodesTests.cpp
+	./scanner_tests/returnCodesTests.cpp
 	./src/scanner.c ./src/scanner.h
 	${COMMON_SOURCES}
 	)

@@ -17,24 +17,30 @@
 #include "error.h"
 #include "scanner.h"
 
-#define PUSH_CHAR(sym) ret = str_add_char(&token->attr.id, (char)(sym)); \
-                       if (!ret) { \
-                           return INTERNAL_ERR; \
-                       }
+#define PUSH_CHAR(sym) \
+        do { \
+            ret = str_add_char(&token->attr.id, (char)(sym)); \
+            if (!ret) { \
+                return INTERNAL_ERR; \
+            } \
+        } while(0);
 
-#define ACCEPT_LEXEM() ungetc(ch, f); \
-                       flag = true
+#define ACCEPT_LEXEM() \
+        ungetc(ch, f); \
+        flag = true
 
 #define TRANSLATE_HEX(ch, symbol, n) \
-                      if ((ch) >= '0' && (ch) <= '9') { \
-                          (symbol) += ((n) * ((ch) - 48)); \
-                      } \
-                      else if ((ch) >= 'a' && (ch) <= 'f') { \
-                          (symbol) += ((n) * ((ch) - 87)); \
-                      } \
-                      else if ((ch) >= 'A' && (ch) <= 'F') { \
-                          (symbol) += ((n) * ((ch) - 55)); \
-                      }
+        do { \
+            if ((ch) >= '0' && (ch) <= '9') { \
+                (symbol) += ((n) * ((ch) - 48)); \
+            } \
+            else if ((ch) >= 'a' && (ch) <= 'f') { \
+                (symbol) += ((n) * ((ch) - 87)); \
+            } \
+            else if ((ch) >= 'A' && (ch) <= 'F') { \
+                (symbol) += ((n) * ((ch) - 55)); \
+            } \
+        } while(0);
 
 int ch;
 states_t state;

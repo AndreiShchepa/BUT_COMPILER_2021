@@ -257,7 +257,7 @@ bool gen_init() {
     PRINT_INSTR(9, "createframe"  NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(10, "pushframe"  NON_VAR EOL, EMPTY_STR);
 
-//    str_free(&cnt.func_name);
+    //str_free(&cnt.func_name);
     return (err == NO_ERR);
 }
 
