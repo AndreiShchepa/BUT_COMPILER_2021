@@ -14,6 +14,9 @@
 
 #define BLOCKS_NUM 2
 
+#define DEBUG_ANDREJ 0
+#define DEBUG_ZDENEK 1
+
 typedef struct cnts_s {
     string_t func_name;
     unsigned int param_cnt;
