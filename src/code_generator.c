@@ -314,7 +314,7 @@ bool gen_expression() {
                     tmp = calloc(1, sizeof(htab_item_t)); //todo vymazat
                     tmp->deep = 1; //todo vymazat
                 }
-                PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
+                PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
                 PRINT_FUNC(2, "\npushs int@%llu" EOL, (llu_t)queue_expr->front->token->attr.num_i); //ubuntu chce lu
