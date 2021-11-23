@@ -4,6 +4,8 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include "error.h"
 #include "str.h"
 #include "queue.h"
@@ -17,6 +19,8 @@ typedef struct cnts_s {
     unsigned int deep;
 } cnts_t;
 extern cnts_t cnt;
+
+typedef long long unsigned int llu_t;
 
 bool init_cnt();
 bool gen_init_built_int();

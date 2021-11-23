@@ -257,7 +257,7 @@ bool gen_init() {
     PRINT_INSTR(9, "createframe"  NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(10, "pushframe"  NON_VAR EOL, EMPTY_STR);
 
-    str_free(&cnt.func_name);
+//    str_free(&cnt.func_name);
     return (err == NO_ERR);
 }
 
@@ -269,6 +269,21 @@ bool gen_testing_helper() {
     fclose(test_file);
     return true;
 }
+
+#if 0
+bool print_instr(const char* instr, ...) {
+    PRINT_INSTR(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
+    va_list pArgs;
+    va_start(pArgs, instr);
+    va_arg(pArgs, char *);
+
+    fprintf(stderr, "CHYBA: ");
+    vfprintf(stderr, instr, pArgs);
+
+    va_end(pArgs);
+    return true;
+}
+#endif
 
 bool gen_expression() {
     htab_item_t *tmp;
@@ -286,7 +301,7 @@ bool gen_expression() {
                 PRINT_INSTR(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
-                PRINT_INSTR(2, "\npushs int@%llu" EOL, queue_expr->front->token->attr.num_i); //ubuntu chce lu
+                PRINT_INSTR(2, "\npushs int@%llu" EOL, (llu_t)queue_expr->front->token->attr.num_i); //ubuntu chce lu
                 break;
             case T_FLOAT:
                 // todo format (asi je treba skontrolovat)
@@ -388,6 +403,3 @@ bool gen_expression() {
     fclose(testik);
     return true;
 }
-
-
-
