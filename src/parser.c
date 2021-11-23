@@ -335,6 +335,7 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(true, false));
+        str_clear(&tps_right);
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         ADD_SYMTAB();
@@ -367,6 +368,7 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(true, false));
+        str_clear(&tps_right);
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
         ADD_SYMTAB();
@@ -424,7 +426,6 @@ bool statement() {
             str_add_char(&tps_right, 'N');
         }
         ///////////////////////////////////////////////////////
-
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         return statement();
@@ -510,7 +511,7 @@ bool type_expr() {
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -520,7 +521,7 @@ bool type_expr() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -583,7 +584,7 @@ bool init_assign() {
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -593,7 +594,7 @@ bool init_assign() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
