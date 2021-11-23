@@ -17,6 +17,7 @@ typedef struct cnts_s {
     unsigned int deep;
 } cnts_t;
 extern cnts_t cnt;
+extern string_t ifj_code;
 
 bool init_cnt();
 bool gen_init_built_int();

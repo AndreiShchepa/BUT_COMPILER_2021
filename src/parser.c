@@ -937,12 +937,13 @@ int parser() {
     ret = str_init(&tps_right, 5);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
-    /* CODE EXPRESSION TEST */
+     /* CODE EXPRESSION TEST */
     queue_expr = queue_init();
     queue_id = queue_init();
-    //gen_init();
     fill_queues();
-    gen_expression();
+    //gen_init();
+
+    //gen_expression();
     /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();

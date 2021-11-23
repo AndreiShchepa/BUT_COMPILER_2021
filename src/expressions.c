@@ -468,7 +468,7 @@ bool Close(List * list) {
                 find->already_reduced = 1;
             }
 
-            printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
+            //printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
             // We change << with E
             strcpy(find->data, "E");
             // We delete everything after <<
