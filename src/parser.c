@@ -946,57 +946,17 @@ bool check_def_of_decl_func() {
     return true;
 }
 
-void fill_queues(){
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_STRING;
-    str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "Jozko \0";
-
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_STRING;
-    str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "Peto \0";
-
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_STRING;
-    str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "Martin \0";
-
-
-
-
-    queue_add_token_front(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->front->token->type = T_STRING;
-    str_init(&(queue_expr->front->token->attr.id), 1000);
-    queue_expr->front->token->attr.id.str = "Richard \0";
-
-
-    queue_add_id_rear(queue_id, calloc(1, sizeof(htab_item_t)));
-    queue_id->rear->id->key_id = "x\0";
-
-    while(!queue_isEmpty(queue_expr)){
-        printf("%s", queue_expr->front->token->attr.id.str);
-        queue_remove_front(queue_expr);
-    }
-
-}
-
 int parser() {
     FILE *f = stdin;
     err = NO_ERR;
     set_source_file(f);
-
     
     queue_expr = queue_init();
     queue_id = queue_init();
+
 #ifndef DEBUG_ANDREJ
-    fill_queues();
-    gen_init();
-    printf("hello");
-    gen_expression();
+
 #endif
-
-
 
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);

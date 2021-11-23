@@ -193,13 +193,13 @@ bool gen_init_var() {
 }
 
 bool gen_if_start() {
-    cnt.if_cnt++;
     PRINT_FUNC(1, "label $%s$%d$if$" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
 bool gen_if_else() {
     PRINT_FUNC(2, "label $%s$%d$$else$" EOL, cnt.func_name.str, cnt.if_cnt);
+
     return true;
 }
 
@@ -209,6 +209,7 @@ bool gen_if_end(/*TODO*/) {
 }
 
 bool gen_if_eval() {
+    cnt.if_cnt++; // because this instruction is printed first
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
     PRINT_FUNC(2, "jumpifneq $%s$%d$$else$ GF@&type1 string@false" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
