@@ -220,7 +220,6 @@ add_func_decl:
         NEXT_NONTERM(type_returns());
 
         CHECK_TPS_DEF_DECL_FUNCS();
-
         return prog();
     }
     else if (token.keyword == KW_FUNCTION) {
@@ -270,16 +269,17 @@ add_func_def:
         print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
-        CHECK_SEM_DEF_ERR(!tmp_func);
 
+        NEXT_TOKEN();
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
+
+        CHECK_SEM_DEF_ERR(!tmp_func);
         // tmp_func = calling func
         // tps_left = tmp_func.argv
         // expected in tps_right types of arguments
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
-        NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
@@ -528,11 +528,15 @@ bool type_expr() {
         return true;
     }
 
-    str_clear(&tps_left);
     print_rule("20. <type_expr> -> <expression> <other_exp>");
 
     NEXT_NONTERM(expression(false, false));
     NEXT_NONTERM(other_exp());
+
+    if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
+        err = SEM_OTHER_ERR;
+        return false;
+    }
 
     CHECK_COMPATIBILITY();
     return true;
@@ -599,6 +603,7 @@ bool init_assign() {
 
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
+
     CHECK_COMPATIBILITY();
 
     return true;
@@ -880,6 +885,7 @@ int parser() {
 
     if (!ret && err == NO_ERR) {
         err = PARSER_ERR;
+        goto end_parser;
     }
 
     ret = check_def_of_decl_func();

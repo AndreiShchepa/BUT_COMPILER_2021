@@ -1,6 +1,6 @@
 require "ifj21"
 
-function main ()
+function main () : integer
     return 12
 end
 

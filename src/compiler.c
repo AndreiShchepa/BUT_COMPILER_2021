@@ -65,6 +65,13 @@ int ret;
         else if (ret == PARSER_ERR) {
             fprintf(stderr, "\nParser err\n");
         }
+        else if (ret == SEM_OTHER_ERR) {
+            fprintf(stderr, "\nSemantic err: another semantic error"
+                    " (probably in multiply assigning)\n");
+        }
+        else if (ret == SEM_ARITHM_REL_ERR) {
+            fprintf(stderr, "\nSematic err: type incompatibility in expressions\n");
+        }
         else {
             fprintf(stderr, "\nAnother err\n");
         }
