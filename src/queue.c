@@ -81,7 +81,7 @@ bool queue_add_rear(Queue *queue){
         new_element->next_element = NULL;
         queue->front = new_element;
     } else {
-        new_element->next_element = queue->rear;;
+        new_element->next_element = queue->rear;
         queue->rear->previous_element = new_element;
     }
     new_element->previous_element = NULL;
@@ -123,7 +123,7 @@ bool queue_add_front(Queue *queue){
 }
 
 bool queue_add_id_front(Queue *queue, htab_item_t *id) {
-    if(queue_add_rear(queue)){
+    if(queue_add_front(queue)){
         queue->front->id = id;
         return true;
     }
@@ -131,7 +131,7 @@ bool queue_add_id_front(Queue *queue, htab_item_t *id) {
 
 }
 bool queue_add_token_front(Queue *queue, token_t *token) {
-    if(queue_add_rear(queue)){
+    if(queue_add_front(queue)){
         queue->front->token = token;
         return true;
     }
