@@ -10,5 +10,7 @@ compile_commands.json
 tags
 .idea
 .DS_Store
+*.ifjcode
+*.lua
 build/
 cmake-build-debug/
