@@ -370,9 +370,9 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(true, false));
-        gen_expression(); // todo Andrej
-        gen_if_eval(); // todo Andrej
-        gen_if_start(); // todo Andrej
+        CODE_GEN(gen_expression); // todo Andrej
+        CODE_GEN(gen_if_eval); // todo Andrej
+        CODE_GEN(gen_if_start); // todo Andrej
 
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
@@ -381,7 +381,7 @@ bool statement() {
         NEXT_TOKEN();
         deep++;
         NEXT_NONTERM(statement());
-        gen_if_end_jump(); // todo Andrej
+        CODE_GEN(gen_if_end_jump); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
         deep--;
 
@@ -390,10 +390,10 @@ bool statement() {
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        gen_if_else(); // todo Andrej
+        CODE_GEN(gen_if_else); // todo Andrej
         deep++;
         NEXT_NONTERM(statement());
-        gen_if_end(); // todo Andrej
+        CODE_GEN(gen_if_end); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_END);
         deep--;
 
@@ -601,7 +601,7 @@ bool type_expr() {
 
     NEXT_NONTERM(expression(false, false));
 
-    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression); //todo Andrej
     CODE_GEN(gen_init_var);  //todo Andrej
 
     NEXT_NONTERM(other_exp());
@@ -617,7 +617,7 @@ bool other_exp() {
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, false));
 
-        //CODE_GEN(gen_expression); //todo Andrej
+        CODE_GEN(gen_expression); //todo Andrej
         CODE_GEN(gen_init_var);  //todo Andrej
 
         return other_exp();
@@ -677,7 +677,7 @@ bool init_assign() {
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
-    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression); //todo Andrej
     CODE_GEN(gen_init_var); //todo Andrej
 
     CHECK_COMPATIBILITY();
@@ -965,42 +965,45 @@ void fill_queues(){
     queue_expr->rear->token->attr.id.str = "Martin \0";
 
 
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_CONCAT;
 
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_STRING;
-    str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "Richard \0";
 
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_CONCAT;
+    queue_add_token_front(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->front->token->type = T_STRING;
+    str_init(&(queue_expr->front->token->attr.id), 1000);
+    queue_expr->front->token->attr.id.str = "Richard \0";
 
-    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
-    queue_expr->rear->token->type = T_CONCAT;
 
     queue_add_id_rear(queue_id, calloc(1, sizeof(htab_item_t)));
     queue_id->rear->id->key_id = "x\0";
+
+    while(!queue_isEmpty(queue_expr)){
+        printf("%s", queue_expr->front->token->attr.id.str);
+        queue_remove_front(queue_expr);
+    }
+
 }
 
 int parser() {
     FILE *f = stdin;
     err = NO_ERR;
     set_source_file(f);
-    /* CODE EXPRESSION TEST */
+
+    
     queue_expr = queue_init();
     queue_id = queue_init();
 #ifndef DEBUG_ANDREJ
-//    fill_queues();
+    fill_queues();
     gen_init();
     printf("hello");
     gen_expression();
 #endif
-    /* END OF CODE EXPRESSION TEST */
+
+
+
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
-
     local_symtbs.size = 0;
+
 
     ret = init_default_funcs_ifj21();
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
