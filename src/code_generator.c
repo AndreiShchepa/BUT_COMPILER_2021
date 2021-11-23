@@ -398,8 +398,6 @@ bool gen_expression() {
     }
     PRINT_INSTR(52, "\npops LF@%s", queue_id->front->id->key_id);
     PRINT_INSTR(53, "\nwrite LF@x"  NON_VAR EOL, EMPTY_STR);
-    FILE *testik = fopen("testik.out", "w");
-    fprintf(testik, "%s", ifj_code.str);
-    fclose(testik);
+
     return true;
 }

@@ -19,6 +19,7 @@ typedef struct cnts_s {
     unsigned int deep;
 } cnts_t;
 extern cnts_t cnt;
+extern string_t ifj_code;
 
 typedef long long unsigned int llu_t;
 

@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include "error.h"
 #include "str.h"
+#include "code_generator.h"
+
+extern string_t ifj_code;
 
 int main() {
 
@@ -71,6 +74,6 @@ int ret;
         }
     }
 #endif
-
+    fprintf(stdout, "%s", ifj_code.str);
 	return ret;
 }
