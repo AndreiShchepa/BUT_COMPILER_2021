@@ -4,10 +4,15 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include "error.h"
 #include "str.h"
 #include "queue.h"
 #include "symtable.h"
+
+
+#define BLOCKS_NUM 2
 
 typedef struct cnts_s {
     string_t func_name;
@@ -16,8 +21,13 @@ typedef struct cnts_s {
     unsigned int while_cnt;
     unsigned int deep;
 } cnts_t;
+
 extern cnts_t cnt;
-extern string_t ifj_code;
+extern string_t ifj_code[BLOCKS_NUM];
+
+enum block_e {FUNCTIONS, MAIN};
+
+typedef long long unsigned int llu_t;
 
 bool init_cnt();
 bool gen_init_built_int();
@@ -52,7 +62,7 @@ bool gen_testing_helper();
 
 bool gen_expression();
 
-bool  gen_if_eval();
+bool gen_if_eval();
 
 bool gen_if_end_jump();
 #endif // CODE_GENERATOR_H
