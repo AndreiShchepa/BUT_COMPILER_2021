@@ -222,6 +222,7 @@ bool gen_if_end(/*TODO*/) {
 }
 
 bool gen_if_eval() {
+    cnt.if_cnt++; // because this instruction is printed first
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "jumpifneq $%s$%d$$else$ GF@&type1 string@false" , cnt.func_name.str, cnt.if_cnt);
     return true;

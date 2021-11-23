@@ -18,6 +18,8 @@
 #include "queue.h"
 char postfix[500] = {0};
 
+#define DEBUG_ANDREJ 0
+
 extern int err;
 extern string_t tps_right;
 extern arr_symtbs_t local_symtbs;
@@ -478,6 +480,9 @@ bool Close(List * list) {
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
             //todo test #E and delete string variables
+            if (rule == 0){
+                queue_add_token_rear(queue_expr, &Ei->element_token);
+            }
             if (rule != 0 && rule != 1) {
                 if(rule != 7){
                     if (!Ei->already_reduced && !Ej->already_reduced) {
@@ -557,6 +562,20 @@ bool Close(List * list) {
             find->nextElement = NULL;
             // The resulting expression is combination of 2 other expressions
             list->lastElement = find;
+
+#if DEBUG_ANDREJ
+            QueueElementPtr *tmp = queue_expr->front;
+            while(tmp != NULL){
+                if (queue_expr->front->token->type == T_ID)
+                    printf("%s", queue_expr->front->token->attr.id.str);
+                if (queue_expr->front->token->type == T_INT)
+                    printf("%llu", queue_expr->front->token->attr.num_i);
+                if (queue_expr->front->token->type == T_FLOAT)
+                    printf("%f", queue_expr->front->token->attr.num_f);
+                tmp = tmp->previous_element;
+            }
+#endif
+
 
             return true;
         }
