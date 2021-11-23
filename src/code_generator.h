@@ -11,6 +11,9 @@
 #include "queue.h"
 #include "symtable.h"
 
+
+#define BLOCKS_NUM 2
+
 typedef struct cnts_s {
     string_t func_name;
     unsigned int param_cnt;
@@ -19,7 +22,9 @@ typedef struct cnts_s {
     unsigned int deep;
 } cnts_t;
 extern cnts_t cnt;
-extern string_t ifj_code;
+extern string_t ifj_code[BLOCKS_NUM];
+
+enum block_e {FUNCTIONS, MAIN};
 
 typedef long long unsigned int llu_t;
 
