@@ -65,7 +65,7 @@
     } while(0)
 
 
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR
 #define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
 		do {                                                                        \
 			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
@@ -117,12 +117,6 @@ bool gen_int2char(Queue *queue, token_t *symb_1) {
 }
 
 bool gen_func_label() {
-    return true;
-}
-
-bool gen_header() {
-    PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
-    PRINT_FUNC(1, "jump $main" NON_VAR, EMPTY_STR);
     return true;
 }
 
@@ -257,7 +251,7 @@ bool gen_func_end() {
 }
 
 bool gen_func_call_start() {
-    DEBUG_PRINT_INSTR(1, MAIN, DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, MAIN, EOL DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
     PRINT_MAIN(2, "createframe"    NON_VAR , EMPTY_STR);
     return true;
 }
@@ -292,23 +286,25 @@ bool gen_func_call_label() {
 bool gen_init() {
     if (!str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
         !str_init(&ifj_code[MAIN], IFJ_CODE_START_LEN)      ||
-        !gen_header()                                       ||
         !init_cnt()                                         ||
         !gen_init_built_ins()
         ) {
         err = INTERNAL_ERR;
     }
 
-    PRINT_FUNC(4,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
-    PRINT_FUNC(5,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
-    PRINT_FUNC(7,   "defvar GF@&var2"   NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR(1, MAIN, EOL DEVIDER NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR(1, MAIN, DEVIDER_2"MAIN LABEL" NON_VAR , EMPTY_STR);
-    PRINT_MAIN(8,   "label $main"       NON_VAR , EMPTY_STR);
-    PRINT_MAIN(9,   "createframe"       NON_VAR , EMPTY_STR);
-    PRINT_MAIN(10,  "pushframe"         NON_VAR , EMPTY_STR);
-    PRINT_MAIN(11,  "createframe"       NON_VAR , EMPTY_STR);
+    PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
+    DEBUG_PRINT_INSTR(20, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
+    PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
+    PRINT_FUNC(4,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
+    PRINT_FUNC(5,   "defvar GF@&var2"   NON_VAR , EMPTY_STR);
+    PRINT_FUNC(6, "jump $main" NON_VAR, EMPTY_STR);
+    DEBUG_PRINT_INSTR(20, MAIN, EOL DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR(21, MAIN, DEVIDER_2"MAIN LABEL" NON_VAR , EMPTY_STR);
+    PRINT_MAIN(7,   "label $main"       NON_VAR , EMPTY_STR);
+    PRINT_MAIN(8,   "createframe"       NON_VAR , EMPTY_STR);
+    PRINT_MAIN(9,   "pushframe"         NON_VAR , EMPTY_STR);
+    PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
 
     //str_free(&cnt.func_name);
     return (err == NO_ERR);

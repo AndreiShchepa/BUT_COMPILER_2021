@@ -988,7 +988,7 @@ int parser() {
     err = NO_ERR;
     set_source_file(f);
 
-    
+
     queue_expr = queue_init();
     queue_id = queue_init();
 #ifndef DEBUG_ANDREJ
