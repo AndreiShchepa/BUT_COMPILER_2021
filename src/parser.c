@@ -964,7 +964,5 @@ end_parser:
     queue_free(queue_expr);
     queue_free(queue_id);
 
-    //gen_testing_helper();
-
     return err;
 }
