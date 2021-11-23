@@ -373,9 +373,9 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(true, false));
-        gen_expression(); // todo Andrej
-        gen_if_eval(); // todo Andrej
-        gen_if_start(); // todo Andrej
+        CODE_GEN(gen_expression); // todo Andrej
+        CODE_GEN(gen_if_eval); // todo Andrej
+        CODE_GEN(gen_if_start); // todo Andrej
 
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
@@ -384,7 +384,7 @@ bool statement() {
         NEXT_TOKEN();
         deep++;
         NEXT_NONTERM(statement());
-        gen_if_end_jump(); // todo Andrej
+        CODE_GEN(gen_if_end_jump); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
         deep--;
 
@@ -393,10 +393,10 @@ bool statement() {
         ADD_SYMTAB();
 
         NEXT_TOKEN();
-        gen_if_else(); // todo Andrej
+        CODE_GEN(gen_if_else); // todo Andrej
         deep++;
         NEXT_NONTERM(statement());
-        gen_if_end(); // todo Andrej
+        CODE_GEN(gen_if_end); // todo Andrej
         EXPECTED_TOKEN(token.keyword == KW_END);
         deep--;
 
@@ -600,7 +600,7 @@ bool type_expr() {
 
     NEXT_NONTERM(expression(false, false));
 
-    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression); //todo Andrej
     CODE_GEN(gen_init_var);  //todo Andrej
 
     NEXT_NONTERM(other_exp());
@@ -616,7 +616,7 @@ bool other_exp() {
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, false));
 
-        //CODE_GEN(gen_expression); //todo Andrej
+        CODE_GEN(gen_expression); //todo Andrej
         CODE_GEN(gen_init_var);  //todo Andrej
 
         return other_exp();
@@ -676,7 +676,7 @@ bool init_assign() {
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
-    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression); //todo Andrej
     CODE_GEN(gen_init_var); //todo Andrej
 
     CHECK_COMPATIBILITY();
@@ -1000,8 +1000,8 @@ int parser() {
 
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
-
     local_symtbs.size = 0;
+
 
     ret = init_default_funcs_ifj21();
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
@@ -1030,7 +1030,6 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
-    dealloc_gen_var();
 
     return err;
 }

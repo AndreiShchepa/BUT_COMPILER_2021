@@ -326,6 +326,7 @@ bool gen_expression() {
                     return false;
                 }
                 PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
+                str_free(&queue_expr->front->token->attr.id);
                 break;
             case T_INT:
                 PRINT_FUNC(2, "\npushs int@%llu" EOL, (llu_t)queue_expr->front->token->attr.num_i); //ubuntu chce lu
@@ -421,9 +422,9 @@ bool gen_expression() {
             default:
                 break;
         }
+        free(queue_expr->front->token);
         queue_remove_front(queue_expr);
     }
-    printf("%s", ifj_code->str);
     return true;
 }
 

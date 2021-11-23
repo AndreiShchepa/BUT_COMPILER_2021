@@ -252,9 +252,9 @@ void Dispose(ElementPtr Element) {
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
         if(DelElement->element_token.type == T_ID){
-            str_free(&DelElement->element_token.attr.id);
+            //str_free(&DelElement->element_token.attr.id);
         }
-        free(DelElement);
+        //free(DelElement);
         DelElement = NULL;
     }
 }
@@ -353,6 +353,10 @@ bool Insert(List * list, char * data) {
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
         strcpy(TempElement_second->data, data);
+
+        TempElement_second->element_token.attr.num_i = token.attr.num_i;
+        TempElement_second->element_token.attr.num_f = token.attr.num_f;
+
         TempElement_second->already_reduced = 0;
         // else we just set type to T_NONE so we can
         // differentiate between an expression and a character
@@ -526,6 +530,8 @@ bool Close(List * list) {
             if(rule == 0){
                 find->element_token.type = list->lastElement->element_token.type;
                 find->element_token.keyword = list->lastElement->element_token.keyword;
+                find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
+                find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
                 if(list->lastElement->element_token.type == T_ID){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
@@ -753,7 +759,6 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
-    printf("\nPostfix:%s\n", postfix);
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
