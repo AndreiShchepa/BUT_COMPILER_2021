@@ -135,16 +135,15 @@ bool gen_label_item() {
     return true;
 }
 
-bool gen_while_label(htab_item_t *htab_item) {
-    PRINT_FUNC(0, "label $%s_while_%d"EOL, htab_item->key_id,  cnt.while_cnt);
+bool gen_while_label(char *key_id) {
+    PRINT_FUNC(1, "label $%s$%d$while$" EOL, key_id, cnt.while_cnt);
     cnt.while_cnt++;
 	return true;
 }
 
-bool gen_while_cond(/*TODO*/) {
-	// TODO
-    // PRINT_FUNC(0, "label $%s_while_%d_end"EOL, htab_item->key_id,  cnt.while_cnt);
-	// switch jumpifneq , jumpifeq etc.. label
+bool gen_while_eval() {
+    PRINT_FUNC(1, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+    PRINT_FUNC(2, "jumpifneq $%s$%d$$while_end$ GF@&type1 string@true" EOL, cnt.func_name.str, cnt.while_cnt);
 	return true;
 }
 
@@ -152,9 +151,10 @@ bool gen_while_start() {
     return true;
 }
 
-bool gen_while_end(htab_item_t *htab_item) {
-	cnt.while_cnt--;
-	PRINT_FUNC(0, "jump $%s_while_%d"EOL, htab_item->key_id, cnt.while_cnt);
+bool gen_while_end() {
+    cnt.while_cnt--;
+    PRINT_FUNC(1, "jump $%s$%d$whiled$" EOL, cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(2, "label $%s$%d$while_end$" EOL, cnt.func_name.str, cnt.while_cnt);
     return true;
 }
 
@@ -167,6 +167,7 @@ bool gen_params() {
         PRINT_FUNC(3, "move LF@%s  LF@%dp " EOL, queue_elem->id->key_id, i);
     }
     DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL"# logic"NON_VAR EOL, EMPTY_STR);
+    // TODO - remove one by one
     queue_dispose(queue_id);
     return true;
 }
@@ -229,8 +230,9 @@ bool gen_func_start(char *id) {
 
 bool gen_func_end() {
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL"# end" 	NON_VAR, EOL);
-    PRINT_FUNC(2,   "popframe" 	NON_VAR, EOL);
-    PRINT_FUNC(3,   "return"   	NON_VAR, EOL);
+    PRINT_FUNC(2,   "popframe" 	        NON_VAR, EOL);
+    PRINT_FUNC(4,   "todo frame vars" 	NON_VAR, EOL);
+    PRINT_FUNC(3,   "return"   	        NON_VAR, EOL);
     DEBUG_PRINT_INSTR(3, FUNCTIONS,	"########################################################"   	NON_VAR, EOL);
     return true;
 }
@@ -427,5 +429,7 @@ bool gen_expression() {
 
 bool dealloc_gen_var() {
     str_free(&cnt.func_name);
+    str_free(&ifj_code[MAIN]);
+    str_free(&ifj_code[FUNCTIONS]);
     return true;
 }
