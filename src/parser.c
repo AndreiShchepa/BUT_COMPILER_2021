@@ -940,10 +940,9 @@ int parser() {
     /* CODE EXPRESSION TEST */
     queue_expr = queue_init();
     queue_id = queue_init();
-    gen_init();
+    //gen_init();
     fill_queues();
     gen_expression();
-    printf("%a",5.0);
     /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
