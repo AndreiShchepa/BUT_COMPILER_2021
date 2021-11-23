@@ -6,11 +6,11 @@
 *.txt
 *.cache
 *.kcg
-compile_commands.json
-tags
-.idea
-.DS_Store
 *.ifjcode
 *.lua
+.idea
+.DS_Store
+compile_commands.json
+tags
 build/
 cmake-build-debug/

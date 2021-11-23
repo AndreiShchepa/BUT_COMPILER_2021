@@ -21,6 +21,7 @@ typedef struct cnts_s {
     unsigned int while_cnt;
     unsigned int deep;
 } cnts_t;
+
 extern cnts_t cnt;
 extern string_t ifj_code[BLOCKS_NUM];
 
@@ -61,7 +62,7 @@ bool gen_testing_helper();
 
 bool gen_expression();
 
-bool  gen_if_eval();
+bool gen_if_eval();
 
 bool gen_if_end_jump();
 #endif // CODE_GENERATOR_H
