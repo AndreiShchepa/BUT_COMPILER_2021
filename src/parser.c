@@ -615,11 +615,19 @@ bool other_exp() {
         print_rule("21. <other_exp> -> , <expression> <other_exp>");
 
         NEXT_TOKEN();
+
+        bool is_return = false;
+        if(queue_isEmpty(queue_expr)){ // is return
+            is_return = true;
+        }
+
         NEXT_NONTERM(expression(false, false));
 
         CODE_GEN(gen_expression); //todo Andrej
-        CODE_GEN(gen_init_var);  //todo Andrej
 
+        if(!is_return){
+            CODE_GEN(gen_init_var);  //todo Andrej
+        }
         return other_exp();
     }
 
