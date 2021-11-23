@@ -42,7 +42,7 @@ bool queue_isEmpty(Queue *queue){
     return (queue->front == NULL);
 }
 
-void queue_remove(Queue *queue){
+void queue_remove_front(Queue *queue){
     if(queue_isEmpty(queue)){
         return;
     }
@@ -55,6 +55,21 @@ void queue_remove(Queue *queue){
     queue->front = queue->front->previous_element;
     free(queue->front->next_element);
     queue->front->next_element = NULL;
+}
+
+void queue_remove_rear(Queue *queue){
+    if(queue_isEmpty(queue)){
+        return;
+    }
+    if(queue->front == queue->rear){
+        free(queue->front);
+        queue->front = NULL;
+        queue->rear = NULL;
+        return;
+    }
+    queue->rear = queue->rear->next_element;
+    free(queue->rear->previous_element);
+    queue->rear->previous_element = NULL;
 }
 
 bool queue_add(Queue *queue){

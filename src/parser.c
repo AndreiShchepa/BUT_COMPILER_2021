@@ -438,6 +438,9 @@ bool statement() {
         // Allocate structure for variable in symtable //
         ALLOC_VAR_IN_SYMTAB();
 
+        queue_add_id(queue_id,tmp_var); //todo Andrej
+        CODE_GEN(gen_def_var); // todo Andrej
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
@@ -505,6 +508,7 @@ bool statement() {
             ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
             CHECK_INTERNAL_ERR(!ret, false);
 
+            queue_add_id(queue_id, tmp_var); // todo Andrej
             NEXT_TOKEN();
             NEXT_NONTERM(vars());
         }
@@ -533,6 +537,7 @@ bool vars() {
         ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
 
+        queue_add_id(queue_id, tmp_var); // todo Andrej
         NEXT_TOKEN();
 
         return vars();
@@ -578,6 +583,10 @@ bool type_expr() {
     print_rule("20. <type_expr> -> <expression> <other_exp>");
 
     NEXT_NONTERM(expression(false, false));
+
+    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_init_var);  //todo Andrej
+
     NEXT_NONTERM(other_exp());
 
     CHECK_COMPATIBILITY();
@@ -590,6 +599,9 @@ bool other_exp() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, false));
+
+        //CODE_GEN(gen_expression); //todo Andrej
+        CODE_GEN(gen_init_var);  //todo Andrej
 
         return other_exp();
     }
@@ -614,15 +626,18 @@ bool def_var() {
     str_clear(&tps_left);
 
     print_rule("24. <def_var> -> e");
+    queue_remove_rear(queue_id); //todo Andrej mozno front
     return true;
 }
 
+
 bool init_assign() {
     tmp_func = symtab_find(&global_symtab, token.attr.id.str);
-
+    a,b,c = func();
+    func, c, b, a
     if (token.type == T_ID && tmp_func) {
+        CODE_GEN("call func s nazvom ")
         print_rule("25. <init_assign> -> id_func ( <args> )");
-
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
         CHECK_COMPATIBILITY();
@@ -645,6 +660,10 @@ bool init_assign() {
 
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
+
+    //CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_init_var); //todo Andrej
+
     CHECK_COMPATIBILITY();
 
     return true;
@@ -953,7 +972,7 @@ int parser() {
      /* CODE EXPRESSION TEST */
     queue_expr = queue_init();
     queue_id = queue_init();
-    fill_queues();
+    //fill_queues();
     //gen_init();
 
     //gen_expression();

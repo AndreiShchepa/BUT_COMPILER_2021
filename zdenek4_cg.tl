@@ -1,7 +1,13 @@
 require "ifj21"
 
-function main()
-	local a : integer = 10
+function nastupiste()
+	local a : integer = 5
+	local s : integer
+	if s < 4 then
+	a = 4
+	else
+	a = 5
+	end
 end
 
-main()
+nastupiste()
