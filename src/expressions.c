@@ -15,6 +15,8 @@
 #include "error.h"
 #include "expressions.h"
 #include "symtable.h"
+#include "queue.h"
+char postfix[500] = {0};
 
 extern int err;
 extern string_t tps_right;
@@ -229,6 +231,8 @@ List * Init(List * list) {
     strcpy(list->firstElement->data, "$");
     TempElement->type = 'N';
     TempElement->element_token.type = T_NONE;
+    TempElement->already_reduced = 0;
+
 
     return list;
 }
@@ -326,6 +330,7 @@ bool Insert(List * list, char * data) {
     strcpy(TempElement_first->data, "<<");
     TempElement_first->type = 'N';
     TempElement_first->element_token.type = T_NONE;
+    TempElement_first->already_reduced = 0;
 
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
@@ -355,6 +360,7 @@ bool Insert(List * list, char * data) {
     else {
         TempElement_second->type = 'N';
         TempElement_second->element_token.type = token.type;
+        TempElement_second->already_reduced = 0;
     }
 
     strcpy(TempElement_second->data, data);
@@ -373,6 +379,7 @@ bool Close(List * list) {
     ElementPtr find = list->lastElement;
     ElementPtr Ei = NULL;
     ElementPtr Ej = NULL;
+    ElementPtr operator = NULL;
     CLEAR_TYPES_E();
     // We copy into our array until we dont find closing <<
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
@@ -390,6 +397,8 @@ bool Close(List * list) {
         }
         else if ((strcmp(find->data, "i")) == 0) {
             Ej = find;
+        } else {
+            operator = find;
         }
 
         strcat(Array_To_Check_Against_Rules, find->data);
@@ -461,7 +470,58 @@ bool Close(List * list) {
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
+
+//                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
+            //todo test #E and delete string variables
+            if (rule != 0 && rule != 1) {
+                if(rule != 7){
+                    if (!Ei->already_reduced && !Ej->already_reduced) {
+                        queue_add_token_rear(queue_expr, &Ei->element_token);
+                        strcat(postfix, Ei->data);
+
+                        queue_add_token_rear(queue_expr, &Ej->element_token);
+                        strcat(postfix, Ej->data);
+
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+
+                    } else if (Ei->already_reduced && !Ej->already_reduced) {
+
+                        queue_add_token_rear(queue_expr, &Ej->element_token);
+                        strcat(postfix, Ej->data);
+
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+
+                    } else if (!Ei->already_reduced && Ej->already_reduced) {
+                        char helper[500] = {0};
+                        queue_add_token_front(queue_expr, &Ei->element_token);
+                        strcat(helper, Ei->data);
+
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+
+                        strcat(helper, postfix);
+                        strcpy(postfix, helper);
+                    } else {
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+                    }
+                } else {
+                    if (!Ei->already_reduced){
+                        queue_add_token_rear(queue_expr, &Ei->element_token);
+                        strcat(postfix, Ei->data);
+
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+                    } else {
+                        queue_add_token_rear(queue_expr, &operator->element_token);
+                        strcat(postfix, operator->data);
+                    }
+                }
+            }
+//            printf("\nPostfix:%s\n", postfix);
             // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
             if(rule == 0){
                 find->element_token.type = list->lastElement->element_token.type;
@@ -693,7 +753,8 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
-
+    printf("\nPostfix:%s\n", postfix);
+    postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
         //printf("expression type: %c\n", list->lastElement.type);
