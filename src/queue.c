@@ -72,7 +72,7 @@ void queue_remove_rear(Queue *queue){
     queue->rear->previous_element = NULL;
 }
 
-bool queue_add(Queue *queue){
+bool queue_add_rear(Queue *queue){
     QueueElementPtr *new_element =(QueueElementPtr *) calloc(1, sizeof(QueueElementPtr));
     if(!new_element){
         return false;
@@ -89,17 +89,50 @@ bool queue_add(Queue *queue){
     return true;
 }
 
-bool queue_add_id(Queue *queue, htab_item_t *id) {
-    if(queue_add(queue)){
+bool queue_add_id_rear(Queue *queue, htab_item_t *id) {
+    if(queue_add_rear(queue)){
         queue->rear->id = id;
         return true;
     }
     return false;
 
 }
-bool queue_add_token(Queue *queue, token_t *token) {
-    if(queue_add(queue)){
+bool queue_add_token_rear(Queue *queue, token_t *token) {
+    if(queue_add_rear(queue)){
         queue->rear->token = token;
+        return true;
+    }
+    return false;
+}
+
+bool queue_add_front(Queue *queue){
+    QueueElementPtr *new_element =(QueueElementPtr *) calloc(1, sizeof(QueueElementPtr));
+    if(!new_element){
+        return false;
+    }
+    if (queue_isEmpty(queue)) {
+        new_element->previous_element = NULL;
+        queue->rear = new_element;
+    } else {
+        new_element->previous_element = queue->front;
+        queue->front->next_element = new_element;
+    }
+    new_element->next_element = NULL;
+    queue->front = new_element;
+    return true;
+}
+
+bool queue_add_id_front(Queue *queue, htab_item_t *id) {
+    if(queue_add_rear(queue)){
+        queue->front->id = id;
+        return true;
+    }
+    return false;
+
+}
+bool queue_add_token_front(Queue *queue, token_t *token) {
+    if(queue_add_rear(queue)){
+        queue->front->token = token;
         return true;
     }
     return false;

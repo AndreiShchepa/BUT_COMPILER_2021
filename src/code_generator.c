@@ -421,6 +421,7 @@ bool gen_expression() {
         }
         queue_remove_front(queue_expr);
     }
+    printf("%s", ifj_code->str);
     return true;
 }
 
