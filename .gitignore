@@ -5,6 +5,7 @@
 *.DS_Store
 *.txt
 *.cache
+*.kcg
 compile_commands.json
 tags
 .idea
