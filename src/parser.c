@@ -33,9 +33,6 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 Queue* queue_id;
 Queue* queue_expr;
 
-#define DEBUG_ANDREJ 0
-#define DEBUG_ZDENEK 1
-
 #define CODE_GEN(callback, ...)         \
     do {                                \
         if (!(callback)(__VA_ARGS__)) {   \
@@ -413,8 +410,7 @@ bool statement() {
         NEXT_TOKEN();
 
 		///////////////////////////////////
-//        str_copy_str(cnt.func_name, item->key_id);
-//		cnt.func_name.str = item->key_id;
+        strcat(cnt.func_name.str, item->key_id);
         CODE_GEN(gen_while_label);
 		///////////////////////////////////
 
@@ -502,6 +498,11 @@ bool statement() {
                          &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
             NEXT_TOKEN();
+
+            /////////////////////////////
+            QUEUE_ADD_ID(tmp_func);
+            /////////////////////////////
+
             EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
 
@@ -835,7 +836,8 @@ bool param_to_func() {
 
         CHECK_SEM_DEF_ERR(!tmp_var);
 
-		CODE_GEN(gen_func_call_args_var, tmp_var);
+        QUEUE_ADD_ID(tmp_var);
+//		CODE_GEN(gen_func_call_args_var, tmp_var);
 
         // add to tps_right types of tokens
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);

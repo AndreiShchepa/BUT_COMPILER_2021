@@ -79,5 +79,6 @@ int ret;
     gen_testing_helper();
 #endif
 
+    dealloc_gen_var();
 	return ret;
 }
