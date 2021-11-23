@@ -18,6 +18,7 @@
 
 token_t token;
 int err;
+unsigned long deep = 0;
 static bool ret;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
@@ -115,6 +116,7 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             } \
             tmp_var->data.var = calloc(1, sizeof(var_t)); \
             CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
+            tmp_var->deep = deep; \
             tmp_var->type = VAR; \
             tmp_var->data.var->init = true; \
             tmp_var->data.var->val_nil = true; \
@@ -196,6 +198,7 @@ bool prog() {
         // Allocate structure for decl_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
 add_func_decl:
+        item->deep = deep;
         item->data.func->decl = true;
         working_func = 0; // declaration of function
         ret = str_init(&item->data.func->decl_attr.rets, 5);
@@ -230,6 +233,7 @@ add_func_decl:
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
 add_func_def:
+        item->deep = deep;
         item->data.func->def = true;
         working_func = 1;
         ret = str_init(&item->data.func->def_attr.rets, 5);
@@ -243,6 +247,7 @@ add_func_def:
 
         ADD_SYMTAB();
 
+        deep++;
         NEXT_TOKEN();
         NEXT_NONTERM(params());
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -253,6 +258,7 @@ add_func_def:
 
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
+        deep--;
 
         DEL_SYMTAB();
 
@@ -334,16 +340,20 @@ bool statement() {
         ADD_SYMTAB();
 
         NEXT_TOKEN();
+        deep++;
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
+        deep--;
 
         DEL_SYMTAB();
 
         ADD_SYMTAB();
 
         NEXT_TOKEN();
+        deep++;
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
+        deep--;
 
         DEL_SYMTAB();
 
@@ -362,8 +372,10 @@ bool statement() {
         ADD_SYMTAB();
 
         NEXT_TOKEN();
+        deep++;
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
+        deep--;
 
         DEL_SYMTAB();
 

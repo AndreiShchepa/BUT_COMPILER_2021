@@ -149,7 +149,7 @@ char Rules[][LENGTH_OF_RULES] = {
                 find->element_token.type = T_STRING; \
                 find->type = 'S'; \
             } \
-            else if ((strcmp(types_E, "II") == 0)){ \
+            else if ((strcmp(types_E, "II") == 0)) { \
                 find->element_token.type = T_INT; \
                 find->type = 'I'; \
             } \
@@ -468,7 +468,7 @@ bool Close(List * list) {
                 find->already_reduced = 1;
             }
 
-            printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
+            //printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
             // We change << with E
             strcpy(find->data, "E");
             // We delete everything after <<
