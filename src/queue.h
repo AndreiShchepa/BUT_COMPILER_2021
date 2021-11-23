@@ -56,7 +56,13 @@ bool queue_isEmpty(Queue *queue);
  * @brief Remove front element
  * @param queue
  */
-void queue_remove(Queue *queue);
+void queue_remove_front(Queue *queue);
+
+/**
+ * @brief Remove rear element
+ * @param queue
+ */
+void queue_remove_rear(Queue *queue);
 
 /**
  * @brief Add element from the end of queue

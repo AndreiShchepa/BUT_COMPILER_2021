@@ -65,6 +65,10 @@ bool gen_expression();
 bool gen_if_eval();
 
 bool gen_if_end_jump();
+
+bool gen_def_var();
+
+bool gen_init_var();
 #endif // CODE_GENERATOR_H
 
 

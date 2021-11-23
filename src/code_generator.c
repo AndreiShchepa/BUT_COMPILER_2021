@@ -179,6 +179,18 @@ bool gen_param() {
     return true;
 }
 
+bool gen_def_var() {
+    PRINT_FUNC(1, "defvar LF@$%s$%lu$%s$" EOL, cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+    return true;
+}
+
+bool gen_init_var() {
+    PRINT_FUNC(1, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
+    PRINT_FUNC(1, "move LF@$%s$%lu$%s$ GF@&var1" EOL, cnt.func_name.str, queue_id->rear->id->deep, queue_id->rear->id->key_id);
+    queue_remove_rear(queue_id);
+    return true;
+}
+
 bool gen_if_start() {
     cnt.if_cnt++;
     PRINT_FUNC(1, "label $%s$%d$if$" EOL, cnt.func_name.str, cnt.if_cnt);
@@ -197,7 +209,7 @@ bool gen_if_end(/*TODO*/) {
 
 bool gen_if_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
-    PRINT_FUNC(2, "jumpifneq $%s$%d$$else$ GF@&type1 string@nil" EOL, cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "jumpifneq $%s$%d$$else$ GF@&type1 string@false" EOL, cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
@@ -303,16 +315,13 @@ bool PRINT_FUNC(const char* instr, ...) {
 
 bool gen_expression() {
     htab_item_t *tmp;
-    str_init(&cnt.func_name,100);
-    cnt.func_name.str = "main\0";
     while (!queue_isEmpty(queue_expr)) {
         switch (queue_expr->front->token->type) {
             case T_ID:
                 tmp = find_id_symtbs(&local_symtbs, queue_expr->front->token->attr.id.str);
                 if(!tmp){
-                    //todo error
-                    tmp = calloc(1, sizeof(htab_item_t)); //todo vymazat
-                    tmp->deep = 1; //todo vymazat
+                    err = INTERNAL_ERR;
+                    return false;
                 }
                 PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
                 break;
@@ -329,8 +338,10 @@ bool gen_expression() {
             case T_KEYWORD:
                 if(queue_expr->front->token->keyword == KW_NIL){
                     PRINT_FUNC(5, "pushs nil@nil" NON_VAR EOL, EMPTY_STR);
+                } else {
+                    err = PARSER_ERR;
+                    return false;
                 }
-                // todo else what??
                 break;
             case T_PLUS:
                 PRINT_FUNC(6, "call $check_op" NON_VAR EOL, EMPTY_STR);
@@ -395,13 +406,11 @@ bool gen_expression() {
                 PRINT_FUNC(44, "nots" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_LENGTH:
-                // todo nejake mozne errors? alebo pretypovania?
                 PRINT_FUNC(45, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
                 PRINT_FUNC(46, "strlen GF@&var1 GF@&var1" NON_VAR EOL, EMPTY_STR);
                 PRINT_FUNC(47, "pushs GF@&var1" NON_VAR EOL, EMPTY_STR);
                 break;
             case T_CONCAT:
-                // todo nejake mozne errors? alebo pretypovania?
                 PRINT_FUNC(48, "pops GF@&var2" NON_VAR EOL, EMPTY_STR);
                 PRINT_FUNC(49, "pops GF@&var1" NON_VAR EOL, EMPTY_STR);
                 PRINT_FUNC(50, "concat GF@&var1 GF@&var1 GF@&var2" NON_VAR EOL, EMPTY_STR);
@@ -410,11 +419,8 @@ bool gen_expression() {
             default:
                 break;
         }
-        queue_remove(queue_expr);
+        queue_remove_front(queue_expr);
     }
-    PRINT_FUNC(52, "\npops LF@%s", queue_id->front->id->key_id);
-    PRINT_FUNC(53, "\nwrite LF@x"  NON_VAR EOL, EMPTY_STR);
-
     return true;
 }
 
