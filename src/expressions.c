@@ -165,9 +165,8 @@ htab_item_t *var;
 void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
-//        printf("%s", PrintElement->data);
-        printf("(%s\t", PrintElement->data);
-        printf("%c\t%d\tReduced:%d)", PrintElement->type, PrintElement->element_token.type, PrintElement->already_reduced);
+        printf("\t%s\t", PrintElement->data);
+        printf("%c\t%d\tReduced:%d", PrintElement->type, PrintElement->element_token.type, PrintElement->already_reduced);
         if(PrintElement->element_token.type == T_ID){
             printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
         } else {

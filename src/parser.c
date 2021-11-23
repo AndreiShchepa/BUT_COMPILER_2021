@@ -695,6 +695,7 @@ bool other_params() {
         }
         /////////////////////////////////////////////////
 
+        FILL_TYPE(&tmp_var->data.var->type);
         NEXT_NONTERM(type());
 
         return other_params();
