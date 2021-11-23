@@ -272,6 +272,7 @@ add_func_def:
         NEXT_TOKEN();
         NEXT_NONTERM(params());
         //        init_cnt();
+        // todo -func name
         CODE_GEN(gen_params);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);

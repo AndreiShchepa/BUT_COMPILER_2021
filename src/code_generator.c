@@ -251,7 +251,7 @@ bool gen_func_call_args_const(token_t *token) {
 
 bool gen_func_call_label() {
     PRINT_MAIN(1, "call &%s" EOL, queue_id->rear->id->key_id);
-	queue_dispose(queue_id);
+	queue_remove_rear(queue_id);
     init_cnt();
 	return true;
 }

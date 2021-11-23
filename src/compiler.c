@@ -75,7 +75,9 @@ int ret;
     }
 #endif
 
+#ifndef DEBUG_EXPR
     gen_testing_helper();
+#endif
 
 	return ret;
 }
