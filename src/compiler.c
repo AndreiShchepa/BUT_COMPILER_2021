@@ -17,7 +17,7 @@
 #include "str.h"
 #include "code_generator.h"
 
-extern string_t ifj_code;
+extern string_t ifj_code[BLOCKS_NUM];
 
 int main() {
 
@@ -74,6 +74,8 @@ int ret;
         }
     }
 #endif
-    fprintf(stdout, "%s", ifj_code.str);
+
+    gen_testing_helper();
+
 	return ret;
 }
