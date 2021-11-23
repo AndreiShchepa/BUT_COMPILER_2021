@@ -234,7 +234,8 @@ bool gen_if_end_jump() {
 }
 
 bool gen_func_start(char *id) {
-    cnt.if_cnt = 0;
+    init_cnt();
+    strcpy(cnt.func_name.str, id);
     DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL DEVIDER NON_VAR, EMPTY_STR);
     PRINT_FUNC(2, "label &%s"          , id);
     PRINT_FUNC(3, "pushframe"  NON_VAR , EMPTY_STR);
