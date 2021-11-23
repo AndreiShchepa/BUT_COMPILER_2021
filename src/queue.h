@@ -65,11 +65,11 @@ void queue_remove_front(Queue *queue);
 void queue_remove_rear(Queue *queue);
 
 /**
- * @brief Add element from the end of queue
+ * @brief Add element on the end of queue
  * @param queue
  * @return On success True, otherwise False
  */
-bool queue_add(Queue *queue);
+bool queue_add_rear(Queue *queue);
 
 /**
  * @brief Add element htab_item_t
@@ -77,7 +77,7 @@ bool queue_add(Queue *queue);
  * @param if
  * @return On success True, otherwise False
  */
-bool queue_add_id(Queue *queue, htab_item_t *id);
+bool queue_add_id_rear(Queue *queue, htab_item_t *id);
 
 /**
 * @brief Add element token_t
@@ -85,6 +85,29 @@ bool queue_add_id(Queue *queue, htab_item_t *id);
 * @param token
 * @return On success True, otherwise False
 */
-bool queue_add_token(Queue *queue, token_t *token);
+bool queue_add_token_rear(Queue *queue, token_t *token);
+
+/**
+ * @brief Add element on start of queue
+ * @param queue
+ * @return On success True, otherwise False
+ */
+bool queue_add_front(Queue *queue);
+
+/**
+ * @brief Add element htab_item_t
+ * @param queue
+ * @param if
+ * @return On success True, otherwise False
+ */
+bool queue_add_id_front(Queue *queue, htab_item_t *id);
+
+/**
+* @brief Add element token_t on front
+* @param queue
+* @param token
+* @return On success True, otherwise False
+*/
+bool queue_add_token_front(Queue *queue, token_t *token);
 
 #endif // _QUEUE_H

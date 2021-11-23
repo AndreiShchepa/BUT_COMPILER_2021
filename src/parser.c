@@ -41,7 +41,7 @@ Queue* queue_expr;
     } while(0)                          \
 
 #define QUEUE_ADD_ID(where_is_id_key) \
-    if (!queue_add_id(queue_id, (where_is_id_key))) {    \
+    if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
         err = INTERNAL_ERR;                             \
         return false;                                   \
     } \
@@ -438,7 +438,7 @@ bool statement() {
         // Allocate structure for variable in symtable //
         ALLOC_VAR_IN_SYMTAB();
 
-        queue_add_id(queue_id,tmp_var); //todo Andrej
+        QUEUE_ADD_ID(tmp_var); //todo Andrej
         CODE_GEN(gen_def_var); // todo Andrej
 
         NEXT_TOKEN();
@@ -497,6 +497,9 @@ bool statement() {
             CHECK_COMPATIBILITY();
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
+            while(!queue_isEmpty(queue_id)){ // todo andrej
+                CODE_GEN(gen_init_var);
+            }
             NEXT_TOKEN();
         }
         else if (FIND_VAR_IN_SYMTAB) {
@@ -508,7 +511,7 @@ bool statement() {
             ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
             CHECK_INTERNAL_ERR(!ret, false);
 
-            queue_add_id(queue_id, tmp_var); // todo Andrej
+            QUEUE_ADD_ID(tmp_var); // todo Andrej
             NEXT_TOKEN();
             NEXT_NONTERM(vars());
         }
@@ -537,7 +540,7 @@ bool vars() {
         ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
 
-        queue_add_id(queue_id, tmp_var); // todo Andrej
+        QUEUE_ADD_ID(tmp_var); // todo Andrej
         NEXT_TOKEN();
 
         return vars();
@@ -633,10 +636,7 @@ bool def_var() {
 
 bool init_assign() {
     tmp_func = symtab_find(&global_symtab, token.attr.id.str);
-    a,b,c = func();
-    func, c, b, a
     if (token.type == T_ID && tmp_func) {
-        CODE_GEN("call func s nazvom ")
         print_rule("25. <init_assign> -> id_func ( <args> )");
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
@@ -654,7 +654,9 @@ bool init_assign() {
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
-
+        while(!queue_isEmpty(queue_id)){ // todo andrej
+            CODE_GEN(gen_init_var);
+        }
         return true;
     }
 
@@ -805,7 +807,6 @@ bool type_params() {
 bool args() {
     if (param_to_func()) {
         print_rule("39. <args> -> <param_to_func> <other_args>");
-
         return other_args();
     }
 
@@ -933,21 +934,37 @@ bool check_def_of_decl_func() {
 }
 
 void fill_queues(){
-    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
     queue_expr->rear->token->type = T_STRING;
     str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "aAHOJ\0";
+    queue_expr->rear->token->attr.id.str = "Jozko \0";
 
-    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
     queue_expr->rear->token->type = T_STRING;
     str_init(&(queue_expr->rear->token->attr.id), 1000);
-    queue_expr->rear->token->attr.id.str = "andrejko\0";
+    queue_expr->rear->token->attr.id.str = "Peto \0";
+
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_STRING;
+    str_init(&(queue_expr->rear->token->attr.id), 1000);
+    queue_expr->rear->token->attr.id.str = "Martin \0";
 
 
-    queue_add_token(queue_expr, calloc(1, sizeof(token_t)));
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
     queue_expr->rear->token->type = T_CONCAT;
 
-    queue_add_id(queue_id, calloc(1, sizeof(htab_item_t)));
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_STRING;
+    str_init(&(queue_expr->rear->token->attr.id), 1000);
+    queue_expr->rear->token->attr.id.str = "Richard \0";
+
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_CONCAT;
+
+    queue_add_token_rear(queue_expr, calloc(1, sizeof(token_t)));
+    queue_expr->rear->token->type = T_CONCAT;
+
+    queue_add_id_rear(queue_id, calloc(1, sizeof(htab_item_t)));
     queue_id->rear->id->key_id = "x\0";
 }
 
@@ -955,7 +972,14 @@ int parser() {
     FILE *f = stdin;
     err = NO_ERR;
     set_source_file(f);
-
+    /* CODE EXPRESSION TEST */
+    queue_expr = queue_init();
+    queue_id = queue_init();
+    fill_queues();
+    gen_init();
+    printf("hello");
+    gen_expression();
+    /* END OF CODE EXPRESSION TEST */
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
@@ -969,14 +993,7 @@ int parser() {
     ret = str_init(&tps_right, 5);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
-     /* CODE EXPRESSION TEST */
-    queue_expr = queue_init();
-    queue_id = queue_init();
-    //fill_queues();
-    //gen_init();
 
-    //gen_expression();
-    /* END OF CODE EXPRESSION TEST */
 
     FIRST_TOKEN();
     ret = prolog();
