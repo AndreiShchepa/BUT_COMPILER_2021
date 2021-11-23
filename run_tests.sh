@@ -88,7 +88,7 @@ fi
 for file in ${folder}/${name}*_${expected_err}.tl;
 do
     if [[ "${folder}/${name}*_${expected_err}.tl" == "$file" ]]; then
-        echo "Files with this arguments were not found"
+        echo "Files with these arguments were not found"
         exit 1
     fi
 

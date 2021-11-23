@@ -123,10 +123,10 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             str_init(&tmp_var->data.var->type, 2); \
         } while(0);
 
-#define CHECK_COMPATIBILITY() \
+#define CHECK_COMPATIBILITY(ERROR) \
         do { \
             if (!type_compatibility()) { \
-                err = SEM_FUNC_ERR; \
+                err = (ERROR); \
                 return false; \
             } \
             else { \
@@ -286,7 +286,7 @@ add_func_def:
         // after argc() we have in tps_left expected types of argv
         // in tps_right we have real types of argv
         // do comparing of to arrays anc then clear
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -425,7 +425,7 @@ bool statement() {
         }
         ///////////////////////////////////////////////////////
 
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         return statement();
     }
@@ -445,7 +445,7 @@ bool statement() {
 
             NEXT_NONTERM(args());
 
-            CHECK_COMPATIBILITY();
+            CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
             NEXT_TOKEN();
@@ -510,7 +510,7 @@ bool type_expr() {
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -520,7 +520,7 @@ bool type_expr() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -538,7 +538,7 @@ bool type_expr() {
         return false;
     }
 
-    CHECK_COMPATIBILITY();
+    CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
     return true;
 }
 
@@ -583,7 +583,7 @@ bool init_assign() {
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -593,7 +593,7 @@ bool init_assign() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -604,7 +604,7 @@ bool init_assign() {
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
-    CHECK_COMPATIBILITY();
+    CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
     return true;
 }
