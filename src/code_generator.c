@@ -15,22 +15,32 @@
 #define EOL "\n"
 #define EMPTY_STR ""
 #define NON_VAR "%s"
+#define DEBUG_INSTR 1
 
 #define PRINT_INSTR(num, fmt, ...)                                          \
     do {                                                                    \
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];       \
         sprintf(instr##num, (fmt), __VA_ARGS__);                            \
-        if (!str_concat_str2(&ifj_code, instr##num)) {                      \
+        if (!str_concat_str2(&ifj_code[MAIN], instr##num)) {                \
+            return false;                                                   \
+        }                                                                   \
+    } while(0)
+
+#define PRINT_FUNCTIONS(num, fmt, ...)                                      \
+    do {                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];       \
+        sprintf(instr##num, (fmt), __VA_ARGS__);                            \
+        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {           \
             return false;                                                   \
         }                                                                   \
     } while(0)
 
 #ifdef DEBUG_INSTR
-	#define DEBUG_PRINT_INSTR(num, fmt, ...)                                \
+#define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                \
 		do {                                                                \
 			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + 2)];   \
 			sprintf(instr##num, (fmt), __VA_ARGS__);                        \
-			if (!str_concat_str2(&ifj_code, instr##num)) {                  \
+			if (!str_concat_str2(&ifj_code[NUM_BLOCK], instr##num)) {                  \
 				return false;                                               \
 			}                                                               \
 		} while(0)
@@ -43,7 +53,7 @@
 /******************************************************************************
   *									GLOBAL VARS
 ******************************************************************************/
-string_t ifj_code;
+string_t ifj_code[BLOCKS_NUM];
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
@@ -133,14 +143,14 @@ bool gen_while_end(htab_item_t *htab_item) {
 }
 
 bool gen_params() {
-    DEBUG_PRINT_INSTR(1, EOL"# params" NON_VAR EOL, EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL"# params" NON_VAR EOL, EMPTY_STR);
 
     QueueElementPtr *queue_elem = queue_id->front;
     for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
         PRINT_INSTR(2, "defvar LF@%s"        EOL, queue_elem->id->key_id);
         PRINT_INSTR(3, "move LF@%s  LF@%dp " EOL, queue_elem->id->key_id, i);
     }
-    DEBUG_PRINT_INSTR(3, EOL"# logic"NON_VAR EOL, EMPTY_STR);
+    DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL"# logic"NON_VAR EOL, EMPTY_STR);
     queue_dispose(queue_id);
     return true;
 }
@@ -182,7 +192,7 @@ bool gen_if_end_jump() {
 
 bool gen_func_start(char *id) {
     cnt.if_cnt = 0;
-    DEBUG_PRINT_INSTR(1, 	EOL"########################################################"   	NON_VAR, EOL);
+    DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL"########################################################"   	NON_VAR, EOL);
     PRINT_INSTR(2, "label $%s"          EOL, id);
     PRINT_INSTR(3, "pushframe"  NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(4, "createframe"NON_VAR EOL, EMPTY_STR);
@@ -190,15 +200,15 @@ bool gen_func_start(char *id) {
 }
 
 bool gen_func_end() {
-    DEBUG_PRINT_INSTR(1, EOL"# end" 	NON_VAR, EOL);
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL"# end" 	NON_VAR, EOL);
     PRINT_INSTR(2,  "popframe" 	NON_VAR, EOL);
     PRINT_INSTR(3, 	"return"   	NON_VAR, EOL);
-    DEBUG_PRINT_INSTR(3, 	"########################################################"   	NON_VAR, EOL);
+    DEBUG_PRINT_INSTR(3, FUNCTIONS,	"########################################################"   	NON_VAR, EOL);
     return true;
 }
 
 bool gen_func_call_start() {
-    DEBUG_PRINT_INSTR(1, EOL"# call_func" NON_VAR EOL, EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, MAIN, EOL"# call_func" NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(2, "createframe"    NON_VAR EOL, EMPTY_STR);
     return true;
 }
@@ -230,18 +240,9 @@ bool gen_func_call_label() {
 	return true;
 }
 
-bool code_gen_print_ifj_code21() {
-    FILE *test_file = fopen("test_file.out", "w");
-    if (!test_file) {
-        return false;
-    }
-    fprintf(test_file, "%s", ifj_code.str);
-    fclose(test_file);
-    return true;
-}
-
 bool gen_init() {
-    if (!str_init(&ifj_code, IFJ_CODE_START_LEN) ||
+    if (!str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
+        !str_init(&ifj_code[MAIN], IFJ_CODE_START_LEN) ||
         !gen_header()                            ||
         !init_cnt()                              ||
         !gen_init_built_ins()
@@ -262,11 +263,8 @@ bool gen_init() {
 }
 
 bool gen_testing_helper() {
-    FILE *test_file = fopen("test_file.out", "w");
-    if (!test_file)
-        return false;
-    fprintf(stdout, "%s", ifj_code.str);
-    fclose(test_file);
+    fprintf(stdout, "%s", ifj_code[FUNCTIONS].str);
+    fprintf(stdout, "%s", ifj_code[MAIN].str);
     return true;
 }
 
