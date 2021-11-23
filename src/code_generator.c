@@ -79,7 +79,6 @@ bool gen_func_label() {
 
 bool gen_header() {
     PRINT_INSTR(1, ".IFJcode21" NON_VAR EOL EOL, EMPTY_STR);
-    PRINT_INSTR(1, "jump $main" NON_VAR EOL EOL, EMPTY_STR);
     return true;
 }
 
@@ -92,13 +91,13 @@ bool gen_init_built_ins() {
     PRINT_INSTR(5, "%s", FUNC_WRITE);
     PRINT_INSTR(6, "%s", FUNC_SUBSTR);
     PRINT_INSTR(7, "%s", FUNC_ORD);
-    PRINT_INSTR(8, "%s", FUNC_CHR);*/
+    PRINT_INSTR(8, "%s", FUNC_CHR);
     PRINT_INSTR(10, "%s", FUNC_RETYPING_VAR1);
     PRINT_INSTR(11, "%s", FUNC_RETYPING_VAR2);
     PRINT_INSTR(12, "%s", FUNC_CHECK_OP);
     PRINT_INSTR(13, "%s", FUNC_CHECK_COMP);
     PRINT_INSTR(14, "%s", FUNC_OP_NIL);
-    PRINT_INSTR(15, "%s", FUNC_CHECK_DIV);
+    PRINT_INSTR(15, "%s", FUNC_CHECK_DIV);*/
     return true;
 }
 
@@ -253,9 +252,6 @@ bool gen_init() {
     PRINT_INSTR(5, "defvar GF@&type2" NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(6, "defvar GF@&var1"  NON_VAR EOL, EMPTY_STR);
     PRINT_INSTR(7, "defvar GF@&var2"  NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(8, "\n\n\nlabel $main" NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(9, "createframe"  NON_VAR EOL, EMPTY_STR);
-    PRINT_INSTR(10, "pushframe"  NON_VAR EOL, EMPTY_STR);
 
     //str_free(&cnt.func_name);
     return (err == NO_ERR);
@@ -283,7 +279,7 @@ bool gen_expression() {
                     tmp = calloc(1, sizeof(htab_item_t)); //todo vymazat
                     tmp->deep = 1; //todo vymazat
                 }
-                PRINT_INSTR(1, "pushs LF@$%s$%llu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
+                PRINT_INSTR(1, "pushs LF@$%s$%lu$%s$" EOL, cnt.func_name.str, tmp->deep, queue_expr->front->token->attr.id.str);
                 break;
             case T_INT:
                 PRINT_INSTR(2, "\npushs int@%llu" EOL, queue_expr->front->token->attr.num_i); //ubuntu chce lu
