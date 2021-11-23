@@ -35,6 +35,7 @@ bool gen_init_built_int();
 bool gen_while_label();
 bool gen_while_start();
 bool gen_while_end();
+bool gen_while_eval();
 
 bool gen_params();
 bool gen_param();
@@ -69,6 +70,7 @@ bool gen_if_end_jump();
 bool gen_def_var();
 
 bool gen_init_var();
+bool dealloc_gen_var();
 #endif // CODE_GENERATOR_H
 
 

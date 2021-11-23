@@ -33,6 +33,9 @@ bool working_func; // 0 - decl_fun, 1 - def_func
 Queue* queue_id;
 Queue* queue_expr;
 
+#define DEBUG_ANDREJ 0
+#define DEBUG_ZDENEK 1
+
 #define CODE_GEN(callback, ...)         \
     do {                                \
         if (!(callback)(__VA_ARGS__)) {   \
@@ -410,10 +413,18 @@ bool statement() {
         NEXT_TOKEN();
 
 		///////////////////////////////////
-        CODE_GEN(gen_while_label, item);
+//        str_copy_str(cnt.func_name, item->key_id);
+//		cnt.func_name.str = item->key_id;
+        CODE_GEN(gen_while_label);
 		///////////////////////////////////
 
         NEXT_NONTERM(expression(true, false));
+
+		///////////////////////////////////
+        CODE_GEN(gen_expression);
+        CODE_GEN(gen_while_eval);
+		///////////////////////////////////
+
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
         ADD_SYMTAB();
@@ -462,6 +473,7 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, true));
+        CODE_GEN(gen_expression);
         NEXT_NONTERM(other_exp());
 
         ////////////////////// comment ////////////////////////
@@ -976,10 +988,12 @@ int parser() {
     /* CODE EXPRESSION TEST */
     queue_expr = queue_init();
     queue_id = queue_init();
-    fill_queues();
+#ifndef DEBUG_ANDREJ
+//    fill_queues();
     gen_init();
     printf("hello");
     gen_expression();
+#endif
     /* END OF CODE EXPRESSION TEST */
     ret = str_init(&token.attr.id, 20);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
@@ -1013,6 +1027,7 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
+    dealloc_gen_var();
 
     return err;
 }
