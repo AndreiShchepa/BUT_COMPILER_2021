@@ -253,7 +253,7 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if(DelElement->element_token.type == T_ID){
+        if(DelElement->element_token.type == T_ID || DelElement->element_token.type == T_STRING){
 //            str_free(&DelElement->element_token.attr.id);
         }
 //        free(DelElement);
@@ -338,6 +338,7 @@ bool Insert(List * list, char * data) {
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
         // If we are dealing with variable we also save the name of the variable to be able to look into symtab
+        // or we are saving the string of variable of type T_STRING
         if(token.type == T_ID || token.type == T_STRING){
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             if (!ret) {
@@ -483,20 +484,21 @@ bool Close(List * list) {
                 err = INTERNAL_ERR;
                 return false;
             }
-            // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
-            if(rule == 0){
-                find->element_token.type = list->lastElement->element_token.type;
-                find->element_token.keyword = list->lastElement->element_token.keyword;
-                find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
-                find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
-                if(list->lastElement->element_token.type == T_ID){
+            // if we are reducing <<i>> or (E) we also need to copy every single information from token to be able to pass it into gen code
+            if(rule == 0 || rule == 1){
+                find->element_token.type = Ei->element_token.type;
+                find->element_token.keyword = Ei->element_token.keyword;
+                find->element_token.attr.num_i = Ei->element_token.attr.num_i;
+                find->element_token.attr.num_f = Ei->element_token.attr.num_f;
+                find->already_reduced = Ei->already_reduced;
+                if(Ei->element_token.type == T_ID || Ei->element_token.type == T_STRING){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
                     if (!ret) {
                         err = INTERNAL_ERR;
                         return false;
                     }
-                    ret = str_copy_str(&find->element_token.attr.id, &list->lastElement->element_token.attr.id);
+                    ret = str_copy_str(&find->element_token.attr.id, &Ei->element_token.attr.id);
                     if (!ret) {
                         err = INTERNAL_ERR;
                         return false;
