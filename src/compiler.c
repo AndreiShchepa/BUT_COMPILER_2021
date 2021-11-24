@@ -82,7 +82,7 @@ int ret;
     }
 #endif
 
-#ifndef DEBUG_EXPR
+#if !defined(DEBUG_EXPR) && !defined(DEBUG_RULES)
     gen_testing_helper();
 #endif
 

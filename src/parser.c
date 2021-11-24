@@ -469,9 +469,6 @@ bool statement() {
         ret = str_copy_str(&left_new_var, &token.attr.id);
         CHECK_INTERNAL_ERR(!ret, false);
 
-        QUEUE_ADD_ID(tmp_var); //todo Andrej
-        CODE_GEN(gen_def_var); // todo Andrej
-
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
@@ -573,7 +570,10 @@ bool statement() {
             ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
             CHECK_INTERNAL_ERR(!ret, false);
 
+			/////////////////////////
             QUEUE_ADD_ID(tmp_var); // todo Andrej
+			/////////////////////////
+
             NEXT_TOKEN();
             NEXT_NONTERM(vars());
         }
@@ -708,7 +708,14 @@ bool def_var() {
 
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
     ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
-    CHECK_INTERNAL_ERR(!ret, false);
+
+	CHECK_INTERNAL_ERR(!ret, false);
+
+	//////////////////////////////
+	QUEUE_ADD_ID(tmp_var); //todo Andrej
+	CODE_GEN(gen_def_var); // todo Andrej
+	//////////////////////////////
+
     str_clear(&tps_left);
 
     print_rule("24. <def_var> -> e");
@@ -741,21 +748,26 @@ bool init_assign() {
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
+
+		/////////////////////////
         while(!queue_isEmpty(queue_id)){ // todo andrej
             CODE_GEN(gen_init_var);
         }
+		/////////////////////////
+
         return true;
     }
 
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
-	////////////////////////
-    CODE_GEN(gen_expression); //todo Andrej
-    CODE_GEN(gen_init_var); //todo Andrej
-	////////////////////////
-
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
+
+    ////////////////////////
+    QUEUE_ADD_ID(tmp_var);
+    CODE_GEN(gen_init_var);     // todo Andrej
+    ////////////////////////
+
     ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
     CHECK_INTERNAL_ERR(!ret, false);
     CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
