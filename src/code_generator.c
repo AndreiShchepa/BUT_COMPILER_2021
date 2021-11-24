@@ -5,6 +5,7 @@
  *                                  TODO
  *****************************************************************************/
 // TODO - check vars, params, if, while numbering - tests - redefinition
+// TODO - change if in func PRINT_FUNC else PRINT_MAIN
 
 
 /******************************************************************************
