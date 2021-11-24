@@ -20,6 +20,8 @@ token_t token;
 int err;
 unsigned long deep = 0;
 static bool ret;
+char left_new_var_type;
+string_t left_new_var;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
 htab_item_t *item;
@@ -108,9 +110,9 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             } \
         } while(0);
 
-#define ALLOC_VAR_IN_SYMTAB() \
+#define ALLOC_VAR_IN_SYMTAB(KEY) \
         do { \
-            tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id); \
+            tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], (KEY)); \
             if (!tmp_var) { \
                 return false; \
             } \
@@ -118,8 +120,6 @@ bool working_func; // 0 - decl_fun, 1 - def_func
             CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
             tmp_var->deep = deep; \
             tmp_var->type = VAR; \
-            tmp_var->data.var->init = true; \
-            tmp_var->data.var->val_nil = true; \
             str_init(&tmp_var->data.var->type, 2); \
         } while(0);
 
@@ -286,6 +286,7 @@ add_func_def:
         // after argc() we have in tps_left expected types of argv
         // in tps_right we have real types of argv
         // do comparing of to arrays anc then clear
+        //
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -392,17 +393,23 @@ bool statement() {
         EXPECTED_TOKEN(token.type == T_ID);
 
         // Allocate structure for variable in symtable //
-        ALLOC_VAR_IN_SYMTAB();
+        ret = str_copy_str(&left_new_var, &token.attr.id);
+        CHECK_INTERNAL_ERR(!ret, false);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
 
-        FILL_TYPE(&tmp_var->data.var->type);
+        //FILL_TYPE(&tmp_var->data.var->type);
         FILL_TYPE(&tps_left);
 
         NEXT_NONTERM(type());
         NEXT_NONTERM(def_var());
+
+        //ALLOC_VAR_IN_SYMTAB(&left_new_var);
+        //ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+        //CHECK_INTERNAL_ERR(!ret, false);
+        //str_clear(&tps_left);
 
         return statement();
     }
@@ -564,12 +571,15 @@ bool def_var() {
         NEXT_TOKEN();
 
         // variable has initial value //
-        tmp_var->data.var->val_nil = false;
+        //tmp_var->data.var->val_nil = false;
         ////////////////////////////////
 
         return init_assign();
     }
 
+    ALLOC_VAR_IN_SYMTAB(&left_new_var);
+    ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+    CHECK_INTERNAL_ERR(!ret, false);
     str_clear(&tps_left);
 
     print_rule("24. <def_var> -> e");
@@ -581,6 +591,7 @@ bool init_assign() {
 
     if (token.type == T_ID && tmp_func) {
         print_rule("25. <init_assign> -> id_func ( <args> )");
+        left_new_var_type = tps_left.str[0];
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
@@ -594,6 +605,8 @@ bool init_assign() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
+        ALLOC_VAR_IN_SYMTAB(&left_new_var);
+        tmp_var->data.var->type.str[0] = left_new_var_type;
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -605,6 +618,9 @@ bool init_assign() {
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
+    ALLOC_VAR_IN_SYMTAB(&left_new_var);
+    ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+    CHECK_INTERNAL_ERR(!ret, false);
     CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
     return true;
@@ -672,7 +688,7 @@ bool params() {
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
 
-        ALLOC_VAR_IN_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -701,7 +717,7 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        ALLOC_VAR_IN_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -760,6 +776,7 @@ bool param_to_func() {
         CHECK_SEM_DEF_ERR(!tmp_var);
 
         // add to tps_right types of tokens
+        //printf("id with name %s has type %c\n", tmp_var->key_id, tmp_var->data.var->type.str[0]);
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
     }
     else if (TOKEN_TERM()) {
@@ -880,6 +897,8 @@ int parser() {
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
     ret = str_init(&tps_right, 5);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
+    ret = str_init(&left_new_var, 20);
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
     FIRST_TOKEN();
     ret = prolog();
@@ -894,6 +913,7 @@ int parser() {
 end_parser:
     str_free(&tps_right);
     str_free(&tps_left);
+    str_free(&left_new_var);
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
     symtab_free(&global_symtab);
