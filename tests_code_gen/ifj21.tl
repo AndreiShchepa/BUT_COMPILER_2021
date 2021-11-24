@@ -1,4 +1,4 @@
--- Zajisteni zakladni kompatibility IFJ21->Teal
+-- Zajisteni zakladni kompatibility IFJ21->Teal (v2021-11-23)
 
 function tointeger(f : number) : integer
   local _ : number
@@ -37,7 +37,7 @@ function reads() : string
   local ret : string
   local _ : string 
   ret, _ = io.read("*l")
-  return tostring(ret)
+  return ret   -- do not convert nil into string (as 'tostring(ret)' did)
 end
 
 function write(... : string | integer | number | boolean)  -- podpora boolean pro bonusove rozsireni
