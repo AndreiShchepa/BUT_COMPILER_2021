@@ -531,6 +531,7 @@ bool Close(List * list) {
                 find->element_token.keyword = list->lastElement->element_token.keyword;
                 find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
                 find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
+                queue_add_token_rear(queue_expr, &list->lastElement->element_token);
                 if(list->lastElement->element_token.type == T_ID){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
