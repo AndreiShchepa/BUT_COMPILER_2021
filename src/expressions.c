@@ -595,7 +595,9 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule){
             if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
                 return false;
             }
+#if DEBUG_RISO
             printf("Add_queue: Ei:%d\n", Token_Ei->type);
+#endif
             queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){

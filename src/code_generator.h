@@ -1,3 +1,7 @@
+/******************************************************************************
+ *                                  TODO
+******************************************************************************/
+// DONE: FUNC_WRITE
 
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
@@ -10,7 +14,6 @@
 #include "str.h"
 #include "queue.h"
 #include "symtable.h"
-
 
 #define BLOCKS_NUM 2
 

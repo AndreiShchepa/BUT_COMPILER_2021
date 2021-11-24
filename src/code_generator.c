@@ -6,6 +6,7 @@
  *****************************************************************************/
 // TODO - check vars, params, if, while numbering - tests - redefinition
 // TODO - change if in func PRINT_FUNC else PRINT_MAIN
+// TODO - format params in func
 
 
 /******************************************************************************
@@ -31,6 +32,8 @@
 #define DEBUG_INSTR_2 1
 #define DEVIDER "################################################################################# "
 #define DEVIDER_2 "########## "
+#define FORMAT_VAR " LF@$%s$%lu$%s$ "
+#define FORMAT_PARAM " LF@%%%dp "
 
 
 #define DEBUG_GEN(fmt, ...) \
@@ -194,8 +197,8 @@ bool gen_params() {
 
     QueueElementPtr *queue_elem = queue_id->front;
     for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
-        PRINT_FUNC(2, "defvar LF@%s"        , queue_elem->id->key_id);
-        PRINT_FUNC(3, "move LF@%s  LF@%%%dp " , queue_elem->id->key_id, i);
+        PRINT_FUNC(2, "defvar "FORMAT_VAR             , cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id);
+        PRINT_FUNC(3, "move   "FORMAT_VAR FORMAT_PARAM, cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id, i);
     }
     DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
     // TODO - remove one by one
