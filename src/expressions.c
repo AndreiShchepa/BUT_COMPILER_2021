@@ -450,7 +450,7 @@ bool Close(List * list) {
             // Assigns type, if Comparing type == compare, if II type == int, SS = string else = float
             ASSIGN_TYPE();
             // Edge case where we are dealing with nil value and we are not doing rules ~= == (i) <<i>>
-            if(rule != 0 && rule != 1 && rule != 12 && rule != 13 && (Ei->type == 'N' || Ej->type == 'N')){
+            if(Ei->type == 'N' || Ej->type == 'N'){
                 err = SEM_ARITHM_REL_ERR;
                 return false;
             }
@@ -479,8 +479,8 @@ bool Close(List * list) {
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
 
-            // We add our rule to postfix and then we save it to queue
-            if(!Add_Tokens_To_Queue(Ei, Ej, operator, rule)){
+            // We add our variable or operator to queue
+            if(!Add_Tokens_To_Queue(Ei, operator, rule)){
                 return false;
             }
             // if we are reducing <<i>> or (E) we also need to copy every single information from token to be able to pass it into gen code
@@ -596,73 +596,22 @@ bool Check_Correct_Closure(List * list) {
     return false;
 }
 
-bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
+bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule){
     token_t * Token_Ei = NULL;
     token_t * Token_Operator = NULL;
-    token_t * Token_Ej = NULL;
-
     if (rule == 0){
-        if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
-            return false;
-        }
-        queue_add_token_rear(queue_expr, Token_Ei);
+            if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
+                return false;
+            }
+            printf("Add_queue: Ei:%d\n", Token_Ei->type);
+            queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
-        if(rule != 7){
-            if (!Ei->already_reduced && !Ej->already_reduced) {
-                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Ei);
-
-                strcat(postfix, Ei->data);
-
-                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Ej);
-
-                strcat(postfix, Ej->data);
-                strcat(postfix, operator->data);
-            } else if (Ei->already_reduced && !Ej->already_reduced) {
-                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Ej);
-
-                strcat(postfix, Ej->data);
-                strcat(postfix, operator->data);
-            } else if (!Ei->already_reduced && Ej->already_reduced) {
-                char helper[500] = {0};
-                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
-                    return false;
-                }
-                queue_add_token_front(queue_expr, Token_Ei);
-
-                strcat(helper, Ei->data);
-                strcat(postfix, operator->data);
-                strcat(helper, postfix);
-                strcpy(postfix, helper);
-            } else {
-                strcat(postfix, operator->data);
-            }
-        } else {
-            if (!Ei->already_reduced){
-                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Ei);
-                strcat(postfix, Ei->data);
-                strcat(postfix, operator->data);
-            } else {
-                strcat(postfix, operator->data);
-            }
-        }
         if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){
             return false;
         }
+        printf("Add_queue: Operator:%d\n", Token_Operator->type);
         queue_add_token_rear(queue_expr, Token_Operator);
     }
-//    printf("\nPostfix:%s\n", postfix);
     return true;
 }
 
