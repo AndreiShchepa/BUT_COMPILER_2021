@@ -18,7 +18,8 @@
 #include "queue.h"
 char postfix[500] = {0};
 
-#define DEBUG_ANDREJ 1
+#define DEBUG_ANDREJ 0
+#define DEBUG_RISO 1
 extern int err;
 extern string_t tps_right;
 extern arr_symtbs_t local_symtbs;
@@ -487,10 +488,6 @@ bool Close(List * list) {
                 find->element_token.keyword = list->lastElement->element_token.keyword;
                 find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
                 find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
-
-                queue_add_token_rear(queue_expr, &list->lastElement->element_token);
-                strcat(postfix, list->lastElement->data);
-
                 if(list->lastElement->element_token.type == T_ID){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
@@ -598,11 +595,16 @@ bool Check_Correct_Closure(List * list) {
 }
 
 bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
-    //todo test #E and delete string variables,
-    if(list == NULL){
+    token_t * Token_Ei = malloc(sizeof(token_t));
+    if(Token_Ei == NULL){
+        Deallocate(list);
         return false;
     }
-    if (rule != 0 && rule != 1) {
+//    token_t * Token_Ej = malloc(sizeof(token_t));
+//    token_t * Token_Operator = malloc(sizeof(token_t));
+    if (rule == 0){
+        queue_add_token_rear(queue_expr, &list->lastElement->element_token);
+    } else if (rule != 1) {
         if(rule != 7){
             if (!Ei->already_reduced && !Ej->already_reduced) {
                 queue_add_token_rear(queue_expr, &Ei->element_token);
@@ -649,7 +651,7 @@ bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr o
             }
         }
     }
-    printf("\nPostfix:%s\n", postfix);
+//    printf("\nPostfix:%s\n", postfix);
     return true;
 }
 
@@ -785,7 +787,9 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
-    //printf("\nPostfix:%s\n", postfix);
+#if DEBUG_RISO
+    printf("\nPostfix:%s\n", postfix);
+#endif
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
