@@ -658,12 +658,6 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
             }
         }
         if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){
-            if(Token_Ei != NULL){
-                free(Token_Ei);
-            }
-            if(Token_Ej != NULL){
-                free(Token_Ej);
-            }
             return false;
         }
         queue_add_token_rear(queue_expr, Token_Operator);
