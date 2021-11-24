@@ -19,7 +19,7 @@
 char postfix[500] = {0};
 
 #define DEBUG_ANDREJ 0
-#define DEBUG_RISO 1
+#define DEBUG_RISO 0
 extern int err;
 extern string_t tps_right;
 extern arr_symtbs_t local_symtbs;
@@ -254,9 +254,9 @@ void Dispose(ElementPtr Element) {
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
         if(DelElement->element_token.type == T_ID || DelElement->element_token.type == T_STRING){
-//            str_free(&DelElement->element_token.attr.id);
+            str_free(&DelElement->element_token.attr.id);
         }
-//        free(DelElement);
+        free(DelElement);
         DelElement = NULL;
     }
 }
