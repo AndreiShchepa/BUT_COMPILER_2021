@@ -884,8 +884,8 @@ int parser() {
     FIRST_TOKEN();
     ret = prolog();
 
-    if (!ret && err == NO_ERR) {
-        err = PARSER_ERR;
+    if (!ret) {
+        err = err == NO_ERR ? PARSER_ERR : err;
         goto end_parser;
     }
 
