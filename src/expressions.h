@@ -105,6 +105,11 @@ void Top(List *, char * );
 bool Push(List *, char * );
 
 /*
+ * @brief We add tokens to queue for gen_code
+ */
+bool Add_Tokens_To_Queue(List *, ElementPtr, ElementPtr, ElementPtr, int );
+
+/*
  * @brief We check if only thing left on stack is "$E"
  */
 bool Check_Correct_Closure(List * );
