@@ -177,19 +177,15 @@ bool gen_while_label(char *key_id) {
 
 bool gen_while_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "jumpifeq $%s$%d$$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
 	return true;
-}
-
-bool gen_while_start() {
-    return true;
 }
 
 bool gen_while_end() {
     PRINT_FUNC(1, "jump $%s$%d$while$" , cnt.func_name.str, cnt.while_cnt);
     PRINT_FUNC(2, "label $%s$%d$while_end$" , cnt.func_name.str, cnt.while_cnt);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
-    cnt.while_cnt--;
+    //cnt.while_cnt--; //todo this is wrong, -- never should be anywhere, only cnt.while == 0 after new func.
     return true;
 }
 

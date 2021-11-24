@@ -57,7 +57,6 @@ typedef struct Element {
     // T_NONE will be used with everything else other than expressions
     // and thus making use of token different than in the rest of the program
     token_t element_token;
-    bool already_reduced;
     char type;
     char data[3];
     struct Element *previousElement;
@@ -103,6 +102,16 @@ void Top(List *, char * );
  * @brief We Copy a string on top of the stack
  */
 bool Push(List *, char * );
+
+/*
+ * @brief We add tokens to queue for gen_code
+ */
+bool Add_Tokens_To_Queue(ElementPtr, ElementPtr, int );
+
+/*
+ * @brief We copy values from one token to another
+ */
+token_t * Copy_Values_From_Token(token_t *, token_t * );
 
 /*
  * @brief We check if only thing left on stack is "$E"

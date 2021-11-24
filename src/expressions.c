@@ -19,7 +19,7 @@
 char postfix[500] = {0};
 
 #define DEBUG_ANDREJ 0
-
+#define DEBUG_RISO 0
 extern int err;
 extern string_t tps_right;
 extern arr_symtbs_t local_symtbs;
@@ -178,8 +178,7 @@ void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
         printf("\t%s\t", PrintElement->data);
-        printf("%c\t%d\t%d\tReduced:%d", PrintElement->type, PrintElement->element_token.type, PrintElement->element_token.keyword,
-               PrintElement->already_reduced);
+        printf("%c\t%d\t%d", PrintElement->type, PrintElement->element_token.type, PrintElement->element_token.keyword);
         if(PrintElement->element_token.type == T_ID){
             printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
         } else {
@@ -233,7 +232,6 @@ List * Init(List * list) {
     strcpy(list->firstElement->data, "$");
     TempElement->type = 'N';
     TempElement->element_token.type = T_NONE;
-    TempElement->already_reduced = 0;
 
 
     return list;
@@ -253,10 +251,10 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if(DelElement->element_token.type == T_ID){
-            //str_free(&DelElement->element_token.attr.id);
+        if(DelElement->element_token.type == T_ID || DelElement->element_token.type == T_STRING){
+            str_free(&DelElement->element_token.attr.id);
         }
-        //free(DelElement);
+        free(DelElement);
         DelElement = NULL;
     }
 }
@@ -332,13 +330,13 @@ bool Insert(List * list, char * data) {
     strcpy(TempElement_first->data, "<<");
     TempElement_first->type = 'N';
     TempElement_first->element_token.type = T_NONE;
-    TempElement_first->already_reduced = 0;
 
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
         // If we are dealing with variable we also save the name of the variable to be able to look into symtab
-        if(token.type == T_ID){
+        // or we are saving the string of variable of type T_STRING
+        if(token.type == T_ID || token.type == T_STRING){
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             if (!ret) {
                 err = INTERNAL_ERR;
@@ -354,19 +352,16 @@ bool Insert(List * list, char * data) {
         ASSIGN_TYPE_FROM_TOKEN();
         TempElement_second->element_token.type = token.type;
         TempElement_second->element_token.keyword = token.keyword;
-        strcpy(TempElement_second->data, data);
-
         TempElement_second->element_token.attr.num_i = token.attr.num_i;
         TempElement_second->element_token.attr.num_f = token.attr.num_f;
 
-        TempElement_second->already_reduced = 0;
+        strcpy(TempElement_second->data, data);
         // else we just set type to T_NONE so we can
         // differentiate between an expression and a character
     }
     else {
         TempElement_second->type = 'N';
         TempElement_second->element_token.type = token.type;
-        TempElement_second->already_reduced = 0;
     }
 
     strcpy(TempElement_second->data, data);
@@ -450,7 +445,7 @@ bool Close(List * list) {
             // Assigns type, if Comparing type == compare, if II type == int, SS = string else = float
             ASSIGN_TYPE();
             // Edge case where we are dealing with nil value and we are not doing rules ~= == (i) <<i>>
-            if(rule != 0 && rule != 1 && rule != 12 && rule != 13 && (Ei->type == 'N' || Ej->type == 'N')){
+            if(Ei->type == 'N' || Ej->type == 'N'){
                 err = SEM_ARITHM_REL_ERR;
                 return false;
             }
@@ -476,82 +471,32 @@ bool Close(List * list) {
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
-
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
-            //todo test #E and delete string variables
-            if (rule == 0){
-                queue_add_token_rear(queue_expr, &Ei->element_token);
+
+            // We add our variable or operator to queue
+            if(!Add_Tokens_To_Queue(Ei, operator, rule)){
+                return false;
             }
-            if (rule != 0 && rule != 1) {
-                if(rule != 7){
-                    if (!Ei->already_reduced && !Ej->already_reduced) {
-                        queue_add_token_rear(queue_expr, &Ei->element_token);
-                        strcat(postfix, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &Ej->element_token);
-                        strcat(postfix, Ej->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                    } else if (Ei->already_reduced && !Ej->already_reduced) {
-
-                        queue_add_token_rear(queue_expr, &Ej->element_token);
-                        strcat(postfix, Ej->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                    } else if (!Ei->already_reduced && Ej->already_reduced) {
-                        char helper[500] = {0};
-                        queue_add_token_front(queue_expr, &Ei->element_token);
-                        strcat(helper, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                        strcat(helper, postfix);
-                        strcpy(postfix, helper);
-                    } else {
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    }
-                } else {
-                    if (!Ei->already_reduced){
-                        queue_add_token_rear(queue_expr, &Ei->element_token);
-                        strcat(postfix, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    } else {
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    }
-                }
-            }
-//            printf("\nPostfix:%s\n", postfix);
-            // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
-            if(rule == 0){
-                find->element_token.type = list->lastElement->element_token.type;
-                find->element_token.keyword = list->lastElement->element_token.keyword;
-                find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
-                find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
-                if(list->lastElement->element_token.type == T_ID){
+            // if we are reducing <<i>> or (E) we also need to copy every single information from token to be able to pass it into gen code
+            if(rule == 0 || rule == 1){
+                find->element_token.type = Ei->element_token.type;
+                find->element_token.keyword = Ei->element_token.keyword;
+                find->element_token.attr.num_i = Ei->element_token.attr.num_i;
+                find->element_token.attr.num_f = Ei->element_token.attr.num_f;
+                if(Ei->element_token.type == T_ID || Ei->element_token.type == T_STRING){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
                     if (!ret) {
                         err = INTERNAL_ERR;
                         return false;
                     }
-                    ret = str_copy_str(&find->element_token.attr.id, &list->lastElement->element_token.attr.id);
+                    ret = str_copy_str(&find->element_token.attr.id, &Ei->element_token.attr.id);
                     if (!ret) {
                         err = INTERNAL_ERR;
                         return false;
                     }
                 }
-            } else {
-                find->already_reduced = 1;
             }
 
             //printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
@@ -562,7 +507,6 @@ bool Close(List * list) {
             find->nextElement = NULL;
             // The resulting expression is combination of 2 other expressions
             list->lastElement = find;
-
 #if DEBUG_ANDREJ
             QueueElementPtr *tmp = queue_expr->front;
             while(tmp != NULL){
@@ -575,8 +519,6 @@ bool Close(List * list) {
                 tmp = tmp->previous_element;
             }
 #endif
-
-
             return true;
         }
     }
@@ -644,6 +586,52 @@ bool Check_Correct_Closure(List * list) {
     }
 
     return false;
+}
+
+bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule){
+    token_t * Token_Ei = NULL;
+    token_t * Token_Operator = NULL;
+    if (rule == 0){
+            if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
+                return false;
+            }
+            printf("Add_queue: Ei:%d\n", Token_Ei->type);
+            queue_add_token_rear(queue_expr, Token_Ei);
+    } else if (rule != 1) {
+        if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){
+            return false;
+        }
+        printf("Add_queue: Operator:%d\n", Token_Operator->type);
+        queue_add_token_rear(queue_expr, Token_Operator);
+    }
+    return true;
+}
+
+token_t * Copy_Values_From_Token(token_t * to, token_t * from){
+    to = malloc(sizeof(token_t));
+    if(to == NULL){
+        err = INTERNAL_ERR;
+        return NULL;
+    }
+    to->type = from->type;
+    to->keyword = from->keyword;
+    to->attr.num_i = from->attr.num_i;
+    to->attr.num_f = from->attr.num_f;
+
+    if(from->type == T_ID || from->type == T_STRING){
+        bool ret;
+        ret = str_init(&to->attr.id, 20);
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return NULL;
+        }
+        ret = str_copy_str(&to->attr.id, &(from->attr.id));
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return NULL;
+        }
+    }
+    return to;
 }
 
 void Deallocate(List * list) {
@@ -778,6 +766,9 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
+#if DEBUG_RISO
+    printf("\nPostfix:%s\n", postfix);
+#endif
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
