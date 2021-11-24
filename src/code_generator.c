@@ -162,10 +162,6 @@ bool gen_while_eval() {
 	return true;
 }
 
-bool gen_while_start() {
-    return true;
-}
-
 bool gen_while_end() {
     PRINT_FUNC(1, "jump $%s$%d$while$" , cnt.func_name.str, cnt.while_cnt);
     PRINT_FUNC(2, "label $%s$%d$while_end$" , cnt.func_name.str, cnt.while_cnt);

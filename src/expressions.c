@@ -522,7 +522,7 @@ bool Close(List * list) {
                 if (queue_expr->front->token->type == T_ID)
                     printf("%s", queue_expr->front->token->attr.id.str);
                 if (queue_expr->front->token->type == T_INT)
-                    printf("%lu", queue_expr->front->token->attr.num_i);
+                    printf("%llu", queue_expr->front->token->attr.num_i);
                 if (queue_expr->front->token->type == T_FLOAT)
                     printf("%f", queue_expr->front->token->attr.num_f);
                 tmp = tmp->previous_element;
@@ -599,7 +599,9 @@ bool Check_Correct_Closure(List * list) {
 
 bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
     //todo test #E and delete string variables,
-
+    if(list == NULL){
+        return false;
+    }
     if (rule != 0 && rule != 1) {
         if(rule != 7){
             if (!Ei->already_reduced && !Ej->already_reduced) {
@@ -783,7 +785,7 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
-    printf("\nPostfix:%s\n", postfix);
+    //printf("\nPostfix:%s\n", postfix);
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
