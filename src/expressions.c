@@ -473,67 +473,24 @@ bool Close(List * list) {
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
-
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
-            //todo test #E and delete string variables,
 
-            if (rule != 0 && rule != 1) {
-                if(rule != 7){
-                    if (!Ei->already_reduced && !Ej->already_reduced) {
-                        queue_add_token_rear(queue_expr, &Ei->element_token);
-                        strcat(postfix, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &Ej->element_token);
-                        strcat(postfix, Ej->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                    } else if (Ei->already_reduced && !Ej->already_reduced) {
-
-                        queue_add_token_rear(queue_expr, &Ej->element_token);
-                        strcat(postfix, Ej->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                    } else if (!Ei->already_reduced && Ej->already_reduced) {
-                        char helper[500] = {0};
-                        queue_add_token_front(queue_expr, &Ei->element_token);
-                        strcat(helper, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-
-                        strcat(helper, postfix);
-                        strcpy(postfix, helper);
-                    } else {
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    }
-                } else {
-                    if (!Ei->already_reduced){
-                        queue_add_token_rear(queue_expr, &Ei->element_token);
-                        strcat(postfix, Ei->data);
-
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    } else {
-                        queue_add_token_rear(queue_expr, &operator->element_token);
-                        strcat(postfix, operator->data);
-                    }
-                }
+            // We add our rule to postfix and then we save it to queue
+            if(!Add_Tokens_To_Queue(list, Ei, Ej, operator, rule)){
+                err = INTERNAL_ERR;
+                return false;
             }
-            printf("\nPostfix:%s\n", postfix);
             // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
             if(rule == 0){
                 find->element_token.type = list->lastElement->element_token.type;
                 find->element_token.keyword = list->lastElement->element_token.keyword;
                 find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
                 find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
+
                 queue_add_token_rear(queue_expr, &list->lastElement->element_token);
                 strcat(postfix, list->lastElement->data);
+
                 if(list->lastElement->element_token.type == T_ID){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
@@ -638,6 +595,60 @@ bool Check_Correct_Closure(List * list) {
     }
 
     return false;
+}
+
+bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
+    //todo test #E and delete string variables,
+
+    if (rule != 0 && rule != 1) {
+        if(rule != 7){
+            if (!Ei->already_reduced && !Ej->already_reduced) {
+                queue_add_token_rear(queue_expr, &Ei->element_token);
+                strcat(postfix, Ei->data);
+
+                queue_add_token_rear(queue_expr, &Ej->element_token);
+                strcat(postfix, Ej->data);
+
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+
+            } else if (Ei->already_reduced && !Ej->already_reduced) {
+
+                queue_add_token_rear(queue_expr, &Ej->element_token);
+                strcat(postfix, Ej->data);
+
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+
+            } else if (!Ei->already_reduced && Ej->already_reduced) {
+                char helper[500] = {0};
+                queue_add_token_front(queue_expr, &Ei->element_token);
+                strcat(helper, Ei->data);
+
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+
+                strcat(helper, postfix);
+                strcpy(postfix, helper);
+            } else {
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+            }
+        } else {
+            if (!Ei->already_reduced){
+                queue_add_token_rear(queue_expr, &Ei->element_token);
+                strcat(postfix, Ei->data);
+
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+            } else {
+                queue_add_token_rear(queue_expr, &operator->element_token);
+                strcat(postfix, operator->data);
+            }
+        }
+    }
+    printf("\nPostfix:%s\n", postfix);
+    return true;
 }
 
 void Deallocate(List * list) {
