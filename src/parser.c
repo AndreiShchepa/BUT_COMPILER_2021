@@ -22,6 +22,8 @@ token_t token;
 int err;
 unsigned long deep = 0;
 static bool ret;
+char left_new_var_type;
+string_t left_new_var;
 arr_symtbs_t local_symtbs;
 htable_t global_symtab;
 htab_item_t *item;
@@ -139,9 +141,9 @@ Queue* queue_expr;
             } \
         } while(0);
 
-#define ALLOC_VAR_IN_SYMTAB() \
+#define ALLOC_VAR_IN_SYMTAB(KEY) \
         do { \
-            tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], &token.attr.id); \
+            tmp_var = symtab_add(&local_symtbs.htab[local_symtbs.size - 1], (KEY)); \
             if (!tmp_var) { \
                 return false; \
             } \
@@ -149,15 +151,13 @@ Queue* queue_expr;
             CHECK_INTERNAL_ERR(!tmp_var->data.var, false); \
             tmp_var->deep = deep; \
             tmp_var->type = VAR; \
-            tmp_var->data.var->init = true; \
-            tmp_var->data.var->val_nil = true; \
             str_init(&tmp_var->data.var->type, 2); \
         } while(0);
 
-#define CHECK_COMPATIBILITY() \
+#define CHECK_COMPATIBILITY(ERROR) \
         do { \
             if (!type_compatibility()) { \
-                err = SEM_FUNC_ERR; \
+                err = (ERROR); \
                 return false; \
             } \
             else { \
@@ -252,7 +252,6 @@ add_func_decl:
         NEXT_NONTERM(type_returns());
 
         CHECK_TPS_DEF_DECL_FUNCS();
-
         return prog();
     }
     else if (token.keyword == KW_FUNCTION) {
@@ -314,8 +313,11 @@ add_func_def:
         print_rule("4.  <proG> -> id_func ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
-        CHECK_SEM_DEF_ERR(!tmp_func);
 
+        NEXT_TOKEN();
+        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
+
+        CHECK_SEM_DEF_ERR(!tmp_func);
         // tmp_func = calling func
         // tps_left = tmp_func.argv
         // expected in tps_right types of arguments
@@ -328,8 +330,6 @@ add_func_def:
 		////////////////////////////////
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
-        NEXT_TOKEN();
         NEXT_NONTERM(args());
 
 		////////////////////////////////
@@ -339,7 +339,8 @@ add_func_def:
         // after argc() we have in tps_left expected types of argv
         // in tps_right we have real types of argv
         // do comparing of to arrays anc then clear
-        CHECK_COMPATIBILITY();
+        //
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -392,6 +393,7 @@ bool statement() {
         CODE_GEN(gen_if_eval); // todo Andrej
         CODE_GEN(gen_if_start); // todo Andrej
 
+        str_clear(&tps_right);
         EXPECTED_TOKEN(token.keyword == KW_THEN);
 
         ADD_SYMTAB();
@@ -439,6 +441,7 @@ bool statement() {
         CODE_GEN(gen_while_eval);
 		///////////////////////////////////
 
+        str_clear(&tps_right);
         EXPECTED_TOKEN(token.keyword == KW_DO);
 
         ADD_SYMTAB();
@@ -463,7 +466,8 @@ bool statement() {
         EXPECTED_TOKEN(token.type == T_ID);
 
         // Allocate structure for variable in symtable //
-        ALLOC_VAR_IN_SYMTAB();
+        ret = str_copy_str(&left_new_var, &token.attr.id);
+        CHECK_INTERNAL_ERR(!ret, false);
 
         QUEUE_ADD_ID(tmp_var); //todo Andrej
         CODE_GEN(gen_def_var); // todo Andrej
@@ -472,11 +476,16 @@ bool statement() {
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
 
-        FILL_TYPE(&tmp_var->data.var->type);
+        //FILL_TYPE(&tmp_var->data.var->type);
         FILL_TYPE(&tps_left);
 
         NEXT_NONTERM(type());
         NEXT_NONTERM(def_var());
+
+        //ALLOC_VAR_IN_SYMTAB(&left_new_var);
+        //ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+        //CHECK_INTERNAL_ERR(!ret, false);
+        //str_clear(&tps_left);
 
         return statement();
     }
@@ -507,8 +516,7 @@ bool statement() {
             str_add_char(&tps_right, 'N');
         }
         ///////////////////////////////////////////////////////
-
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         return statement();
     }
@@ -537,7 +545,7 @@ bool statement() {
 
             NEXT_NONTERM(args());
 
-            CHECK_COMPATIBILITY();
+            CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
@@ -618,7 +626,7 @@ bool type_expr() {
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -628,7 +636,7 @@ bool type_expr() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -636,7 +644,6 @@ bool type_expr() {
         return true;
     }
 
-    str_clear(&tps_left);
     print_rule("20. <type_expr> -> <expression> <other_exp>");
 
     NEXT_NONTERM(expression(false, false));
@@ -646,7 +653,12 @@ bool type_expr() {
 
     NEXT_NONTERM(other_exp());
 
-    CHECK_COMPATIBILITY();
+    if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
+        err = SEM_OTHER_ERR;
+        return false;
+    }
+
+    CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
     return true;
 }
 
@@ -688,12 +700,15 @@ bool def_var() {
         NEXT_TOKEN();
 
         // variable has initial value //
-        tmp_var->data.var->val_nil = false;
+        //tmp_var->data.var->val_nil = false;
         ////////////////////////////////
 
         return init_assign();
     }
 
+    ALLOC_VAR_IN_SYMTAB(&left_new_var);
+    ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+    CHECK_INTERNAL_ERR(!ret, false);
     str_clear(&tps_left);
 
     print_rule("24. <def_var> -> e");
@@ -706,9 +721,11 @@ bool init_assign() {
     tmp_func = symtab_find(&global_symtab, token.attr.id.str);
     if (token.type == T_ID && tmp_func) {
         print_rule("25. <init_assign> -> id_func ( <args> )");
+        left_new_var_type = tps_left.str[0];
+
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY();
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
@@ -718,7 +735,9 @@ bool init_assign() {
         NEXT_TOKEN();
         NEXT_NONTERM(args());
 
-        CHECK_COMPATIBILITY();
+        ALLOC_VAR_IN_SYMTAB(&left_new_var);
+        tmp_var->data.var->type.str[0] = left_new_var_type;
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -731,10 +750,15 @@ bool init_assign() {
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
 
+	////////////////////////
     CODE_GEN(gen_expression); //todo Andrej
     CODE_GEN(gen_init_var); //todo Andrej
+	////////////////////////
 
-    CHECK_COMPATIBILITY();
+    ALLOC_VAR_IN_SYMTAB(&left_new_var);
+    ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+    CHECK_INTERNAL_ERR(!ret, false);
+    CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
 
     return true;
 }
@@ -801,7 +825,7 @@ bool params() {
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
 
-        ALLOC_VAR_IN_SYMTAB();
+        ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -831,9 +855,7 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-//        ADD_VAR_TO_SYMTAB();
-        ALLOC_VAR_IN_SYMTAB();
-        QUEUE_ADD_ID(FIND_VAR_IN_SYMTAB)
+        ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
@@ -900,6 +922,7 @@ bool param_to_func() {
         ///////////////////////////
 
         // add to tps_right types of tokens
+        //printf("id with name %s has type %c\n", tmp_var->key_id, tmp_var->data.var->type.str[0]);
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
     }
     else if (TOKEN_TERM()) {
@@ -1039,14 +1062,17 @@ int parser() {
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
     ret = str_init(&tps_right, 5);
     CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
+    ret = str_init(&left_new_var, 20);
+    CHECK_INTERNAL_ERR(!ret, INTERNAL_ERR);
 
 
 
     FIRST_TOKEN();
     ret = prolog();
 
-    if (!ret && err == NO_ERR) {
-        err = PARSER_ERR;
+    if (!ret) {
+        err = err == NO_ERR ? PARSER_ERR : err;
+        goto end_parser;
     }
 
     ret = check_def_of_decl_func();
@@ -1054,6 +1080,7 @@ int parser() {
 end_parser:
     str_free(&tps_right);
     str_free(&tps_left);
+    str_free(&left_new_var);
     str_free(&token.attr.id);
     free_symtbs(&local_symtbs);
     symtab_free(&global_symtab);

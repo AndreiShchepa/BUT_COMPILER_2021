@@ -7,7 +7,7 @@ function main()
     local dec : number = 190.432
     local nil_var : nil
 
-    local id : string = int + dec  =int * dec - int + dec / (int + dec - nil_var)
+    local id : string = int + dec * int * dec - int + dec / (int + dec - nil_var)
 end
 
 main()

@@ -38,10 +38,10 @@ if [[ "$name" == "scanner_tests" ]]; then
 fi
 
 if [[ "$name" == "all" ]]; then
-    code_coverage_scanner
-
-    cp code1.json ../../../../ && cd ../../../ && rm -rf *
-    cmake .. 1>/dev/null 2>/dev/null && make 1>/dev/null 2>/dev/null && cd ..
+    #code_coverage_scanner
+    #
+    #cp code1.json ../../../../ && cd ../../../ && rm -rf *
+    #cmake .. 1>/dev/null 2>/dev/null && make 1>/dev/null 2>/dev/null && cd ..
 
     for NUM_TEST in 0 2 3 4 5 6 7
     do
@@ -56,9 +56,14 @@ if [[ "$name" == "all" ]]; then
     done
 
     mkdir html
-    gcovr --filter src/ --add-tracefile code0.json --add-tracefile code1.json --add-tracefile code2.json \
-                        --add-tracefile code3.json --add-tracefile code4.json --add-tracefile code5.json \
-                        --add-tracefile code6.json --add-tracefile code7.json \
+    # add --add-tracefile code1.json and ucomment 41 - 44
+    gcovr --filter src/ --add-tracefile code0.json \
+                        --add-tracefile code2.json \
+                        --add-tracefile code3.json \
+                        --add-tracefile code4.json \
+                        --add-tracefile code5.json \
+                        --add-tracefile code6.json \
+                        --add-tracefile code7.json \
                         --html --html-details -o html/code_coverage.html
 
     open html/code_coverage.html
@@ -83,7 +88,7 @@ fi
 for file in ${folder}/${name}*_${expected_err}.tl;
 do
     if [[ "${folder}/${name}*_${expected_err}.tl" == "$file" ]]; then
-        echo "Files with this arguments were not found"
+        echo "Files with these arguments were not found"
         exit 1
     fi
 
