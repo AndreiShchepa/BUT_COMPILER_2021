@@ -178,8 +178,7 @@ void print_stack_debug(List * list) {
     ElementPtr PrintElement = list->firstElement;
     while (PrintElement != NULL) {
         printf("\t%s\t", PrintElement->data);
-        printf("%c\t%d\t%d\tReduced:%d", PrintElement->type, PrintElement->element_token.type, PrintElement->element_token.keyword,
-               PrintElement->already_reduced);
+        printf("%c\t%d\t%d", PrintElement->type, PrintElement->element_token.type, PrintElement->element_token.keyword);
         if(PrintElement->element_token.type == T_ID){
             printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
         } else {
@@ -233,7 +232,6 @@ List * Init(List * list) {
     strcpy(list->firstElement->data, "$");
     TempElement->type = 'N';
     TempElement->element_token.type = T_NONE;
-    TempElement->already_reduced = 0;
 
 
     return list;
@@ -332,7 +330,6 @@ bool Insert(List * list, char * data) {
     strcpy(TempElement_first->data, "<<");
     TempElement_first->type = 'N';
     TempElement_first->element_token.type = T_NONE;
-    TempElement_first->already_reduced = 0;
 
     // If we are dealing not with character,
     // but with an expression we copy the data of token into our structure
@@ -359,14 +356,12 @@ bool Insert(List * list, char * data) {
         TempElement_second->element_token.attr.num_f = token.attr.num_f;
 
         strcpy(TempElement_second->data, data);
-        TempElement_second->already_reduced = 0;
         // else we just set type to T_NONE so we can
         // differentiate between an expression and a character
     }
     else {
         TempElement_second->type = 'N';
         TempElement_second->element_token.type = token.type;
-        TempElement_second->already_reduced = 0;
     }
 
     strcpy(TempElement_second->data, data);
@@ -489,7 +484,6 @@ bool Close(List * list) {
                 find->element_token.keyword = Ei->element_token.keyword;
                 find->element_token.attr.num_i = Ei->element_token.attr.num_i;
                 find->element_token.attr.num_f = Ei->element_token.attr.num_f;
-                find->already_reduced = Ei->already_reduced;
                 if(Ei->element_token.type == T_ID || Ei->element_token.type == T_STRING){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
@@ -503,8 +497,6 @@ bool Close(List * list) {
                         return false;
                     }
                 }
-            } else {
-                find->already_reduced = 1;
             }
 
             //printf("Robim s types: %s a ASSIGN_TYPE: %c\n", types_E, find->type);
