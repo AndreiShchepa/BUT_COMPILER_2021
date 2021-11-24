@@ -480,8 +480,7 @@ bool Close(List * list) {
             }
 
             // We add our rule to postfix and then we save it to queue
-            if(!Add_Tokens_To_Queue(list, Ei, Ej, operator, rule)){
-                err = INTERNAL_ERR;
+            if(!Add_Tokens_To_Queue(Ei, Ej, operator, rule)){
                 return false;
             }
             // if we are reducing <<i>> or (E) we also need to copy every single information from token to be able to pass it into gen code
@@ -597,84 +596,126 @@ bool Check_Correct_Closure(List * list) {
     return false;
 }
 
-bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
-    token_t * Token_Ei = malloc(sizeof(token_t));
-    if(Token_Ei == NULL){
-        Deallocate(list);
-        return false;
-    }
-    token_t * Token_Operator = malloc(sizeof(token_t));
-    if(Token_Operator == NULL){
-        Deallocate(list);
-        free(Token_Ei);
-        return false;
-    }
-    token_t * Token_Ej = malloc(sizeof(token_t));
-    if(Token_Ej == NULL){
-        Deallocate(list);
-        free(Token_Ei);
-        free(Token_Operator);
-        return false;
-    }
+bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int rule){
+    token_t * Token_Ei = NULL;
+    token_t * Token_Operator = NULL;
+    token_t * Token_Ej = NULL;
+
     if (rule == 0){
-        queue_add_token_rear(queue_expr, &list->lastElement->element_token);
+        if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+            return false;
+        }
+        queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if(rule != 7){
             if (!Ei->already_reduced && !Ej->already_reduced) {
-                queue_add_token_rear(queue_expr, &Ei->element_token);
+                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Ei);
                 strcat(postfix, Ei->data);
 
-                queue_add_token_rear(queue_expr, &Ej->element_token);
+                if(!Copy_Values_From_Token(Token_Ej, &Ej->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Ej);
                 strcat(postfix, Ej->data);
 
-                queue_add_token_rear(queue_expr, &operator->element_token);
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
 
             } else if (Ei->already_reduced && !Ej->already_reduced) {
 
-                queue_add_token_rear(queue_expr, &Ej->element_token);
+                if(!Copy_Values_From_Token(Token_Ej, &Ej->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Ej);
                 strcat(postfix, Ej->data);
 
-                queue_add_token_rear(queue_expr, &operator->element_token);
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
 
             } else if (!Ei->already_reduced && Ej->already_reduced) {
                 char helper[500] = {0};
-                queue_add_token_front(queue_expr, &Ei->element_token);
+                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                    return false;
+                }
+                queue_add_token_front(queue_expr, Token_Ei);
                 strcat(helper, Ei->data);
 
-                queue_add_token_rear(queue_expr, &operator->element_token);
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
-
                 strcat(helper, postfix);
                 strcpy(postfix, helper);
             } else {
-                queue_add_token_rear(queue_expr, &operator->element_token);
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
-                free(Token_Ej);
             }
         } else {
             if (!Ei->already_reduced){
-                queue_add_token_rear(queue_expr, &Ei->element_token);
+                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Ei);
                 strcat(postfix, Ei->data);
 
-                queue_add_token_rear(queue_expr, &operator->element_token);
+
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
             } else {
-                queue_add_token_rear(queue_expr, &operator->element_token);
+                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
+                    return false;
+                }
+                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
             }
-            free(Token_Ej);
         }
     }
 //    printf("\nPostfix:%s\n", postfix);
     return true;
 }
 
-//void Copy_Values_From_Token(token_t * to, token_t * from){
-//    to->type = from->type;
-//    to->attr = from->attr;
-//}
+bool Copy_Values_From_Token(token_t * to, token_t * from){
+    to = malloc(sizeof(token_t));
+    if(to == NULL){
+        err = INTERNAL_ERR;
+        return false;
+    }
+    to->type = from->type;
+    to->keyword = from->keyword;
+    to->attr.num_i = from->attr.num_i;
+    to->attr.num_f = from->attr.num_f;
+
+    if(from->type == T_ID || from->type == T_STRING){
+        bool ret;
+        ret = str_init(&to->attr.id, 20);
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return false;
+        }
+        ret = str_copy_str(&to->attr.id, &(from->attr.id));
+        if (!ret) {
+            err = INTERNAL_ERR;
+            return false;
+        }
+    }
+    return true;
+}
 
 void Deallocate(List * list) {
     if (list != NULL) {
