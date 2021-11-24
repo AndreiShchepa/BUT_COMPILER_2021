@@ -605,87 +605,68 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
         if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
             return false;
         }
-
         queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if(rule != 7){
             if (!Ei->already_reduced && !Ej->already_reduced) {
-                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ei);
+
                 strcat(postfix, Ei->data);
 
-                if(!Copy_Values_From_Token(Token_Ej, &Ej->element_token)){
+                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL)){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ej);
+
                 strcat(postfix, Ej->data);
-
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
-
             } else if (Ei->already_reduced && !Ej->already_reduced) {
-
-                if(!Copy_Values_From_Token(Token_Ej, &Ej->element_token)){
+                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL)){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ej);
+
                 strcat(postfix, Ej->data);
-
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
-
             } else if (!Ei->already_reduced && Ej->already_reduced) {
                 char helper[500] = {0};
-                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
                     return false;
                 }
                 queue_add_token_front(queue_expr, Token_Ei);
-                strcat(helper, Ei->data);
 
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
+                strcat(helper, Ei->data);
                 strcat(postfix, operator->data);
                 strcat(helper, postfix);
                 strcpy(postfix, helper);
             } else {
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
             }
         } else {
             if (!Ei->already_reduced){
-                if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+                if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ei);
                 strcat(postfix, Ei->data);
-
-
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
             } else {
-                if(!Copy_Values_From_Token(Token_Operator, &operator->element_token)){
-                    return false;
-                }
-                queue_add_token_rear(queue_expr, Token_Operator);
                 strcat(postfix, operator->data);
             }
         }
+        if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){
+            if(Token_Ei != NULL){
+                free(Token_Ei);
+            }
+            if(Token_Ej != NULL){
+                free(Token_Ej);
+            }
+            return false;
+        }
+        queue_add_token_rear(queue_expr, Token_Operator);
     }
 //    printf("\nPostfix:%s\n", postfix);
     return true;
