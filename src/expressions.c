@@ -616,7 +616,7 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
 
                 strcat(postfix, Ei->data);
 
-                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL)){
+                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ej);
@@ -624,7 +624,7 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
                 strcat(postfix, Ej->data);
                 strcat(postfix, operator->data);
             } else if (Ei->already_reduced && !Ej->already_reduced) {
-                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL)){
+                if((Token_Ej = Copy_Values_From_Token(Token_Ej, &Ej->element_token)) == NULL){
                     return false;
                 }
                 queue_add_token_rear(queue_expr, Token_Ej);
