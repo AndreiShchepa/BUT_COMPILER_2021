@@ -214,7 +214,7 @@ bool gen_if_start() {
 }
 
 bool gen_if_else() {
-    PRINT_FUNC(2, "label $%s$%d$$else$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "label $%s$%d$else$" , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
@@ -226,7 +226,7 @@ bool gen_if_end(/*TODO*/) {
 bool gen_if_eval() {
     cnt.if_cnt++; // because this instruction is printed first
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "jumpifneq $%s$%d$$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
@@ -379,7 +379,7 @@ bool gen_expression() {
                     err = INTERNAL_ERR;
                     return false;
                 }
-                PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$", cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
+                PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" , cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
                 str_free(&queue_expr->front->token->attr.id);
                 break;
             case T_INT:

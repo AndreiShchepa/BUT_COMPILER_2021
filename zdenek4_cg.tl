@@ -1,14 +1,12 @@
 require "ifj21"
 
 function nastupiste()
-	local b : integer = 1
-	local a : integer = 0
-	if b == 1 then
-		a = b + 3
+	local a : integer = 5
+	if a < 4 then
+	a = 4
 	else
-		 a = 44
+	a = 5
 	end
-
 end
 
 nastupiste()
