@@ -477,9 +477,7 @@ bool Close(List * list) {
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
             //todo test #E and delete string variables,
-            if (rule == 0){
-                queue_add_token_rear(queue_expr, &Ei->element_token);
-            }
+
             if (rule != 0 && rule != 1) {
                 if(rule != 7){
                     if (!Ei->already_reduced && !Ej->already_reduced) {
@@ -535,6 +533,7 @@ bool Close(List * list) {
                 find->element_token.attr.num_i = list->lastElement->element_token.attr.num_i;
                 find->element_token.attr.num_f = list->lastElement->element_token.attr.num_f;
                 queue_add_token_rear(queue_expr, &list->lastElement->element_token);
+                strcat(postfix, list->lastElement->data);
                 if(list->lastElement->element_token.type == T_ID){
                     bool ret;
                     ret = str_init(&find->element_token.attr.id, 20);
@@ -566,7 +565,7 @@ bool Close(List * list) {
                 if (queue_expr->front->token->type == T_ID)
                     printf("%s", queue_expr->front->token->attr.id.str);
                 if (queue_expr->front->token->type == T_INT)
-                    printf("%llu", queue_expr->front->token->attr.num_i);
+                    printf("%lu", queue_expr->front->token->attr.num_i);
                 if (queue_expr->front->token->type == T_FLOAT)
                     printf("%f", queue_expr->front->token->attr.num_f);
                 tmp = tmp->previous_element;
