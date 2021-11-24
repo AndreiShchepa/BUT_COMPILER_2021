@@ -110,6 +110,11 @@ bool Push(List *, char * );
 bool Add_Tokens_To_Queue(List *, ElementPtr, ElementPtr, ElementPtr, int );
 
 /*
+ * @brief We copy values from one token to another
+ */
+void Copy_Values_From_Token(token_t *, token_t * );
+
+/*
  * @brief We check if only thing left on stack is "$E"
  */
 bool Check_Correct_Closure(List * );

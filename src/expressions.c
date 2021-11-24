@@ -338,7 +338,7 @@ bool Insert(List * list, char * data) {
     // but with an expression we copy the data of token into our structure
     if ((strcmp(data, "i")) == 0) {
         // If we are dealing with variable we also save the name of the variable to be able to look into symtab
-        if(token.type == T_ID){
+        if(token.type == T_ID || token.type == T_STRING){
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             if (!ret) {
                 err = INTERNAL_ERR;
@@ -356,6 +356,7 @@ bool Insert(List * list, char * data) {
         TempElement_second->element_token.keyword = token.keyword;
         TempElement_second->element_token.attr.num_i = token.attr.num_i;
         TempElement_second->element_token.attr.num_f = token.attr.num_f;
+
         strcpy(TempElement_second->data, data);
         TempElement_second->already_reduced = 0;
         // else we just set type to T_NONE so we can
@@ -600,8 +601,19 @@ bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr o
         Deallocate(list);
         return false;
     }
-//    token_t * Token_Ej = malloc(sizeof(token_t));
-//    token_t * Token_Operator = malloc(sizeof(token_t));
+    token_t * Token_Operator = malloc(sizeof(token_t));
+    if(Token_Operator == NULL){
+        Deallocate(list);
+        free(Token_Ei);
+        return false;
+    }
+    token_t * Token_Ej = malloc(sizeof(token_t));
+    if(Token_Ej == NULL){
+        Deallocate(list);
+        free(Token_Ei);
+        free(Token_Operator);
+        return false;
+    }
     if (rule == 0){
         queue_add_token_rear(queue_expr, &list->lastElement->element_token);
     } else if (rule != 1) {
@@ -637,6 +649,7 @@ bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr o
             } else {
                 queue_add_token_rear(queue_expr, &operator->element_token);
                 strcat(postfix, operator->data);
+                free(Token_Ej);
             }
         } else {
             if (!Ei->already_reduced){
@@ -649,11 +662,17 @@ bool Add_Tokens_To_Queue(List * list, ElementPtr Ei, ElementPtr Ej, ElementPtr o
                 queue_add_token_rear(queue_expr, &operator->element_token);
                 strcat(postfix, operator->data);
             }
+            free(Token_Ej);
         }
     }
 //    printf("\nPostfix:%s\n", postfix);
     return true;
 }
+
+//void Copy_Values_From_Token(token_t * to, token_t * from){
+//    to->type = from->type;
+//    to->attr = from->attr;
+//}
 
 void Deallocate(List * list) {
     if (list != NULL) {
