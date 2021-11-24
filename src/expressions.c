@@ -18,6 +18,7 @@
 #include "queue.h"
 char postfix[500] = {0};
 
+#define DEBUG_ANDREJ 1
 extern int err;
 extern string_t tps_right;
 extern arr_symtbs_t local_symtbs;
@@ -252,9 +253,9 @@ void Dispose(ElementPtr Element) {
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
         if(DelElement->element_token.type == T_ID){
-            str_free(&DelElement->element_token.attr.id);
+//            str_free(&DelElement->element_token.attr.id);
         }
-        free(DelElement);
+//        free(DelElement);
         DelElement = NULL;
     }
 }
@@ -476,7 +477,9 @@ bool Close(List * list) {
 //                printf("\nPostfix:(%d;%d;%d) Rule:%d\n", Ei->element_token.type, Ej->element_token.type, operator->element_token.type, rule);
             }
             //todo test #E and delete string variables,
-            //todo copy number
+            if (rule == 0){
+                queue_add_token_rear(queue_expr, &Ei->element_token);
+            }
             if (rule != 0 && rule != 1) {
                 if(rule != 7){
                     if (!Ei->already_reduced && !Ej->already_reduced) {
@@ -524,7 +527,7 @@ bool Close(List * list) {
                     }
                 }
             }
-//            printf("\nPostfix:%s\n", postfix);
+            printf("\nPostfix:%s\n", postfix);
             // if we are reducing <<i>> we also need to copy every single information from token to be able to pass it into gen code
             if(rule == 0){
                 find->element_token.type = list->lastElement->element_token.type;
@@ -557,7 +560,18 @@ bool Close(List * list) {
             find->nextElement = NULL;
             // The resulting expression is combination of 2 other expressions
             list->lastElement = find;
-
+#if DEBUG_ANDREJ
+            QueueElementPtr *tmp = queue_expr->front;
+            while(tmp != NULL){
+                if (queue_expr->front->token->type == T_ID)
+                    printf("%s", queue_expr->front->token->attr.id.str);
+                if (queue_expr->front->token->type == T_INT)
+                    printf("%llu", queue_expr->front->token->attr.num_i);
+                if (queue_expr->front->token->type == T_FLOAT)
+                    printf("%f", queue_expr->front->token->attr.num_f);
+                tmp = tmp->previous_element;
+            }
+#endif
             return true;
         }
     }
@@ -759,7 +773,7 @@ end_expr:
     while (Close(list)) {
         print_stack_expr(list);
     }
-//    printf("\nPostfix:%s\n", postfix);
+    printf("\nPostfix:%s\n", postfix);
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
