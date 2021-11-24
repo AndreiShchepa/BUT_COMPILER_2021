@@ -1,7 +1,11 @@
 require "ifj21"
 
+function foo(a:integer)
+	return
+end
+
 function main(a:integer)
-	write(a+1)
+	foo(a)
 end
 
 main(2)

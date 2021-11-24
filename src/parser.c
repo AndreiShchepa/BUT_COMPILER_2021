@@ -31,6 +31,7 @@ string_t tps_left;
 string_t tps_right;
 bool working_func; // 0 - decl_fun, 1 - def_func
 Queue* queue_id;
+Queue* queue_args;
 Queue* queue_expr;
 
 #define CODE_GEN(callback, ...)         \
@@ -41,10 +42,20 @@ Queue* queue_expr;
     } while(0)                          \
 
 #define QUEUE_ADD_ID(where_is_id_key) \
-    if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
-        err = INTERNAL_ERR;                             \
-        return false;                                   \
-    } \
+    do {                              \
+        if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
+            err = INTERNAL_ERR;                             \
+            return false;                                   \
+        }                           \
+    } while(0);                                 \
+
+#define QUEUE_ADD_ARGS(where_is_id_key) \
+    do {                              \
+        if (!queue_add_id_rear(queue_args, (where_is_id_key))) {    \
+            err = INTERNAL_ERR;                             \
+            return false;                                   \
+        }                           \
+    } while(0);                                 \
 
 #define CHECK_INTERNAL_ERR(COND, ret) \
         do { \
@@ -410,7 +421,7 @@ bool statement() {
         NEXT_TOKEN();
 
 		///////////////////////////////////
-        strcat(cnt.func_name.str, item->key_id);
+        strcpy(cnt.func_name.str, item->key_id);
         CODE_GEN(gen_while_label);
 		///////////////////////////////////
 
@@ -429,6 +440,7 @@ bool statement() {
         deep++;
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
+        CODE_GEN(gen_while_end);
         deep--;
 
         DEL_SYMTAB();
@@ -462,6 +474,8 @@ bool statement() {
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
+        cnt.ret_vals = 0;
+
         print_rule("15. <statement> -> return <expression> <other_exp> <statement>");
 
         STR_COPY_STR(&tps_left,                       item->data.func->def == true,
@@ -469,7 +483,11 @@ bool statement() {
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, true));
+
+        /////////////////////////////////////////
         CODE_GEN(gen_expression);
+        /////////////////////////////////////////
+
         NEXT_NONTERM(other_exp());
 
         ////////////////////// comment ////////////////////////
@@ -511,7 +529,15 @@ bool statement() {
             CHECK_COMPATIBILITY();
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
+
+            ///////////////////////////
+            CODE_GEN(gen_func_call_label);
+            ///////////////////////////
+
             while(!queue_isEmpty(queue_id)){ // todo andrej
+//                write(a + 1)
+//                c = foo(a)
+//                CODE_GEN(gen_func_call_label);
                 CODE_GEN(gen_init_var);
             }
             NEXT_TOKEN();
@@ -611,16 +637,22 @@ bool type_expr() {
 }
 
 bool other_exp() {
+    unsigned int len = (unsigned int)str_get_len(&item->data.func->def_attr.rets);
     if (token.type == T_COMMA) {
         print_rule("21. <other_exp> -> , <expression> <other_exp>");
 
         NEXT_TOKEN();
         NEXT_NONTERM(expression(false, false));
 
+        cnt.ret_vals++;
         CODE_GEN(gen_expression); //todo Andrej
-        CODE_GEN(gen_init_var);  //todo Andrej
+//        CODE_GEN(gen_init_var);  //todo Andrej
 
         return other_exp();
+    } else if(len != cnt.ret_vals+1 && len != 0) { //        return  || return 1, 2 (3)
+        cnt.ret_vals++;
+        gen_retval_nil();
+        other_exp();
     }
 
     print_rule("22. <other_exp> -> e");
@@ -833,11 +865,14 @@ bool param_to_func() {
         print_rule("41. <param_to_func> -> id_var");
 
         tmp_var = FIND_VAR_IN_SYMTAB;
-
         CHECK_SEM_DEF_ERR(!tmp_var);
 
-        QUEUE_ADD_ID(tmp_var);
-//		CODE_GEN(gen_func_call_args_var, tmp_var);
+        ///////////////////////////
+        if (strcmp(tmp_func->key_id, "write") == 0 && cnt.param_cnt == 0) {
+            CODE_GEN(gen_func_call_write_cnt);
+        }
+        CODE_GEN(gen_func_call_args_var, tmp_var);
+        ///////////////////////////
 
         // add to tps_right types of tokens
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
@@ -850,8 +885,8 @@ bool param_to_func() {
                                        token.type == T_STRING ? 'S' :
                                        token.type == T_FLOAT  ? 'F' : 'N');
 		///////////////////////////////
-		CODE_GEN(gen_func_call_args_const, &token);
-		///////////////////////////////
+        CODE_GEN(gen_func_call_args_const, &token);
+        ///////////////////////////////
 
         CHECK_INTERNAL_ERR(!ret, false);
     }
@@ -952,9 +987,10 @@ int parser() {
     FILE *f = stdin;
     err = NO_ERR;
     set_source_file(f);
-    
+
     queue_expr = queue_init();
     queue_id = queue_init();
+    queue_args = queue_init();
 
 #ifndef DEBUG_ANDREJ
 

@@ -98,7 +98,7 @@ if [ "$compile" -eq 1 ] || [ "$exec" -eq 1 ]; then
     cd .. || exit 1
 fi
 
-# compile to lua all file in tests_code_gen
+# compile to lua all files in tests_code_gen
 if [ "$compile_to_lua" -eq 1 ]; then
     cd tests_code_gen || exit 1
     for file in *.tl; do
@@ -108,7 +108,7 @@ if [ "$compile_to_lua" -eq 1 ]; then
     cd ..
 fi
 
-# compile to ifjcode all file in tests_code_gen
+# compile to ifjcode all files in tests_code_gen
 if [ "$compile_to_ifjcode" -eq 1 ]; then
     cd build || exit 1
     for file in ../tests_code_gen/*.tl; do

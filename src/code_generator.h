@@ -23,6 +23,7 @@ typedef struct cnts_s {
     unsigned int if_cnt;
     unsigned int while_cnt;
     unsigned int deep;
+    unsigned int ret_vals;
 } cnts_t;
 
 extern cnts_t cnt;
@@ -50,6 +51,7 @@ bool gen_if_end();
 bool gen_func_start(char *id);
 bool gen_func_end();
 
+bool gen_func_call_write_cnt();
 bool gen_func_call_start();
 bool gen_func_call_args_var();
 bool gen_func_call_args_const();
@@ -74,6 +76,9 @@ bool gen_def_var();
 
 bool gen_init_var();
 bool dealloc_gen_var();
+
+
+bool gen_retval_nil();
 #endif // CODE_GENERATOR_H
 
 
