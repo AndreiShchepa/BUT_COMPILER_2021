@@ -112,8 +112,11 @@ fi
 if [ "$compile_to_ifjcode" -eq 1 ]; then
     cd build || exit 1
     for file in ../tests_code_gen/*.tl; do
-        compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
-        eval "$compile_cmd" || exit 1
+#        echo $file
+        if [ "$file" != "../tests_code_gen/ifj21.tl" ]; then
+            compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
+            eval "$compile_cmd" || exit 1
+        fi
     done
     cd .. || exit 1
 fi

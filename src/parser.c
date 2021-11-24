@@ -37,17 +37,20 @@ Queue* queue_expr;
 #define CODE_GEN(callback, ...)         \
     do {                                \
         if (!(callback)(__VA_ARGS__)) {   \
-            return false;               \
-        }                               \
+            err = INTERNAL_ERR;                                     \
+            return false;                                           \
+        }                                                           \
     } while(0)                          \
 
-#define QUEUE_ADD_ID(where_is_id_key) \
-    do {                              \
-        if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                             \
-            return false;                                   \
-        }                           \
-    } while(0);                                 \
+#define QUEUE_ADD_ID(where_is_id_key)                               \
+    do {                                                            \
+        if (strcmp(cnt.func_call.str, "write") == 0) {              \
+               break;                                               \
+        } else if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
+            err = INTERNAL_ERR;                                     \
+            return false;                                           \
+        }                                                           \
+    } while(0);                                                     \
 
 #define QUEUE_ADD_ARGS(where_is_id_key) \
     do {                              \
@@ -293,9 +296,13 @@ add_func_def:
         CHECK_TPS_DEF_DECL_FUNCS();
 
         NEXT_NONTERM(statement());
+        CODE_GEN(init_cnt);
         EXPECTED_TOKEN(token.keyword == KW_END);
+
+        /////////////////////////
 		CODE_GEN(gen_func_end);
-        deep--;
+        /////////////////////////
+		deep--;
 
         DEL_SYMTAB();
 
@@ -515,6 +522,10 @@ bool statement() {
             STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                          &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
+            /////////////////////////
+            strcpy(cnt.func_call.str, tmp_func->key_id);
+            /////////////////////////
+
             NEXT_TOKEN();
 
             /////////////////////////////
@@ -531,7 +542,9 @@ bool statement() {
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
             ///////////////////////////
-            CODE_GEN(gen_func_call_label);
+            if (strcmp(cnt.func_call.str, "write") != 0) {
+                CODE_GEN(gen_func_call_label);
+            }
             ///////////////////////////
 
             while(!queue_isEmpty(queue_id)){ // todo andrej
@@ -541,6 +554,7 @@ bool statement() {
                 CODE_GEN(gen_init_var);
             }
             NEXT_TOKEN();
+            str_clear(&cnt.func_call); // TODO - via CODE_GEN
         }
         else if (FIND_VAR_IN_SYMTAB) {
             print_rule("14. <statement> -> id_var <vars> <statement>");
@@ -876,10 +890,13 @@ bool param_to_func() {
         CHECK_SEM_DEF_ERR(!tmp_var);
 
         ///////////////////////////
-        if (strcmp(tmp_func->key_id, "write") == 0 && cnt.param_cnt == 0) {
-            CODE_GEN(gen_func_call_write_cnt);
+        if (strcmp(cnt.func_call.str, "write") == 0) {
+            CODE_GEN(gen_func_call_start);
+            CODE_GEN(gen_func_call_args_var, tmp_var);
+            CODE_GEN(gen_func_call_label);
+        } else {
+            CODE_GEN(gen_func_call_args_var, tmp_var);
         }
-        CODE_GEN(gen_func_call_args_var, tmp_var);
         ///////////////////////////
 
         // add to tps_right types of tokens
@@ -893,7 +910,13 @@ bool param_to_func() {
                                        token.type == T_STRING ? 'S' :
                                        token.type == T_FLOAT  ? 'F' : 'N');
 		///////////////////////////////
-        CODE_GEN(gen_func_call_args_const, &token);
+        if (strcmp(cnt.func_call.str, "write") == 0) {
+            CODE_GEN(gen_func_call_start);
+            CODE_GEN(gen_func_call_args_const, &token);
+            CODE_GEN(gen_func_call_label);
+        } else {
+            CODE_GEN(gen_func_call_args_const, &token);
+        }
         ///////////////////////////////
 
         CHECK_INTERNAL_ERR(!ret, false);

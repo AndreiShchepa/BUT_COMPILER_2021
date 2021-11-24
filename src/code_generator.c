@@ -42,7 +42,7 @@
             sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         } else {                                                                            \
             snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
-                                    80-snprintf(NULL, 0, (fmt EOL), __VA_ARGS__),           \
+                                    80-snprintf(NULL, 0, (fmt), __VA_ARGS__),           \
                                     "#", __LINE__, __func__);                               \
         }                                                                                   \
     } while(0)                                                                              \
@@ -65,6 +65,14 @@
         }                                                                                   \
     } while(0)
 
+#define PRINT_FUNC_BUILT_IN(num, fmt, ...)                                                           \
+    do {                                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
+        sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
+        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
+            return false;                                                                   \
+        }                                                                                   \
+    } while(0)
 
 #if DEBUG_INSTR
 #define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
@@ -78,6 +86,15 @@
 #else
 	#define DEBUG_PRINT_INSTR(num, fmt, ...)
 #endif // DEBUG_INSTR
+
+#define PRINT_WHERE(...)                        \
+    do {                                        \
+        if (strcmp(cnt.func_name.str, "") == 0) {   \
+                PRINT_MAIN(__VA_ARGS__);            \
+        } else {                                    \
+                PRINT_FUNC(__VA_ARGS__);            \
+        }                                           \
+    } while(0)                                  \
 
 
 
@@ -95,10 +112,12 @@ cnts_t cnt = {.func_name.alloc_size = 0};
   *									FUNCTIONS
 ******************************************************************************/
 bool init_cnt() {
-    if (cnt.func_name.alloc_size == 0)      // not alocated
-        str_init(&cnt.func_name, IFJ_CODE_START_LEN);
-    else                                    // already allocated
-        str_clear(&cnt.func_name);
+    if (cnt.func_name.alloc_size == 0) str_init(&cnt.func_name, IFJ_CODE_START_LEN);
+    else                               str_clear(&cnt.func_name);
+
+    if (cnt.func_call.alloc_size == 0) str_init(&cnt.func_call, IFJ_CODE_START_LEN);
+    else                               str_clear(&cnt.func_call);
+
     cnt.param_cnt = 0;
     cnt.if_cnt    = 0;
     cnt.while_cnt = 0;
@@ -128,7 +147,6 @@ bool gen_init_built_ins() {
     PRINT_FUNC(2, "%s", FUNC_READI);
     PRINT_FUNC(3, "%s", FUNC_READN);
     PRINT_FUNC(4, "%s", FUNC_READS);
-    PRINT_FUNC(5, "%s", FUNC_WRITE);
     PRINT_FUNC(6, "%s", FUNC_SUBSTR);
     PRINT_FUNC(7, "%s", FUNC_ORD);
     PRINT_FUNC(8, "%s", FUNC_CHR);
@@ -137,8 +155,9 @@ bool gen_init_built_ins() {
     PRINT_FUNC(12, "%s", FUNC_CHECK_OP);
     PRINT_FUNC(13, "%s", FUNC_CHECK_COMP);
     PRINT_FUNC(14, "%s", FUNC_OP_NIL);
-    PRINT_FUNC(15, "%s", FUNC_CHECK_DIV);
 #endif
+    PRINT_FUNC_BUILT_IN(15, "%s", FUNC_CHECK_DIV);
+    PRINT_FUNC(5, "%s", FUNC_WRITE);
     return true;
 }
 
@@ -180,7 +199,7 @@ bool gen_params() {
     QueueElementPtr *queue_elem = queue_id->front;
     for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
         PRINT_FUNC(2, "defvar LF@%s"        , queue_elem->id->key_id);
-        PRINT_FUNC(3, "move LF@%s  LF@%dp " , queue_elem->id->key_id, i);
+        PRINT_FUNC(3, "move LF@%s  LF@%%%dp " , queue_elem->id->key_id, i);
     }
     DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
     // TODO - remove one by one
@@ -253,63 +272,76 @@ bool gen_func_end() {
     return true;
 }
 
+int where_to_print() {
+    return (strcmp(cnt.func_name.str, "") == 0) ? MAIN : FUNCTIONS;
+}
+
+bool is_write() {
+    return (strcmp(cnt.func_call.str, "write") == 0) ? true : false;
+}
+
 bool gen_func_call_start() {
-    DEBUG_PRINT_INSTR(1, MAIN, EOL DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
-    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(2, "createframe"    NON_VAR , EMPTY_STR);
-    else                                    PRINT_FUNC(2, "createframe"    NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, where_to_print(), EOL DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
+    PRINT_WHERE(1, "createframe" NON_VAR, EMPTY_STR);
+//    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(2, "createframe"    NON_VAR , EMPTY_STR);
+//    else                                    PRINT_FUNC(2, "createframe"    NON_VAR , EMPTY_STR);
     return true;
 }
 
-bool gen_func_call_write_cnt() {
-    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "defvar TF@%dp"       , cnt.param_cnt);
-    else                                    PRINT_FUNC(1, "defvar TF@%dp"       , cnt.param_cnt);
-
-    cnt.param_cnt++;
+bool gen_func_call_write() {
     return true;
 }
 
 bool gen_func_call_args_var(htab_item_t *htab_item) {
-    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "defvar TF@%dp"       , cnt.param_cnt);
-    else                                    PRINT_FUNC(1, "defvar TF@%dp"       , cnt.param_cnt);;
+    PRINT_WHERE(1, "defvar TF@%%%dp"       , cnt.param_cnt);
+    PRINT_WHERE(2, "move   TF@%%%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
+//    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "defvar TF@%dp"       , cnt.param_cnt);
+//    else                                    PRINT_FUNC(1, "defvar TF@%dp"       , cnt.param_cnt);;
+//
+//    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(2, "move   TF@%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
+//    else                                    PRINT_FUNC(2, "move   TF@%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
 
-    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(2, "move   TF@%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
-    else                                    PRINT_FUNC(2, "move   TF@%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
-
-    cnt.param_cnt++;
+    if (!is_write()) {
+        cnt.param_cnt++;
+    }
 	return true;
 }
 
 bool gen_func_call_args_const(token_t *token) {
-    if (strcmp(cnt.func_name.str, "") == 0) {
-        PRINT_MAIN(1, "defvar TF@%dp" , cnt.param_cnt);
-        switch(token->type) {
-            case (T_INT)	: PRINT_MAIN(2, "move   TF@%dp int@%s" , cnt.param_cnt, token->attr.id.str); break;
-            case (T_FLOAT)	: PRINT_MAIN(2, "move   TF@%dp float@%s" , cnt.param_cnt, token->attr.id.str); break;
-            case (T_STRING)	: PRINT_MAIN(2, "move   TF@%dp string@%s", cnt.param_cnt, token->attr.id.str); break;
-            default       	: PRINT_MAIN(2, "move   TF@%dp nil@nil"  , cnt.param_cnt);                     break;
-        }
-    } else {
-        PRINT_FUNC(1, "defvar TF@%dp" , cnt.param_cnt);
-        switch(token->type) {
-            case (T_INT)	: PRINT_FUNC(2, "move   TF@%dp int@%s" , cnt.param_cnt, token->attr.id.str); break;
-            case (T_FLOAT)	: PRINT_FUNC(2, "move   TF@%dp float@%s" , cnt.param_cnt, token->attr.id.str); break;
-            case (T_STRING)	: PRINT_FUNC(2, "move   TF@%dp string@%s", cnt.param_cnt, token->attr.id.str); break;
-            default       	: PRINT_FUNC(2, "move   TF@%dp nil@nil"  , cnt.param_cnt);                     break;
-        }
+//    if (strcmp(cnt.func_name.str, "") == 0) {
+    PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
+    switch(token->type) {
+        case (T_INT)	: PRINT_WHERE(2, "move   TF@%%%dp int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i); break;
+        case (T_FLOAT)	: PRINT_WHERE(2, "move   TF@%%%dp float@%a" , cnt.param_cnt, token->attr.num_f); break;
+        case (T_STRING)	: PRINT_WHERE(2, "move   TF@%%%dp string@%s", cnt.param_cnt, token->attr.id.str); break;
+        default       	: PRINT_WHERE(2, "move   TF@%%%dp nil@nil"  , cnt.param_cnt);                     break;
     }
+//    } else {
+//        PRINT_FUNC(1, "defvar TF@%dp" , cnt.param_cnt);
+//        switch(token->type) {
+//            case (T_INT)	: PRINT_FUNC(2, "move   TF@%%%dp int@%s" , cnt.param_cnt, token->attr.id.str); break;
+//            case (T_FLOAT)	: PRINT_FUNC(2, "move   TF@%%%dp float@%s" , cnt.param_cnt, token->attr.id.str); break;
+//            case (T_STRING)	: PRINT_FUNC(2, "move   TF@%%%dp string@%s", cnt.param_cnt, token->attr.id.str); break;
+//            default       	: PRINT_FUNC(2, "move   TF@%%%dp nil@nil"  , cnt.param_cnt);                     break;
+//        }
+//    }
 
-    cnt.param_cnt++;
+    if (strcmp(cnt.func_call.str, "write") != 0)
+        cnt.param_cnt++;
     return true;
 }
 
 bool gen_func_call_label() {
-    if (strcmp(queue_id->rear->id->key_id, "write") == 0) {
-        if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "call &%s" , queue_id->rear->id->key_id);
-        else                                    PRINT_FUNC(1, "call &%s" , queue_id->rear->id->key_id);
+    if (strcmp(cnt.func_call.str, "write") == 0) {
+        PRINT_WHERE(1, "call &write" NON_VAR, EMPTY_STR);
+        return true;
+//        if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "call &%s" , queue_id->rear->id->key_id);
+//        else                                    PRINT_FUNC(1, "call &%s" , queue_id->rear->id->key_id);
     }
 
-    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "call &%s" , queue_id->rear->id->key_id);
-    else                                    PRINT_FUNC(1, "call &%s" , queue_id->rear->id->key_id);
+    PRINT_WHERE(1, "call &%s" , queue_id->rear->id->key_id);
+//    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "call &%s" , queue_id->rear->id->key_id);
+//    else                                    PRINT_FUNC(1, "call &%s" , queue_id->rear->id->key_id);
 
     queue_remove_rear(queue_id);
     init_cnt();
@@ -319,14 +351,11 @@ bool gen_func_call_label() {
 bool gen_init() {
     if (!str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
         !str_init(&ifj_code[MAIN], IFJ_CODE_START_LEN)      ||
-        !init_cnt()                                         ||
-        !gen_init_built_ins()
+        !init_cnt()
         ) {
         err = INTERNAL_ERR;
     }
-
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
-    DEBUG_PRINT_INSTR(20, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(4,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
@@ -338,6 +367,12 @@ bool gen_init() {
     PRINT_MAIN(8,   "createframe"       NON_VAR , EMPTY_STR);
     PRINT_MAIN(9,   "pushframe"         NON_VAR , EMPTY_STR);
     PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
+
+    if (!gen_init_built_ins()) {
+        err = INTERNAL_ERR;
+    }
+    DEBUG_PRINT_INSTR(25, FUNCTIONS, EOL DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(20, FUNCTIONS, NON_VAR , EMPTY_STR);
 
     //str_free(&cnt.func_name);
     return (err == NO_ERR);
@@ -484,6 +519,7 @@ bool gen_expression() {
 
 bool dealloc_gen_var() {
     str_free(&cnt.func_name);
+    str_free(&cnt.func_call);
     str_free(&ifj_code[MAIN]);
     str_free(&ifj_code[FUNCTIONS]);
     return true;

@@ -19,6 +19,7 @@
 
 typedef struct cnts_s {
     string_t func_name;
+    string_t func_call;
     unsigned int param_cnt;
     unsigned int if_cnt;
     unsigned int while_cnt;
@@ -50,36 +51,27 @@ bool gen_if_end();
 
 bool gen_func_start(char *id);
 bool gen_func_end();
-
-bool gen_func_call_write_cnt();
+bool gen_func_call_write();
 bool gen_func_call_start();
 bool gen_func_call_args_var();
 bool gen_func_call_args_const();
 bool gen_func_call_label();
 
 bool code_gen_print_ifj_code21();
-
 bool gen_expression();
-
 bool gen_init();
 bool code_gen();
-
-bool gen_testing_helper();
-
 bool gen_expression();
-
 bool gen_if_eval();
-
 bool gen_if_end_jump();
-
 bool gen_def_var();
-
 bool gen_init_var();
 bool dealloc_gen_var();
-
-
 bool gen_retval_nil();
-#endif // CODE_GENERATOR_H
+bool gen_testing_helper();
+
+int where_to_print();
+bool is_write();
 
 
 /******************************************************************************
@@ -123,7 +115,7 @@ bool gen_retval_nil();
 "\n																		"\
 "\n	## end																"\
 "\n	popframe															"\
-"\n	return																"\
+"\n	return																"
 
 #define FUNC_READN                                                        \
 "\nlabel $readn # readn() : number										"\
@@ -138,7 +130,7 @@ bool gen_retval_nil();
 "\n																		"\
 "\n	# end																"\
 "\n	popframe															"\
-"\n	return																"\
+"\n	return																"
 
 #define FUNC_READS                                                        \
 "\nlabel $reads # reads() : string										"\
@@ -153,9 +145,25 @@ bool gen_retval_nil();
 "\n																		"\
 "\n	# end																"\
 "\n	popframe															"\
-"\n	return																"\
+"\n	return																"
 
-#define FUNC_WRITE                                                                                                \
+#define FUNC_WRITE      \
+"\nlabel &write"        \
+"\npushframe"           \
+"\ncreateframe"         \
+"\ndefvar 		LF@&write_var_type"                                 \
+"\ntype		    LF@&write_var_type 	LF@%0p"                         \
+"\njumpifeq 	$write$type$nil 	LF@&write_var_type string@nil"  \
+"\nwrite 		LF@%0p"                 \
+"\njump 		$write$end"             \
+"\nlabel 		$write$type$nil"        \
+"\nwrite 		string@nil"             \
+"\nlabel $write$end"                    \
+"\npopframe"                            \
+"\nreturn\n"
+
+
+#if 0
 "\nlabel $write # write(... : string | integer | number | boolean)  -- podpora boolean pro bonusove rozsireni	"\
 "\n	# start																										"\
 "\n	createframe																									"\
@@ -185,7 +193,8 @@ bool gen_retval_nil();
 "\n	# end																										"\
 "\n	label $write_label_end																						"\
 "\n	popframe																									"\
-"\n	return																										"\
+"\n	return																										"
+#endif
 
 
 #define FUNC_SUBSTR                                                        \
@@ -254,7 +263,7 @@ bool gen_retval_nil();
 "\n	# end 3																	"\
 "\n	label $substr_label_end3												"\
 "\n	popframe																"\
-"\n	return																	"\
+"\n	return																	"
 
 #define FUNC_ORD                                                        \
 "\nlabel $ord # ord(s : string, i : integer) : integer					"\
@@ -289,7 +298,7 @@ bool gen_retval_nil();
 "\n																		"\
 "\n	# end																"\
 "\n	popframe															"\
-"\n	return																"\
+"\n	return																"
 
 #define FUNC_CHR                                                        \
 "\nlabel $chr # chr(i : integer) : string								"\
@@ -402,3 +411,5 @@ bool gen_retval_nil();
 "\npushs GF@&var1"                                            \
 "\npushs GF@&var2"                                            \
 "\nreturn\n"
+
+#endif // CODE_GENERATOR_H
