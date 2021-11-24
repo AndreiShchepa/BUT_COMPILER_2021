@@ -112,7 +112,7 @@ bool Add_Tokens_To_Queue(ElementPtr, ElementPtr, ElementPtr, int );
 /*
  * @brief We copy values from one token to another
  */
-bool Copy_Values_From_Token(token_t *, token_t * );
+token_t * Copy_Values_From_Token(token_t *, token_t * );
 
 /*
  * @brief We check if only thing left on stack is "$E"

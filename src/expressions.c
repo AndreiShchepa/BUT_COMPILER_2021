@@ -602,9 +602,10 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
     token_t * Token_Ej = NULL;
 
     if (rule == 0){
-        if(!Copy_Values_From_Token(Token_Ei, &Ei->element_token)){
+        if((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL){
             return false;
         }
+
         queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if(rule != 7){
@@ -690,11 +691,11 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr Ej, ElementPtr operator, int 
     return true;
 }
 
-bool Copy_Values_From_Token(token_t * to, token_t * from){
+token_t * Copy_Values_From_Token(token_t * to, token_t * from){
     to = malloc(sizeof(token_t));
     if(to == NULL){
         err = INTERNAL_ERR;
-        return false;
+        return NULL;
     }
     to->type = from->type;
     to->keyword = from->keyword;
@@ -706,15 +707,15 @@ bool Copy_Values_From_Token(token_t * to, token_t * from){
         ret = str_init(&to->attr.id, 20);
         if (!ret) {
             err = INTERNAL_ERR;
-            return false;
+            return NULL;
         }
         ret = str_copy_str(&to->attr.id, &(from->attr.id));
         if (!ret) {
             err = INTERNAL_ERR;
-            return false;
+            return NULL;
         }
     }
-    return true;
+    return to;
 }
 
 void Deallocate(List * list) {
