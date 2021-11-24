@@ -127,11 +127,13 @@ char Rules[][LENGTH_OF_RULES] = {
                 find->element_token.type = T_NONE; \
                 find->type = 'C'; \
             } \
-            else if (strcmp(types_E, "SS") == 0) { \
+            else if (strcmp(types_E, "SS") == 0 && strcmp(types_E, "SN") == 0 &&\
+                     strcmp(types_E, "NS") == 0) { \
                 find->element_token.type = T_STRING; \
                 find->type = 'S'; \
             } \
-            else if ((strcmp(types_E, "II") == 0)) { \
+            else if (strcmp(types_E, "II") == 0 && strcmp(types_E, "IN") == 0 &&\
+                     strcmp(types_E, "NI") == 0) { \
                 find->element_token.type = T_INT; \
                 find->type = 'I'; \
             } \
