@@ -78,6 +78,15 @@ char Rules[][LENGTH_OF_RULES] = {
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
+
+#define ASSIGN_TYPE_FROM_TOKEN() \
+        do { \
+                TempElement_second->type =  token.type == T_INT          ? 'I' :        \
+                                            token.type == T_STRING       ? 'S' :        \
+                                            token.type == T_FLOAT        ? 'F' :        \
+                                            token.type == T_KEYWORD      ? 'N' : 'X';   \
+                                            } while(0);
+
 #define GET_TYPE_ID(IDX, KEY) \
         do { \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
@@ -88,13 +97,6 @@ char Rules[][LENGTH_OF_RULES] = {
             types_E[IDX] = var->data.var->type.str[0]; \
         } while(0);
 
-#define ASSIGN_TYPE_FROM_TOKEN() \
-        do { \
-                TempElement_second->type =  token.type == T_INT          ? 'I' :        \
-                                            token.type == T_STRING       ? 'S' :        \
-                                            token.type == T_FLOAT        ? 'F' :        \
-                                            token.type == T_KEYWORD      ? 'N' : 'X';   \
-                                            } while(0);
 #define GET_TYPE_TERM(IDX) \
         do { \
             if((IDX) == 0) { \
@@ -106,19 +108,46 @@ char Rules[][LENGTH_OF_RULES] = {
 
 #define CLEAR_TYPES_E() types_E[0] = types_E[1] = '\0';
 
-#define CHECK_NUMBER() \
+#define ASSIGN_TYPE() \
         do { \
-            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
-                strcmp(types_E, "FI") && strcmp(types_E, "FF")  ) \
-            { \
-                err = SEM_ARITHM_REL_ERR; \
-                return false; \
+            if (types_E[0] == 'N' && types_E[1] == 'N') { \
+                find->element_token.type = T_NONE;  \
+                find->element_token.keyword = KW_NIL; \
+                find->type = 'N'; \
+            } \
+            else if (rule == 5) { \
+                find->element_token.type = T_FLOAT; \
+                find->type = 'F'; \
+            } \
+            else if (rule == 7) { \
+                find->element_token.type = T_INT; \
+                find->type = 'I'; \
+            } \
+            else if ((rule >= 8 && rule <= 13) || strcmp(types_E, "CC") == 0) { \
+                find->element_token.type = T_NONE; \
+                find->type = 'C'; \
+            } \
+            else if (strcmp(types_E, "SS") == 0 || strcmp(types_E, "SN") == 0 || \
+                     strcmp(types_E, "NS") == 0) { \
+                find->element_token.type = T_STRING; \
+                find->type = 'S'; \
+            } \
+            else if (strcmp(types_E, "II") == 0 || strcmp(types_E, "IN") == 0 || \
+                     strcmp(types_E, "NI") == 0) { \
+                find->element_token.type = T_INT; \
+                find->type = 'I'; \
+            } \
+            else { \
+                find->element_token.type = T_FLOAT; \
+                find->type = 'F'; \
             } \
         } while(0);
 
+
 #define CHECK_CONC_LENGTH() \
         do { \
-            if (strcmp(types_E, "SS")) \
+            if (strcmp(types_E, "SS") && strcmp(types_E, "NN") && \
+                strcmp(types_E, "NS") && strcmp(types_E, "SN")) \
             { \
                 err = SEM_ARITHM_REL_ERR; \
                 return false; \
@@ -139,35 +168,16 @@ char Rules[][LENGTH_OF_RULES] = {
             } \
         } while(0);
 
-#define ASSIGN_TYPE() \
+#define CHECK_NUMBER() \
         do { \
-            if (rule == 5) { \
-                find->element_token.type = T_FLOAT; \
-                find->type = 'F'; \
-            } \
-            else if (rule == 7) { \
-                find->element_token.type = T_INT; \
-                find->type = 'I'; \
-            } \
-            else if ((rule >= 8 && rule <= 13) || strcmp(types_E, "CC") == 0) { \
-                find->element_token.type = T_NONE; \
-                find->type = 'C'; \
-            } \
-            else if (types_E[0] == 'N' || types_E[1] == 'N') { \
-                find->element_token.type = T_NONE; \
-                find->type = 'N'; \
-            } \
-            else if (strcmp(types_E, "SS") == 0) { \
-                find->element_token.type = T_STRING; \
-                find->type = 'S'; \
-            } \
-            else if ((strcmp(types_E, "II") == 0)) { \
-                find->element_token.type = T_INT; \
-                find->type = 'I'; \
-            } \
-            else { \
-                find->element_token.type = T_FLOAT; \
-                find->type = 'F'; \
+            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
+                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
+                strcmp(types_E, "NN") && strcmp(types_E, "NI") && \
+                strcmp(types_E, "IN") && strcmp(types_E, "NF") && \
+                strcmp(types_E, "FN")) \
+            { \
+                err = SEM_ARITHM_REL_ERR; \
+                return false; \
             } \
         } while(0);
 
@@ -444,11 +454,6 @@ bool Close(List * list) {
         if (strcmp(Array_To_Check_Against_Rules, Rules[rule]) == 0) {
             // Assigns type, if Comparing type == compare, if II type == int, SS = string else = float
             ASSIGN_TYPE();
-            // Edge case where we are dealing with nil value and we are not doing rules ~= == (i) <<i>>
-            if(Ei->type == 'N' || Ej->type == 'N'){
-                err = SEM_ARITHM_REL_ERR;
-                return false;
-            }
             // In this if statement we make sure that if rules #E = 7 and E..E = 14 were
             // found the expressions are also strings
             if (rule == 7 || rule == 14) {
@@ -467,7 +472,8 @@ bool Close(List * list) {
             else if(rule != 0 && rule != 1){
                 CHECK_NUMBER();
                 // Special case where we are trying to divide with rule // for integers and the values are not integers
-                if(rule == 6 && strcmp(types_E, "II") != 0){
+                if(rule == 6 && strcmp(types_E, "II") && strcmp(types_E, "IN") &&
+                                strcmp(types_E, "NI") && strcmp(types_E, "NN")){
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
@@ -597,13 +603,15 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule){
             }
 #if DEBUG_RISO
             printf("Add_queue: Ei:%d\n", Token_Ei->type);
-#endif
+        #endif
             queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL){
             return false;
         }
-        printf("Add_queue: Operator:%d\n", Token_Operator->type);
+        #if DEBUG_RISO
+            printf("Add_queue: Operator:%d\n", Token_Operator->type);
+        #endif
         queue_add_token_rear(queue_expr, Token_Operator);
     }
     return true;
