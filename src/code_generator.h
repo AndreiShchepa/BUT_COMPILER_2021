@@ -22,10 +22,11 @@
 #define BLOCKS_NUM 2
 
 #define DEBUG_ANDREJ 0
-#define DEBUG_ZDENEK 1
+#define DEBUG_ZDENEK 0
 
-#define DEBUG_INSTR         1
-#define DEBUG_INSTR_2       1
+#define DEBUG_INSTR                 1
+#define DEBUG_BUILT_IN              1
+#define DEBUG_INSTR_WITH_GEN_INFO   1
 
 #define IFJ_CODE_START_LEN 10000
 #define MAX_LINE_LEN       300
@@ -44,7 +45,7 @@
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
     do {                                                                                    \
-        if (!DEBUG_INSTR_2) {                                                               \
+        if (!DEBUG_INSTR_WITH_GEN_INFO) {                                                               \
             sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         } else {                                                                            \
             snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
@@ -82,7 +83,7 @@
 
 
 
-#if DEBUG_INSTR
+#ifdef DEBUG_INSTR
 #define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
 		do {                                                                        \
 			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
@@ -406,45 +407,38 @@ bool is_write();
 "\nreturn"                                                              \
 
 #define FUNC_CHR                                                        \
-"\nlabel &ord # ord(s : string, i : integer) : integer"\
-"\n# start"\
+"\nlabel &chr # chr(i : integer) : string"\
+"\n## start"\
 "\npushframe	"\
 "\ncreateframe"\
 "\n"\
 "\n# logic"\
-"\ndefvar 		LF@ord$s"\
-"\ndefvar 		LF@ord$i"\
-"\ndefvar 		LF@ord$cmp"\
-"\ndefvar 		LF@ord$ret1"\
-"\ndefvar 		LF@ord$len"\
+"\ndefvar 		LF@chr$i"\
+"\ndefvar 		LF@chr$ret1"\
+"\ndefvar 		LF@chr$cmp"\
 "\n"\
 "\npushs LF@%0p"\
 "\ncall &check_is_nil"\
-"\npops LF@ord$s"\
-"\npushs LF@%1p"\
-"\ncall &check_is_nil"\
-"\npops LF@ord$i"\
+"\npops 		LF@chr$i"\
 "\n"\
-"\nstrlen		LF@ord$len 		LF@ord$s"\
+"\nmove 		LF@chr$ret1 nil@nil"\
+"\nmove 		LF@chr$cmp 	bool@false"\
 "\n"\
-"\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
-"\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
-"\nlt 			LF@ord$cmp 		LF@ord$i 	int@1"\
-"\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
-"\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
-"\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
+"\ngt 			LF@chr$cmp 		LF@chr$i 	int@255"\
+"\nJUMPIFEQ 	$chr_label_end 	LF@chr$cmp 	bool@true"\
+"\nlt 			LF@chr$cmp 		LF@chr$i 	int@0"\
+"\nJUMPIFEQ 	$chr_label_end 	LF@chr$cmp 	bool@true"\
 "\n"\
-"\nstri2int 	LF@ord$ret1 LF@ord$s LF@ord$i"\
-"\n"\
-"\nlabel $ord_label_end"\
-"\npushs LF@ord$ret1"\
+"\nint2char 	LF@chr$ret1 	LF@chr$i"\
+"\npushs 		LF@chr$ret1"\
 "\npopframe"\
 "\nreturn"\
 "\n"\
-"\nlabel $ord_label_end2"\
+"\n## end"\
+"\nlabel $chr_label_end"\
 "\npushs nil@nil"\
 "\npopframe"\
-"\nreturn"
+"\nreturn"                                                              \
 
 
 /******************************************************************************

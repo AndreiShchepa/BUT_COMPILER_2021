@@ -40,6 +40,9 @@ while [ "$#" -gt 0 ]; do
     "INSTR")
         set_dbg_cmake "$1"
         ;;
+    "BUILT_IN")
+        set_dbg_cmake "$1"
+        ;;
     "--exec")
         exec=1
         ;;

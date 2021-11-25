@@ -34,11 +34,12 @@ set(CMAKE_BUILD_TYPE Debug)
 
 ###############################################################################
 # opts
-option(DEBUG_RULES   "Enable rules printing from parser"       OFF)
-option(DEBUG_SCANNER "Run only scanner"                        OFF)
-option(DEBUG_EXPR    "Enable debug for expressions processing" OFF)
-option(DEBUG_INSTR   "Print formated ifjcode21"                OFF)
-option(COMPILE_TESTS "Compile tests and code_coverage"		   OFF)
+option(DEBUG_RULES    "Enable rules printing from parser"       OFF)
+option(DEBUG_SCANNER  "Run only scanner"                        OFF)
+option(DEBUG_EXPR     "Enable debug for expressions processing" OFF)
+option(DEBUG_INSTR    "Print formated ifjcode21"                OFF)
+option(DEBUG_BUILT_IN "Compile tests and code_coverage"		    OFF)
+option(COMPILE_TESTS  "Compile tests and code_coverage"		    OFF)
 
 if (DEBUG_RULES)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_RULES")
@@ -54,6 +55,10 @@ endif()
 
 if (DEBUG_INSTR)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_INSTR")
+endif()
+
+if (DEBUG_BUILD_IN)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_BUILD_IN")
 endif()
 
 
