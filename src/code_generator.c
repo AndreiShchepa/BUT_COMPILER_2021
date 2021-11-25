@@ -312,11 +312,11 @@ bool convert_str_to_ascii(string_t *str_in) {
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
     switch(token->type) {
-        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
-        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
+        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
+        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
         case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
-                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
-        default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
+                          PRINT_WHERE(2, "move "  FORMAT_ARGS " string@%s", cnt.param_cnt, token->attr.id.str);        break;
+        default       	: PRINT_WHERE(2, "move "  FORMAT_ARGS " nil@nil"  , cnt.param_cnt);                            break;
     }
 
     if (strcmp(cnt.func_call.str, "write") != 0)

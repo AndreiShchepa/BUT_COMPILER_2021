@@ -36,6 +36,7 @@
 #define DEVIDER_2           "########## "
 #define FORMAT_VAR          " LF@$%s$%lu$%s$ "
 #define FORMAT_PARAM        " LF@%%%dp "
+#define FORMAT_ARGS         " TF@%%%dp "
 #define FORMAT_IF           " $%s$%d$if$ "
 #define FORMAT_ELSE         " $%s$%d$else$ "
 #define FORMAT_IF_END       " $%s$%d$if_end$ "
@@ -174,8 +175,6 @@ typedef long long unsigned int llu_t;
 /******************************************************************************
   *									FUNCTIONS
 *****************************************************************************/
-
-
 bool alloc_ifj_code();
 bool init_ifj_code();
 
@@ -224,45 +223,46 @@ bool is_write();
 /******************************************************************************
   *									BUILT-IN FUNCS
 *****************************************************************************/
-#define FUNC_TOINTEGER                                                        \
-"label $tointeger # tointeger(f : number) : integer						"\
-"\n	# start																	"\
-"\n	createframe			# new TF											"\
-"\n	pushframe			# TF => LF											"\
-"\n																			"\
-"\n	# logic																	"\
-"\n	defvar		LF@ret1														"\
-"\n	defvar		LF@$tointeger_var_type										"\
-"\n																			"\
-"\n	pops 		LF@ret1														"\
-"\n	TYPE		LF@$tointeger_var_type LF@ret1								"\
-"\n																			"\
-"\n	jumpifneq 	$tointeger_end LF@$tointeger_var_type string@float			"\
-"\n																			"\
-"\n	label t_float															"\
-"\n	float2int 	LF@ret1 	LF@ret1											"\
-"\n	jump 		$tointeger_end												"\
-"\n																			"\
-"\n	## end																	"\
-"\n	label $tointeger_end													"\
-"\n	pushs LF@ret1															"\
-"\n	popframe 			# LF => TF											"\
-"\n	return																	"
-
-#define FUNC_READI                                                        \
-"label $readi # readi() : integer"\
-"\ncreateframe"\
-"\npushframe"\
-"\ndefvar LF@readi_ret1"\
-"\nread   LF@readi_ret1 int"\
-"\npushs  LF@readi_ret1"\
-"\npopframe"\
+#define FUNC_CHECK_IS_NIL \
+"\npops GF@&var1"\
+"\ntype GF@&type1 GF@&var1"\
+"\njumpifeq $op_nil GF@&type1 string@nil"\
+"\npushs GF@&var1"\
 "\nreturn"
 
+#define FUNC_TOINTEGER \
+"\nlabel $tointeger # tointeger(f : number) : integer"\
+"\npushframe # TF => LF"\
+"\ncreateframe	# new TF"\
+"\ndefvar LF@$tointeger$0p_type"\
+"\npushs LF@%0p"\
+"\ncall &check_is_nil"\
+"\nTYPE	LF@$tointeger$0p_type LF@%0p"\
+"\njumpifneq $tointeger$end LF@$tointeger$0p_type string@float"\
+"\nfloat2ints"\
+"\nlabel $tointeger$end"\
+"\npopframe 			# LF => TF"\
+"\nreturn"
+
+#define FUNC_READI                                                        \
+"\nlabel &readi # readi() : integer"\
+"\n## start"\
+"\ncreateframe"\
+"\npushframe	"\
+"\n"\
+"\n## logic"\
+"\ndefvar		LF@readi$ret1"\
+"\nread 		LF@readi$ret1 int"\
+"\npushs 		LF@readi$ret1"\
+"\n"\
+"\n## end"\
+"\npopframe"\
+"\nreturn		"
+
 #define FUNC_READN              \
-"label $readn # readn() : number"  \
-"\ncreateframe"            \
+"label &readn # readn() : number"  \
 "\npushframe"              \
+"\ncreateframe"            \
 "\ndefvar LF@readn_ret1"   \
 "\nread   LF@readn_ret1 float"\
 "\npushs  LF@readn_ret1"   \
@@ -270,9 +270,9 @@ bool is_write();
 "\nreturn"
 
 #define FUNC_READS \
-"label $reads # reads() : string	"\
-"\ncreateframe"            \
+"label &reads # reads() : string	"\
 "\npushframe"              \
+"\ncreateframe"            \
 "\ndefvar 	LF@reads_ret1"  \
 "\nread    LF@reads_ret1 string"\
 "\npushs   LF@reads_ret1"  \
@@ -294,181 +294,168 @@ bool is_write();
 "\npopframe"                            \
 "\nreturn"
 
-
-#if 0
-"\nlabel $write # write(... : string | integer | number | boolean)  -- podpora boolean pro bonusove rozsireni	"\
-"\n	# start																										"\
-"\n	createframe																									"\
-"\n	pushframe																									"\
-"\n																												"\
-"\n	# logic																										"\
-"\n	defvar 		LF@write_var_type																				"\
-"\n	defvar 		LF@write_var_print																				"\
-"\n																												"\
-"\n	label $write_while1																							"\
-"\n	pops 		LF@write_var_print																				"\
-"\n	TYPE		LF@write_var_type 	LF@write_var_print 															"\
-"\n	jumpifeq 	$write_label_t_nil 	LF@write_var_type string@nil												"\
-"\n	jumpifeq 	$write_label_string	LF@write_var_type string@string												"\
-"\n	write 		LF@write_var_print																				"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	label $write_label_string																					"\
-"\n	jumpifeq 	$write_label_end	LF@write_var_print GF@bottom_of_stack										"\
-"\n	write 		LF@write_var_print																				"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	label 		$write_label_t_nil																				"\
-"\n	write 		string@nil																						"\
-"\n	jump 		$write_while1																					"\
-"\n																												"\
-"\n	# end																										"\
-"\n	label $write_label_end																						"\
-"\n	popframe																									"\
-"\n	return																										"
-#endif
-
-
 #define FUNC_SUBSTR                                                        \
-"\nlabel $substr # substr(str : string, i : integer, j : integer) : string 	"\
-"\n	# start																	"\
-"\n	createframe																"\
-"\n	pushframe																"\
-"\n																			"\
-"\n	# logic																	"\
-"\n	defvar 	LF@substr_param1												"\
-"\n	defvar 	LF@substr_param2												"\
-"\n	defvar 	LF@substr_param3												"\
-"\n	defvar 	LF@substr_ret1													"\
-"\n	defvar 	LF@substr_len													"\
-"\n	defvar 	LF@substr_while_cnt												"\
-"\n	defvar 	LF@substr_char													"\
-"\n	defvar 	LF@substr_cmp													"\
-"\n																			"\
-"\n	pops 	LF@substr_param1												"\
-"\n	pops 	LF@substr_param2												"\
-"\n	pops 	LF@substr_param3												"\
-"\n	move 	LF@substr_ret1 		string@										"\
-"\n	strlen 	LF@substr_len 		LF@substr_param1							"\
-"\n	move 	LF@substr_while_cnt	int@0										"\
-"\n	move 	LF@substr_char 		string@										"\
-"\n	move 	LF@substr_cmp 		bool@false									"\
-"\n																			"\
-"\n	# j > i																	"\
-"\n	gt 			LF@substr_cmp 		LF@substr_param2 	LF@substr_param3	"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# i < 0																	"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param2 	int@0				"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# j < 0																	"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param3 	int@0				"\
-"\n	JUMPIFEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# i > len-1																"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param2 	LF@substr_len		"\
-"\n	JUMPIFNEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n	# j > len-1																"\
-"\n	lt 			LF@substr_cmp 		LF@substr_param3 	LF@substr_len		"\
-"\n	JUMPIFNEQ 	$substr_label_end2 	LF@substr_cmp 		bool@true			"\
-"\n																			"\
-"\n																			"\
-"\n	label $substr_while1													"\
-"\n	getchar  LF@substr_char 		LF@substr_param1 	LF@substr_param2	"\
-"\n	concat   LF@substr_ret1 		LF@substr_ret1		LF@substr_char		"\
-"\n	jumpifeq $substr_label_end 		LF@substr_param2 	LF@substr_param3	"\
-"\n	add 	 LF@substr_while_cnt	LF@substr_while_cnt int@1				"\
-"\n	add 	 LF@substr_param2 		LF@substr_param2 	int@1				"\
-"\n	jump 	 $substr_while1													"\
-"\n																			"\
-"\n	# end																	"\
-"\n	label $substr_label_end													"\
-"\n	clears																	"\
-"\n	pushs 	GF@bottom_of_stack												"\
-"\n	pushs 	LF@substr_ret1													"\
-"\n	jump 	$substr_label_end3												"\
-"\n																			"\
-"\n	# end 2																	"\
-"\n	label $substr_label_end2												"\
-"\n	clears																	"\
-"\n	pushs 	GF@bottom_of_stack												"\
-"\n	pushs 	nil@nil															"\
-"\n																			"\
-"\n	# end 3																	"\
-"\n	label $substr_label_end3												"\
-"\n	popframe																"\
-"\n	return																	"
+"\nlabel $substr # substr(str : string, i : integer, j : integer) : string "\
+"\n# start"\
+"\npushframe	"\
+"\ncreateframe"\
+"\n"\
+"\n# logic"\
+"\ndefvar 	LF@substr$str"\
+"\ndefvar 	LF@substr$i"\
+"\ndefvar 	LF@substr$j"\
+"\ndefvar 	LF@substr$ret1"\
+"\ndefvar 	LF@substr$len"\
+"\ndefvar 	LF@substr$while$cnt"\
+"\ndefvar 	LF@substr$char"\
+"\ndefvar 	LF@substr$cmp"\
+"\n"\
+"\npushs LF@%0p"\
+"\ncall  &check_is_nil"\
+"\npops  LF@substr$str"\
+"\npushs LF@%1p"\
+"\ncall  &check_is_nil"\
+"\npops  LF@substr$i"\
+"\npushs LF@%2p"\
+"\ncall  &check_is_nil"\
+"\npops  LF@substr$j"\
+"\n"\
+"\nmove 	LF@substr$ret1 		string@"\
+"\nstrlen 	LF@substr$len 		LF@substr$str"\
+"\nmove 	LF@substr$while$cnt	int@0"\
+"\nmove 	LF@substr$char 		string@"\
+"\nmove 	LF@substr$cmp 		bool@false"\
+"\n"\
+"\n# i > j"\
+"\ngt 			LF@substr$cmp 		LF@substr$i	 	LF@substr$j"\
+"\nJUMPIFEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
+"\n# i < 0"\
+"\nlt 			LF@substr$cmp 		LF@substr$i 	int@0"\
+"\nJUMPIFEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
+"\n# j < 0"\
+"\nlt 			LF@substr$cmp 		LF@substr$j 	int@0"\
+"\nJUMPIFEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
+"\n# i > len-1"\
+"\nlt 			LF@substr$cmp 		LF@substr$i 	LF@substr$len"\
+"\nJUMPIFNEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
+"\n# j > len-1"\
+"\nlt 			LF@substr$cmp 		LF@substr$j 	LF@substr$len"\
+"\nJUMPIFNEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
+"\n"\
+"\n"\
+"\nlabel $substr_while1"\
+"\ngetchar  LF@substr$char 		LF@substr$str 		LF@substr$i"\
+"\nconcat   LF@substr$ret1 		LF@substr$ret1		LF@substr$char"\
+"\njumpifeq $substr_label_end 		LF@substr$i 	    LF@substr$j"\
+"\nadd 	 LF@substr$while$cnt	LF@substr$while$cnt int@1"\
+"\nadd 	 LF@substr$i   			LF@substr$i 		int@1"\
+"\njump 	 $substr_while1"\
+"\n"\
+"\n# end"\
+"\nlabel $substr_label_end"\
+"\npushs 	LF@substr$ret1"\
+"\npopframe"\
+"\nreturn"\
+"\n"\
+"\n# end 2"\
+"\nlabel $substr_label_end2"\
+"\npushs 	string@"\
+"\npopframe"\
+"\nreturn"
 
 #define FUNC_ORD                                                        \
-"\nlabel $ord # ord(s : string, i : integer) : integer					"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@ord_param1											"\
-"\n	defvar 		LF@ord_param2											"\
-"\n	defvar 		LF@ord_cmp												"\
-"\n	defvar 		LF@ord_ret1												"\
-"\n	defvar 		LF@ord_len												"\
-"\n																		"\
-"\n	pops 		LF@ord_param1											"\
-"\n	pops 		LF@ord_param2											"\
-"\n	move 		LF@ord_ret1 	bool@false								"\
-"\n	move 		LF@ord_ret1 	nil@nil									"\
-"\n	strlen		LF@ord_len 		LF@ord_param1							"\
-"\n																		"\
-"\n	gt 			LF@ord_cmp 		LF@ord_param2 	int@255					"\
-"\n	JUMPIFEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n	lt 			LF@ord_cmp 		LF@ord_param2 	int@0					"\
-"\n	JUMPIFEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n	lt 			LF@ord_cmp 		LF@ord_param2	LF@ord_len				"\
-"\n	JUMPIFNEQ 	$ord_label_end 	LF@ord_cmp 		bool@true				"\
-"\n																		"\
-"\n	stri2int 	LF@ord_ret1 LF@ord_param1 LF@ord_param2					"\
-"\n																		"\
-"\n	label $ord_label_end												"\
-"\n	pushs 		LF@ord_ret1												"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"
+"\nlabel &ord # ord(s : string, i : integer) : integer"\
+"\n# start"\
+"\npushframe	"\
+"\ncreateframe"\
+"\n"\
+"\n# logic"\
+"\ndefvar 		LF@ord$s"\
+"\ndefvar 		LF@ord$i"\
+"\ndefvar 		LF@ord$cmp"\
+"\ndefvar 		LF@ord$ret1"\
+"\ndefvar 		LF@ord$len"\
+"\n"\
+"\npushs LF@%0p"\
+"\ncall &check_is_nil"\
+"\npops LF@ord$s"\
+"\npushs LF@%1p"\
+"\ncall &check_is_nil"\
+"\npops LF@ord$i"\
+"\n"\
+"\nstrlen		LF@ord$len 		LF@ord$s"\
+"\n"\
+"\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
+"\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i 	int@1"\
+"\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
+"\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
+"\n"\
+"\nstri2int 	LF@ord$ret1 LF@ord$s LF@ord$i"\
+"\n"\
+"\nlabel $ord_label_end"\
+"\npushs LF@ord$ret1"\
+"\npopframe"\
+"\nreturn"\
+"\n"\
+"\nlabel $ord_label_end2"\
+"\npushs nil@nil"\
+"\npopframe"\
+"\nreturn"                                                              \
 
 #define FUNC_CHR                                                        \
-"\nlabel $chr # chr(i : integer) : string								"\
-"\n	## start															"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@chr_param1											"\
-"\n	defvar 		LF@chr_ret1												"\
-"\n	defvar 		LF@chr_cmp												"\
-"\n																		"\
-"\n	pops 		LF@chr_param1											"\
-"\n	move 		LF@chr_ret1 	nil@nil									"\
-"\n																		"\
-"\n	gt 			LF@chr_cmp 		LF@chr_param1 	int@255					"\
-"\n	JUMPIFEQ 	$chr_label_end 	LF@chr_cmp 		bool@true				"\
-"\n	lt 			LF@chr_cmp 		LF@chr_param1 	int@0					"\
-"\n	JUMPIFEQ 	$chr_label_end 	LF@chr_cmp 		bool@true				"\
-"\n																		"\
-"\n	int2char 	LF@chr_ret1 	LF@chr_param1							"\
-"\n																		"\
-"\n	## end																"\
-"\n	label $chr_label_end												"\
-"\n	pushs 		LF@chr_ret1												"\
-"\n	popframe															"\
-"\n	return																"                                             \
+"\nlabel &ord # ord(s : string, i : integer) : integer"\
+"\n# start"\
+"\npushframe	"\
+"\ncreateframe"\
+"\n"\
+"\n# logic"\
+"\ndefvar 		LF@ord$s"\
+"\ndefvar 		LF@ord$i"\
+"\ndefvar 		LF@ord$cmp"\
+"\ndefvar 		LF@ord$ret1"\
+"\ndefvar 		LF@ord$len"\
+"\n"\
+"\npushs LF@%0p"\
+"\ncall &check_is_nil"\
+"\npops LF@ord$s"\
+"\npushs LF@%1p"\
+"\ncall &check_is_nil"\
+"\npops LF@ord$i"\
+"\n"\
+"\nstrlen		LF@ord$len 		LF@ord$s"\
+"\n"\
+"\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
+"\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i 	int@1"\
+"\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
+"\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
+"\n"\
+"\nstri2int 	LF@ord$ret1 LF@ord$s LF@ord$i"\
+"\n"\
+"\nlabel $ord_label_end"\
+"\npushs LF@ord$ret1"\
+"\npopframe"\
+"\nreturn"\
+"\n"\
+"\nlabel $ord_label_end2"\
+"\npushs nil@nil"\
+"\npopframe"\
+"\nreturn"
 
 
 /******************************************************************************
   *									AUXILIARY FUNCS
 *****************************************************************************/
+#define FUNC_OP_NIL \
+"\ncreateframe"\
+"\ndefvar TF@%0p"\
+"\nmove TF@%0p string@ERROR\0328:\032Unexpected\032nil\032value\032in\032the\032parameter.\010"\
+"\ncall &write"\
+"\nexit int@8"
 
-
-
-#define FUNC_OP_NIL     \
-"\nlabel $op_nil"       \
-"\nexit int@8\n"
 
 #define FUNC_RETYPING_VAR1      \
 "\nlabel $retyping_var1"        \
