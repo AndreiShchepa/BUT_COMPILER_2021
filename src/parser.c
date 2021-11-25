@@ -311,7 +311,7 @@ add_func_def:
         return prog();
     }
     else if (token.type == T_ID) {
-        print_rule("4.  <proG> -> id_func ( <args> ) <prog>");
+        print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
 
@@ -856,7 +856,11 @@ bool params() {
         QUEUE_ADD_ID(tmp_var);
         return other_params();
     }
-//	CODE_GEN(gen_params);
+    //	CODE_GEN(gen_params);
+
+    //if (working_func == 1) {
+    //    FILL_TYPE(&item->data.func->def_attr.argv);
+    //}
 
     print_rule("33. <params> -> e");
     return true;
@@ -904,6 +908,7 @@ bool type_params() {
         return other_types_params();
     }
 
+    str_clear(&item->data.func->decl_attr.argv);
     print_rule("38. <type_params> -> e");
     return true;
 }
