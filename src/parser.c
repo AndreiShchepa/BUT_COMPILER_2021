@@ -662,10 +662,10 @@ bool type_expr() {
         /////////////////
         NEXT_TOKEN();
 
+        //////////////////////
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
         }
-        //////////////////////
         while(!queue_isEmpty(queue_id))
             CODE_GEN(gen_init_var);
         //////////////////////
@@ -754,6 +754,9 @@ bool def_var() {
 
 
 bool init_assign() {
+    const int  num_var = 1;
+    int  num_return = 0;
+
     tmp_func = symtab_find(&global_symtab, token.attr.id.str);
     if (token.type == T_ID && tmp_func) {
         print_rule("26. <init_assign> -> id ( <args> )");
@@ -762,9 +765,15 @@ bool init_assign() {
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
         CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
-
+        num_return = str_get_len(tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets : &tmp_func->data.func->decl_attr.rets);
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
+
+        ///////////////////////////
+        CODE_GEN(gen_func_call_start);
+        strcpy(cnt.func_call.str, token.attr.id.str);
+        QUEUE_ADD_ID(tmp_func);
+        ///////////////////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
@@ -780,6 +789,9 @@ bool init_assign() {
         NEXT_TOKEN();
 
 		/////////////////////////
+        for(int i = num_return - num_var; i > 0; i--){
+            PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+        }
         QUEUE_ADD_ID(tmp_var);      // todo Andrej
         CODE_GEN(gen_def_var);      // todo Andrej
         while(!queue_isEmpty(queue_id)){ // todo andrej
