@@ -224,6 +224,7 @@ bool is_write();
   *									BUILT-IN FUNCS
 *****************************************************************************/
 #define FUNC_CHECK_IS_NIL \
+"\nlabel &check_is_nil"\
 "\npops GF@&var1"\
 "\ntype GF@&type1 GF@&var1"\
 "\njumpifeq $op_nil GF@&type1 string@nil"\
@@ -452,7 +453,7 @@ bool is_write();
 #define FUNC_OP_NIL \
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
-"\nmove TF@%0p string@ERROR\0328:\032Unexpected\032nil\032value\032in\032the\032parameter.\010"\
+"\nmove TF@%0p string@ERROR\\0328:\\032Unexpected\\032nil\\032value\\032in\\032the\\032parameter.\\010"\
 "\ncall &write"\
 "\nexit int@8"
 
