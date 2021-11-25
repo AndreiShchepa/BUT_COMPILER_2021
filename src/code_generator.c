@@ -169,7 +169,6 @@ bool gen_param() {
 bool gen_def_var() {
     PRINT_FUNC(1, "defvar " FORMAT_VAR , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
     PRINT_FUNC(1, "move   " FORMAT_VAR " nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
-
     return true;
 }
 
