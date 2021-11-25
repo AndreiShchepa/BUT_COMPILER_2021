@@ -315,13 +315,13 @@ bool is_write();
 "\ndefvar 	LF@substr$cmp"\
 "\n"\
 "\npushs LF@%0p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$str"\
 "\npushs LF@%1p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$i"\
 "\npushs LF@%2p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$j"\
 "\n"\
 "\nmove 	LF@substr$ret1 		string@"\

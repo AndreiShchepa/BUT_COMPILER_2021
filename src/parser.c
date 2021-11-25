@@ -5,7 +5,9 @@
  *
  * @brief Implement functions processing rules for syntax analysis
  *
- * @author Andrei Shchapaniak <xshcha00>
+ * @author  Andrei Shchapaniak  <xshcha00>
+ *          Andrej Binovsky     <xbinov00>
+ *          Zdenek Lapes        <xlapes02>
  */
 
 #include <stdio.h>
@@ -1132,7 +1134,7 @@ int parser() {
     queue_args = queue_init();
 
 #ifndef DEBUG_ANDREJ
-// profesionalni debug, master of C language
+// profesionalni debug, master of C language by Andrej Binovsky
 #endif
 
     ret = str_init(&token.attr.id, 20);

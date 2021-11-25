@@ -211,7 +211,7 @@ bool gen_if_end_jump() {
 
 bool gen_func_start(char *id) {
     DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL DEVIDER NON_VAR, EMPTY_STR);
-    PRINT_FUNC(2, "label &%s"          , id);
+    PRINT_FUNC(2, "label $%s"          , id);
     PRINT_FUNC(3, "pushframe"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(4, "createframe"NON_VAR , EMPTY_STR);
     return true;
