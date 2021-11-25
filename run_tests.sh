@@ -14,6 +14,17 @@ err_files=0
 err_memory=0
 all_files=0
 
+if [ "$name" == "teal_ok" ];then
+    cd without_errors || exit 1
+    for file in $(ls ${expected_err}*.tl); do
+        echo ""
+        echo "${file}"
+        eval "tl run ${file}"
+    done
+    cd .. || exit 1
+    exit 0
+fi
+
 if [ "$name" == "code_generator" ]; then
     eval "./start.sh --clean"
 
@@ -24,12 +35,11 @@ if [ "$name" == "code_generator" ]; then
     eval "./start.sh --compile_to_ifjcode"
 
     cd without_errors || exit 1
-    for file in *.lua; do
-        eval "lua ${file} > ${file}.out"
-    done
 
-    if [ $(uname) == "Darwin" ];then
-        exit 0
+    if [ $(uname) != "Darwin" ];then
+        for file in *.lua; do
+            eval "lua ${file} > ${file}.out"
+        done
     fi
 
     for file in *.ifjcode; do

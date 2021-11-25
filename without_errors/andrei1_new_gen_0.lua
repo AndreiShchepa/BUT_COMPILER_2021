@@ -8,8 +8,8 @@ function foo()
 
       if (b == 1) then
          while b > 0 do
-            local b = 2
             write(b, "\n")
+            b = b - 1
          end
 
          write(b, "\n")

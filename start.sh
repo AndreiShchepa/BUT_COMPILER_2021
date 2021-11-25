@@ -124,6 +124,12 @@ if [ "$compile_to_lua" -eq 1 ]; then
         eval "$compile_cmd" || exit 1
     done
     cd ..
+    cd without_errors_input || exit 1
+    for file in *.tl; do
+        compile_cmd="tl gen \"$file\""
+        eval "$compile_cmd" || exit 1
+    done
+    cd ..
 fi
 
 # compile to ifjcode all files in tests_code_gen
@@ -132,6 +138,13 @@ if [ "$compile_to_ifjcode" -eq 1 ]; then
     for file in ../without_errors/*.tl; do
 #        echo $file
         if [ "$file" != "../without_errors/ifj21.tl" ]; then
+            compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
+            eval "$compile_cmd" || exit 1
+        fi
+    done
+    for file in ../without_errors_input/*.tl; do
+#        echo $file
+        if [ "$file" != "../without_errors_input/ifj21.tl" ]; then
             compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
             eval "$compile_cmd" || exit 1
         fi

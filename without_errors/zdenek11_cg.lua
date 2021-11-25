@@ -1,11 +1,12 @@
 require("ifj21")
 
 function foo(a)
-   return
+   return a
 end
 
 function main(a)
-   foo(a)
+   a = foo(a)
+   write(2)
 end
 
 main(2)
