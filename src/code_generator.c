@@ -403,7 +403,7 @@ bool convert_str_to_ascii(string_t *str_in) {
     str_in->alloc_size = str_out.alloc_size;
     return true;
 }
-#endif
+
 
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
