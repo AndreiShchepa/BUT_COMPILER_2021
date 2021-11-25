@@ -595,10 +595,6 @@ bool work_with_id() {
 
     //NEXT_TOKEN();
     NEXT_NONTERM(vars());
-    //////////////////////
-    while(!queue_isEmpty(queue_id))
-        CODE_GEN(gen_init_var);
-    //////////////////////
 
     return true;
 }
@@ -637,14 +633,17 @@ bool vars() {
 
 bool type_expr() {
     tmp_func = FIND_FUNC_IN_SYMTAB;
-
+    int  num_var = 0;
+    int  num_return = 0;
     if (token.type == T_ID && tmp_func) {
         print_rule("19. <type_expr> -> id_func ( <args> )");
 
         STR_COPY_STR(&tps_right,                          tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.rets, &tmp_func->data.func->decl_attr.rets);
-        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+        num_var = str_get_len(&tps_left);
 
+        CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+        num_return = str_get_len(tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets : &tmp_func->data.func->decl_attr.rets);
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
@@ -668,6 +667,14 @@ bool type_expr() {
         CODE_GEN(gen_func_call_label);
         /////////////////
         NEXT_TOKEN();
+
+        for(int i = num_return - num_var; i > 0; i--){
+            PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+        }
+        //////////////////////
+        while(!queue_isEmpty(queue_id))
+            CODE_GEN(gen_init_var);
+        //////////////////////
 
         return true;
     }
