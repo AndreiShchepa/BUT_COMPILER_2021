@@ -8,6 +8,12 @@
 // TODO - check vars, params, if, while numbering - tests - redefinition
 // TODO - change if in func PRINT_FUNC else PRINT_MAIN
 // TODO - format params in func
+// TODO - not printing write("\n") - print only string@_  (empty string)
+// TODO - ascii spaces in strings (32)
+// TODO - clear stack
+// TODO - tointeger => return nil or exit 8 if arg nil?
+// TODO - string convert to ascii
+// TODO - muze byt v substr pouzita funkce clear
 
 
 /******************************************************************************
@@ -24,25 +30,22 @@
 /******************************************************************************
   *									MACROS
 *****************************************************************************/
+#define DEBUG_INSTR         1
+#define DEBUG_INSTR_2       1
+
 #define IFJ_CODE_START_LEN 10000
 #define MAX_LINE_LEN       300
-#define EOL "\n"
-#define EMPTY_STR ""
-#define NON_VAR "%s"
-#define DEBUG_INSTR   1
-#define DEBUG_INSTR_2 1
-#define DEVIDER "################################################################################# "
-#define DEVIDER_2 "########## "
-#define FORMAT_VAR " LF@$%s$%lu$%s$ "
-#define FORMAT_PARAM " LF@%%%dp "
-#define FORMAT_IF " $%s$%d$if$ "
-#define FORMAT_ELSE " $%s$%d$else$ "
-#define FORMAT_IF_END "$%s$%d$if_end$"
+#define EOL                 "\n"
+#define EMPTY_STR           ""
+#define NON_VAR             "%s"
+#define DEVIDER             "################################################################################# "
+#define DEVIDER_2           "########## "
+#define FORMAT_VAR          " LF@$%s$%lu$%s$ "
+#define FORMAT_PARAM        " LF@%%%dp "
+#define FORMAT_IF           " $%s$%d$if$ "
+#define FORMAT_ELSE         " $%s$%d$else$ "
+#define FORMAT_IF_END       " $%s$%d$if_end$ "
 
-
-
-#define DEBUG_GEN(fmt, ...) \
-    do { if (DEBUG_INSTR) fprintf(stderr, "%40s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, __VA_ARGS__); } while (0)
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
     do {                                                                                    \
@@ -82,6 +85,8 @@
         }                                                                                   \
     } while(0)
 
+
+
 #if DEBUG_INSTR
 #define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
 		do {                                                                        \
@@ -105,6 +110,17 @@
     } while(0)                                  \
 
 
+#define SWITCH_CASE(number)                         \
+        case number:                                \
+            sprintf(tmp_str, "%d", number);         \
+            str_add_char(&str_out, '\\');           \
+            str_add_char(&str_out, '0');            \
+            str_add_char(&str_out, tmp_str[0]);     \
+            if (tmp_str[1] != '\0'){                \
+                str_add_char(&str_out, tmp_str[1]); \
+            }                                       \
+            break;
+
 
 /******************************************************************************
   *									GLOBAL VARS
@@ -114,17 +130,36 @@ extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
 extern arr_symtbs_t local_symtbs;
-cnts_t cnt = {.func_name.alloc_size = 0};
+cnts_t cnt;
 
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
-bool init_cnt() {
-    if (cnt.func_name.alloc_size == 0) str_init(&cnt.func_name, IFJ_CODE_START_LEN);
-    else                               str_clear(&cnt.func_name);
+bool alloc_ifj_code() {
+    if (!str_init(&ifj_code[MAIN]     , IFJ_CODE_START_LEN) ||
+        !str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN)) {
+        return false;
+    }
+    return true;
+}
 
-    if (cnt.func_call.alloc_size == 0) str_init(&cnt.func_call, IFJ_CODE_START_LEN);
-    else                               str_clear(&cnt.func_call);
+bool init_ifj_code() {
+    str_clear(&ifj_code[MAIN]);
+    str_clear(&ifj_code[FUNCTIONS]);
+    return true;
+}
+
+bool alloc_cnt() {
+    if (!str_init(&cnt.func_name, IFJ_CODE_START_LEN) ||
+        !str_init(&cnt.func_call, IFJ_CODE_START_LEN)) {
+        return false;
+    }
+    return true;
+}
+
+bool init_cnt() {
+    str_clear(&cnt.func_name);
+    str_clear(&cnt.func_call);
 
     cnt.param_cnt = 0;
     cnt.if_cnt    = 0;
@@ -152,9 +187,6 @@ bool gen_func_label() {
 bool gen_init_built_ins() {
 #if 0
     PRINT_FUNC(1, "%s", FUNC_TOINTEGER);
-    PRINT_FUNC(2, "%s", FUNC_READI);
-    PRINT_FUNC(3, "%s", FUNC_READN);
-    PRINT_FUNC(4, "%s", FUNC_READS);
     PRINT_FUNC(6, "%s", FUNC_SUBSTR);
     PRINT_FUNC(7, "%s", FUNC_ORD);
     PRINT_FUNC(8, "%s", FUNC_CHR);
@@ -164,13 +196,18 @@ bool gen_init_built_ins() {
     PRINT_FUNC(13, "%s", FUNC_CHECK_COMP);
     PRINT_FUNC(14, "%s", FUNC_OP_NIL);
 #endif
-    PRINT_FUNC_BUILT_IN(15, "%s", FUNC_RETYPING_VAR1);
-    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_RETYPING_VAR2);
-    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_CHECK_OP);
-    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_CHECK_COMP);
-    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_OP_NIL);
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL EOL DEVIDER"BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, DEVIDER_2"BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(2, "%s", FUNC_READI); DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(3, "%s", FUNC_READN); DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(4, "%s", FUNC_READS); DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(5, "%s", FUNC_WRITE); DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
 
-    PRINT_FUNC(5, "%s", FUNC_WRITE);
+    PRINT_FUNC_BUILT_IN(15, "%s", FUNC_RETYPING_VAR1);
+    PRINT_FUNC_BUILT_IN(17, "%s", FUNC_RETYPING_VAR2);
+    PRINT_FUNC_BUILT_IN(18, "%s", FUNC_CHECK_OP);
+    PRINT_FUNC_BUILT_IN(19, "%s", FUNC_CHECK_COMP);
+    PRINT_FUNC_BUILT_IN(20, "%s", FUNC_OP_NIL);
     return true;
 }
 
@@ -219,7 +256,7 @@ bool gen_param() {
 
 bool gen_def_var() {
     PRINT_FUNC(1, "defvar " FORMAT_VAR , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
-    PRINT_FUNC(1, "move LF@$%s$%lu$%s$ nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+    PRINT_FUNC(1, "move   " FORMAT_VAR " nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
 
     return true;
 }
@@ -259,8 +296,6 @@ bool gen_if_end_jump() {
 }
 
 bool gen_func_start(char *id) {
-    init_cnt();
-    strcpy(cnt.func_name.str, id);
     DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL DEVIDER NON_VAR, EMPTY_STR);
     PRINT_FUNC(2, "label &%s"          , id);
     PRINT_FUNC(3, "pushframe"  NON_VAR , EMPTY_STR);
@@ -304,13 +339,80 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
+
+bool convert_str_to_ascii(string_t *str_in) {
+    string_t str_out;
+    if(!str_init(&str_out, strlen(str_in->str)*5)){
+        return false;
+    }
+    int idx = 0;
+    char input_char = str_in->str[idx];
+    char tmp_str[3];
+
+    while(input_char != '\0') {
+        switch (input_char) {
+            SWITCH_CASE(0);
+            SWITCH_CASE(1);
+            SWITCH_CASE(2);
+            SWITCH_CASE(3);
+            SWITCH_CASE(4);
+            SWITCH_CASE(5);
+            SWITCH_CASE(6);
+            SWITCH_CASE(7);
+            SWITCH_CASE(8);
+            SWITCH_CASE(9);
+            SWITCH_CASE(10);
+            SWITCH_CASE(11);
+            SWITCH_CASE(12);
+            SWITCH_CASE(13);
+            SWITCH_CASE(14);
+            SWITCH_CASE(15);
+            SWITCH_CASE(16);
+            SWITCH_CASE(17);
+            SWITCH_CASE(18);
+            SWITCH_CASE(19);
+            SWITCH_CASE(20);
+            SWITCH_CASE(21);
+            SWITCH_CASE(22);
+            SWITCH_CASE(23);
+            SWITCH_CASE(24);
+            SWITCH_CASE(25);
+            SWITCH_CASE(26);
+            SWITCH_CASE(27);
+            SWITCH_CASE(28);
+            SWITCH_CASE(29);
+            SWITCH_CASE(30);
+            SWITCH_CASE(31);
+            SWITCH_CASE(32);
+
+            SWITCH_CASE(35);
+            SWITCH_CASE(96);
+
+            default:
+                if(!str_add_char(&str_out, input_char)){
+                    return false;
+                }
+                break;
+        }
+        idx++;
+        input_char = str_in->str[idx];
+    }
+    free(str_in->str);
+    str_in->str = str_out.str;
+    str_in->length = str_out.length;
+    str_in->alloc_size = str_out.alloc_size;
+    return true;
+}
+
+
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
     switch(token->type) {
-        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i); break;
-        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f); break;
-        case (T_STRING)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str); break;
-        default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                     break;
+        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
+        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
+        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
+                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
+        default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
     }
 
     if (strcmp(cnt.func_call.str, "write") != 0)
@@ -325,18 +427,16 @@ bool gen_func_call_label() {
     }
 
     PRINT_WHERE(1, "call &%s" , queue_id->rear->id->key_id);
-
     queue_remove_rear(queue_id);
-    init_cnt();
 	return true;
 }
 
 bool gen_init() {
-    if (!str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
-        !str_init(&ifj_code[MAIN], IFJ_CODE_START_LEN)      ||
-        !init_cnt()
-        ) {
-        err = INTERNAL_ERR;
+    if (!alloc_ifj_code()   ||
+        !init_ifj_code()    ||
+        !alloc_cnt()        ||
+        !init_cnt()) {
+        return ((err = INTERNAL_ERR) == NO_ERR);
     }
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
     PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
@@ -352,8 +452,9 @@ bool gen_init() {
     PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
 
     if (!gen_init_built_ins()) {
-        err = INTERNAL_ERR;
+        return ((err = INTERNAL_ERR) == NO_ERR);
     }
+
     DEBUG_PRINT_INSTR(25, FUNCTIONS, EOL DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
     DEBUG_PRINT_INSTR(20, FUNCTIONS, NON_VAR , EMPTY_STR);
 
@@ -393,6 +494,7 @@ bool gen_expression() {
                 PRINT_FUNC(3, "pushs float@%a" , queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
+                convert_str_to_ascii(&queue_expr->front->token->attr.id);
                 PRINT_FUNC(4, "pushs string@%s" , queue_expr->front->token->attr.id.str);
                 break;
             case T_KEYWORD:
@@ -492,3 +594,4 @@ bool dealloc_gen_var() {
     str_free(&ifj_code[FUNCTIONS]);
     return true;
 }
+

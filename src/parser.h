@@ -105,6 +105,8 @@ bool type();
  */
 bool statement();
 
+bool work_with_id();
+
 /*
  * @brief process rules for multiply assigning
  *

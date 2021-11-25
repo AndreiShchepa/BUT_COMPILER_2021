@@ -19,6 +19,7 @@ compile_to_ifjcode=0 # compile code in tests_code_gen to lua code
 valgrind=0           # run valgrind with input file
 help=0
 clean=0              # clean tests_code_gen directory, remove compiled codes
+tags=0
 [[ "$#" -eq 0 ]] && iszero=1 || iszero=0
 
 while [ "$#" -gt 0 ]; do
@@ -61,6 +62,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     "--valgrind")
         valgrind=1
+        ;;
+    "--tags")
+        tags=1
         ;;
     "--help")
         help=1
@@ -127,7 +131,7 @@ if [ "$clean" -eq 1 ]; then
     rm *.lua
     rm *.ifjcode
     rm *.out
-    cd ..
+    cd .. || exit 1
 fi
 
 # valgrind
@@ -140,6 +144,13 @@ if [ "$valgrind" -eq 1 ]; then
 #                            --xtree-memory=full                 \
 #                            --xtree-memory-file=xtmemory.kcg    \
     eval "$valgrind_cmd"
+fi
+
+if [ "$tags" -eq 1 ]; then
+    ctags_cmd="ctags -R ."
+    cscope_cmd="cscope -Rb"
+    eval "$ctags_cmd"
+    eval "$cscope_cmd"
 fi
 
 exit 0
