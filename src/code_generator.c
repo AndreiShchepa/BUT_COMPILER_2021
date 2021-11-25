@@ -159,7 +159,12 @@ bool gen_init_built_ins() {
     PRINT_FUNC(13, "%s", FUNC_CHECK_COMP);
     PRINT_FUNC(14, "%s", FUNC_OP_NIL);
 #endif
-    PRINT_FUNC_BUILT_IN(15, "%s", FUNC_CHECK_DIV);
+    PRINT_FUNC_BUILT_IN(15, "%s", FUNC_RETYPING_VAR1);
+    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_RETYPING_VAR2);
+    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_CHECK_OP);
+    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_CHECK_COMP);
+    PRINT_FUNC_BUILT_IN(16, "%s", FUNC_OP_NIL);
+
     PRINT_FUNC(5, "%s", FUNC_WRITE);
     return true;
 }
@@ -216,6 +221,7 @@ bool gen_param() {
 
 bool gen_def_var() {
     PRINT_FUNC(1, "defvar LF@$%s$%lu$%s$" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+    PRINT_FUNC(1, "move LF@$%s$%lu$%s$ nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
     return true;
 }
 
@@ -293,7 +299,7 @@ bool gen_func_call_write() {
 
 bool gen_func_call_args_var(htab_item_t *htab_item) {
     PRINT_WHERE(1, "defvar TF@%%%dp"       , cnt.param_cnt);
-    PRINT_WHERE(2, "move   TF@%%%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
+    PRINT_WHERE(2, "move   TF@%%%dp LF@$%s$%lu$%s$" , cnt.param_cnt, cnt.func_name.str, htab_item->deep, htab_item->key_id );
 //    if (strcmp(cnt.func_name.str, "") == 0) PRINT_MAIN(1, "defvar TF@%dp"       , cnt.param_cnt);
 //    else                                    PRINT_FUNC(1, "defvar TF@%dp"       , cnt.param_cnt);;
 //
