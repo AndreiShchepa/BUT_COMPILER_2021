@@ -118,7 +118,7 @@ fi
 
 # compile to lua all files in tests_code_gen
 if [ "$compile_to_lua" -eq 1 ]; then
-    cd tests_code_gen || exit 1
+    cd without_errors || exit 1
     for file in *.tl; do
         compile_cmd="tl gen \"$file\""
         eval "$compile_cmd" || exit 1
@@ -129,9 +129,9 @@ fi
 # compile to ifjcode all files in tests_code_gen
 if [ "$compile_to_ifjcode" -eq 1 ]; then
     cd build || exit 1
-    for file in ../tests_code_gen/*.tl; do
+    for file in ../without_errors/*.tl; do
 #        echo $file
-        if [ "$file" != "../tests_code_gen/ifj21.tl" ]; then
+        if [ "$file" != "../without_errors/ifj21.tl" ]; then
             compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
             eval "$compile_cmd" || exit 1
         fi
@@ -141,7 +141,7 @@ fi
 
 # remove from tests_code_gen compiled codes
 if [ "$clean" -eq 1 ]; then
-    cd tests_code_gen || exit 1
+    cd without_errors || exit 1
     rm *.lua
     rm *.ifjcode
     rm *.out

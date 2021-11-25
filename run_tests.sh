@@ -14,6 +14,37 @@ err_files=0
 err_memory=0
 all_files=0
 
+
+if [ "$name" == "code_generator" ];then
+    eval "./start.sh --clean"
+
+    if [ $(uname) == "Darwin" ];then
+        eval "./start.sh --compile_to_lua"
+    fi
+
+    eval "./start.sh --compile_to_ifjcode"
+
+    cd without_errors || exit 1
+    for file in *.lua; do
+        eval "lua ${file} > ${file}.out"
+    done
+
+    if [ $(uname) == "Darwin" ];then
+        exit 0
+    fi
+
+    for file in *.ifjcode; do
+        eval "./ic21int ${file} > ${file}.out"
+    done
+
+    for file in *.ifjcode; do
+        eval "diff ${file%.*}.lua.out ${file%.*}.ifjcode.out"
+    done
+
+    cd .. || exit 1
+    exit 0
+fi
+
 code_coverage_scanner()
 {
     cd build && rm -rf *
