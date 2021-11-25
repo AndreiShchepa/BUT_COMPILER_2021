@@ -133,19 +133,19 @@ bool gen_while_label(char *key_id) {
     cnt.while_cnt_max++;
     cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
+    PRINT_WHILE(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
 	return true;
 }
 
 bool gen_while_eval() {
-    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_WHILE(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_WHILE(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
 	return true;
 }
 
 bool gen_while_end() {
-    PRINT_FUNC(1, "jump $%s$%d$while$" , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(2, "label $%s$%d$while_end$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_WHILE(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
+    PRINT_WHILE(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
     cnt.while_cnt--;
     return true;
