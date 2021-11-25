@@ -160,7 +160,9 @@ typedef struct cnts_s {
     string_t func_call;
     unsigned int param_cnt;
     unsigned int if_cnt;
+    unsigned int if_cnt_max;
     unsigned int while_cnt;
+    unsigned int while_cnt_max;
     unsigned int deep;
     unsigned int ret_vals;
 } cnts_t;
@@ -452,7 +454,7 @@ bool is_write();
 #define FUNC_OP_NIL \
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
-"\nmove TF@%0p string@ERROR\0328:\032Unexpected\032nil\032value\032in\032the\032parameter.\010"\
+"\nmove TF@%0p string@ERROR\\0328:\\032Unexpected\\032nil\\032value\\032in\\032the\\032parameter.\\010"\
 "\ncall &write"\
 "\nexit int@8"
 

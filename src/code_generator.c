@@ -70,7 +70,9 @@ bool init_cnt() {
 
     cnt.param_cnt = 0;
     cnt.if_cnt    = 0;
+    cnt.if_cnt_max = 0;
     cnt.while_cnt = 0;
+    cnt.while_cnt_max = 0;
     cnt.deep      = 0;
     return true;
 }
@@ -117,7 +119,8 @@ bool gen_label_item() {
 }
 
 bool gen_while_label(char *key_id) {
-    cnt.while_cnt++;
+    cnt.while_cnt_max++;
+    cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "label $%s$%d$while$" , key_id, cnt.while_cnt);
 	return true;
@@ -133,7 +136,7 @@ bool gen_while_end() {
     PRINT_FUNC(1, "jump $%s$%d$while$" , cnt.func_name.str, cnt.while_cnt);
     PRINT_FUNC(2, "label $%s$%d$while_end$" , cnt.func_name.str, cnt.while_cnt);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
-    //cnt.while_cnt--; //todo this is wrong, -- never should be anywhere, only cnt.while == 0 after new func.
+    cnt.while_cnt--;
     return true;
 }
 
@@ -179,13 +182,15 @@ bool gen_if_else() {
     return true;
 }
 
-bool gen_if_end(/*TODO*/) {
+bool gen_if_end() {
     PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, cnt.if_cnt);
+    cnt.if_cnt--;
     return true;
 }
 
 bool gen_if_eval() {
-    cnt.if_cnt++; // because this instruction is printed first
+    cnt.if_cnt_max++;
+    cnt.if_cnt = cnt.if_cnt_max; // because this instruction is printed first
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
     return true;
