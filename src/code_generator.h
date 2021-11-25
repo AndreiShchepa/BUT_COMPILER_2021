@@ -227,7 +227,7 @@ bool is_write();
   *									BUILT-IN FUNCS
 *****************************************************************************/
 #define FUNC_CHECK_IS_NIL \
-"\nlabel &check_is_nil"\
+"\nlabel $check_is_nil"\
 "\npops GF@&var1"\
 "\ntype GF@&type1 GF@&var1"\
 "\njumpifeq $op_nil GF@&type1 string@nil"\
@@ -240,7 +240,7 @@ bool is_write();
 "\ncreateframe	# new TF"\
 "\ndefvar LF@$tointeger$0p_type"\
 "\npushs LF@%0p"\
-"\ncall &check_is_nil"\
+"\ncall $check_is_nil"\
 "\nTYPE	LF@$tointeger$0p_type LF@%0p"\
 "\njumpifneq $tointeger$end LF@$tointeger$0p_type string@float"\
 "\nfloat2ints"\
@@ -249,7 +249,7 @@ bool is_write();
 "\nreturn"
 
 #define FUNC_READI                                                        \
-"\nlabel &readi # readi() : integer"\
+"\nlabel $readi # readi() : integer"\
 "\n## start"\
 "\ncreateframe"\
 "\npushframe	"\
@@ -264,7 +264,7 @@ bool is_write();
 "\nreturn		"
 
 #define FUNC_READN              \
-"label &readn # readn() : number"  \
+"label $readn # readn() : number"  \
 "\npushframe"              \
 "\ncreateframe"            \
 "\ndefvar LF@readn_ret1"   \
@@ -274,7 +274,7 @@ bool is_write();
 "\nreturn"
 
 #define FUNC_READS \
-"label &reads # reads() : string	"\
+"label $reads # reads() : string	"\
 "\npushframe"              \
 "\ncreateframe"            \
 "\ndefvar 	LF@reads_ret1"  \
@@ -284,7 +284,7 @@ bool is_write();
 "\nreturn"
 
 #define FUNC_WRITE      \
-"label &write"        \
+"label $write"        \
 "\npushframe"           \
 "\ncreateframe"         \
 "\ndefvar 		LF@&write_var_type"                                 \
@@ -368,7 +368,7 @@ bool is_write();
 "\nreturn"
 
 #define FUNC_ORD                                                        \
-"\nlabel &ord # ord(s : string, i : integer) : integer"\
+"\nlabel $ord # ord(s : string, i : integer) : integer"\
 "\n# start"\
 "\npushframe	"\
 "\ncreateframe"\
@@ -381,10 +381,10 @@ bool is_write();
 "\ndefvar 		LF@ord$len"\
 "\n"\
 "\npushs LF@%0p"\
-"\ncall &check_is_nil"\
+"\ncall $check_is_nil"\
 "\npops LF@ord$s"\
 "\npushs LF@%1p"\
-"\ncall &check_is_nil"\
+"\ncall $check_is_nil"\
 "\npops LF@ord$i"\
 "\n"\
 "\nstrlen		LF@ord$len 		LF@ord$s"\
@@ -409,7 +409,7 @@ bool is_write();
 "\nreturn"                                                              \
 
 #define FUNC_CHR                                                        \
-"\nlabel &chr # chr(i : integer) : string"\
+"\nlabel $chr # chr(i : integer) : string"\
 "\n## start"\
 "\npushframe	"\
 "\ncreateframe"\
@@ -420,7 +420,7 @@ bool is_write();
 "\ndefvar 		LF@chr$cmp"\
 "\n"\
 "\npushs LF@%0p"\
-"\ncall &check_is_nil"\
+"\ncall $check_is_nil"\
 "\npops 		LF@chr$i"\
 "\n"\
 "\nmove 		LF@chr$ret1 nil@nil"\
@@ -447,10 +447,11 @@ bool is_write();
   *									AUXILIARY FUNCS
 *****************************************************************************/
 #define FUNC_OP_NIL \
+"\nlabel $op_nil"\
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
 "\nmove TF@%0p string@ERROR\\0328:\\032Unexpected\\032nil\\032value\\032in\\032the\\032parameter.\\010"\
-"\ncall &write"\
+"\ncall $write"\
 "\nexit int@8"
 
 

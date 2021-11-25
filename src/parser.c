@@ -729,7 +729,9 @@ bool def_var() {
 
         // variable has initial value //
         //tmp_var->data.var->val_nil = false;
-        ////////////////////////////////
+        //////////////////////////////
+//        QUEUE_ADD_ID(tmp_var); //todo Andrej
+        //////////////////////////////
 
         return init_assign();
     }
@@ -789,6 +791,7 @@ bool init_assign() {
         NEXT_TOKEN();
 
 		/////////////////////////
+        CODE_GEN(gen_func_call_label);
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
         }

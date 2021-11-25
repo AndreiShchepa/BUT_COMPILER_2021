@@ -15,6 +15,7 @@
 // TODO - string convert to ascii
 // TODO - muze byt v substr pouzita funkce clear
 // TODO - substr, ord, chr - i <= 0 is right???
+// TODO - while multi declaration
 
 
 /******************************************************************************
@@ -332,11 +333,11 @@ bool gen_func_call_args_const(token_t *token) {
 
 bool gen_func_call_label() {
     if (strcmp(cnt.func_call.str, "write") == 0) {
-        PRINT_WHERE(1, "call &write" NON_VAR, EMPTY_STR);
+        PRINT_WHERE(1, "call $write" NON_VAR, EMPTY_STR);
         return true;
     }
 
-    PRINT_WHERE(1, "call &%s" , queue_id->rear->id->key_id);
+    PRINT_WHERE(1, "call $%s" , queue_id->rear->id->key_id);
     queue_remove_rear(queue_id);
 	return true;
 }
