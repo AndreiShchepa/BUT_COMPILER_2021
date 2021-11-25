@@ -211,6 +211,8 @@ bool args();
  */
 bool param_to_func();
 
+bool term();
+
 /*
  * @brief process all possible other args
  *
