@@ -1,7 +1,7 @@
 /******************************************************************************
  *                                  TODO
 ******************************************************************************/
-// DONE: FUNC_WRITE
+//
 
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
@@ -387,7 +387,7 @@ bool is_write();
 "\n"\
 "\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
 "\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
-"\nlt 			LF@ord$cmp 		LF@ord$i 	int@1"\
+"\nlt 			LF@ord$cmp 		LF@ord$i 	int@0"\
 "\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
 "\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
 "\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
