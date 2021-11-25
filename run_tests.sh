@@ -14,8 +14,7 @@ err_files=0
 err_memory=0
 all_files=0
 
-
-if [ "$name" == "code_generator" ];then
+if [ "$name" == "code_generator" ]; then
     eval "./start.sh --clean"
 
     if [ $(uname) == "Darwin" ];then
