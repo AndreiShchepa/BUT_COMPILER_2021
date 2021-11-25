@@ -447,6 +447,7 @@ bool is_write();
   *									AUXILIARY FUNCS
 *****************************************************************************/
 #define FUNC_OP_NIL \
+"\nlabel $op_nil"        \
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
 "\nmove TF@%0p string@ERROR\\0328:\\032Unexpected\\032nil\\032value\\032in\\032the\\032parameter.\\010"\
