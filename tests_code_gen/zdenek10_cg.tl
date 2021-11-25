@@ -5,7 +5,9 @@ function foo(a:integer):integer, number, number
 end
 
 function main(a:integer)
-	foo(a)
+	local b:integer
+	b=foo(a)
+	write(b)
 end
 
 main(2)
