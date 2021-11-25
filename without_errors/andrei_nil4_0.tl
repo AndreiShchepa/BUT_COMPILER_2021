@@ -7,7 +7,7 @@ function main()
     local dec : number = 190.432
     local nil_var : nil
 
-    local id : string = nil_var + 12
+    local id : integer = nil_var + 12
 end
 
 main()

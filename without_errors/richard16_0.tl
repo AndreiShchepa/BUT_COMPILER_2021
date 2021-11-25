@@ -2,10 +2,10 @@ require "ifj21"
 
 
 function main ()
-	local a : string = nil
+	local a : number = nil
 	if nil == "string" then
 		local b : number = ((a)/8)-nil
-	end
+	else end
 
 end
 
