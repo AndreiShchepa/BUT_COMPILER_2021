@@ -287,12 +287,18 @@ add_func_def:
         CHECK_TPS_DEF_DECL_FUNCS();
 
         NEXT_NONTERM(statement());
+
+
+        /////////////////////////
         CODE_GEN(init_cnt);
+        /////////////////////////
+
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         /////////////////////////
 		CODE_GEN(gen_func_end);
         /////////////////////////
+
 		deep--;
 
         DEL_SYMTAB();
@@ -535,16 +541,22 @@ bool work_with_id() {
             print_rule("16. <work_with_id> -> ( <args> )");
 
             tmp_func = symtab_find(&global_symtab, left_new_var.str);
+
+            /////////////////////////
+            strcpy(cnt.func_call.str, tmp_func->key_id);
+            QUEUE_ADD_ID(tmp_func);
+            /////////////////////////
+
             str_clear(&left_new_var);
             CHECK_SEM_DEF_ERR(!tmp_func);
 
             STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                          &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
-            /////////////////////////
-            strcpy(cnt.func_call.str, tmp_func->key_id);
-            QUEUE_ADD_ID(tmp_func);
-            /////////////////////////
+//            /////////////////////////
+//            strcpy(cnt.func_call.str, tmp_func->key_id);
+//            QUEUE_ADD_ID(tmp_func);
+//            /////////////////////////
 
             NEXT_TOKEN();
 
@@ -637,6 +649,7 @@ bool type_expr() {
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
         ///////////////////////////
+        CODE_GEN(gen_func_call_start);
         strcpy(cnt.func_call.str, token.attr.id.str);
         QUEUE_ADD_ID(tmp_func);
         ///////////////////////////
@@ -651,6 +664,7 @@ bool type_expr() {
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
         /////////////////
+        cnt.param_cnt = 0;
         CODE_GEN(gen_func_call_label);
         /////////////////
         NEXT_TOKEN();
