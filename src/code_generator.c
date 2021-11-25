@@ -14,6 +14,7 @@
 // TODO - tointeger => return nil or exit 8 if arg nil?
 // TODO - string convert to ascii
 // TODO - muze byt v substr pouzita funkce clear
+// TODO - substr, ord, chr - i <= 0 is right???
 
 
 /******************************************************************************
