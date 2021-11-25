@@ -45,7 +45,8 @@ cnts_t cnt;
 ******************************************************************************/
 bool alloc_ifj_code() {
     if (!str_init(&ifj_code[MAIN]     , IFJ_CODE_START_LEN) ||
-        !str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN)) {
+        !str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
+        !str_init(&ifj_code[WHILE]    , IFJ_CODE_START_LEN)) {
         return false;
     }
     return true;
@@ -54,6 +55,7 @@ bool alloc_ifj_code() {
 bool init_ifj_code() {
     str_clear(&ifj_code[MAIN]);
     str_clear(&ifj_code[FUNCTIONS]);
+    str_clear(&ifj_code[WHILE]);
     return true;
 }
 
@@ -69,12 +71,12 @@ bool init_cnt() {
     str_clear(&cnt.func_name);
     str_clear(&cnt.func_call);
 
-    cnt.param_cnt = 0;
-    cnt.if_cnt    = 0;
-    cnt.if_cnt_max = 0;
-    cnt.while_cnt = 0;
-    cnt.while_cnt_max = 0;
-    cnt.deep      = 0;
+    cnt.param_cnt       = 0;
+    cnt.if_cnt          = 0;
+    cnt.if_cnt_max      = 0;
+    cnt.while_cnt       = 0;
+    cnt.while_cnt_max   = 0;
+    cnt.deep            = 0;
     return true;
 }
 
@@ -131,7 +133,7 @@ bool gen_while_label(char *key_id) {
     cnt.while_cnt_max++;
     cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label $%s$%d$while$" , key_id, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
 	return true;
 }
 
@@ -211,7 +213,7 @@ bool gen_if_end_jump() {
 
 bool gen_func_start(char *id) {
     DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL DEVIDER NON_VAR, EMPTY_STR);
-    PRINT_FUNC(2, "label &%s"          , id);
+    PRINT_FUNC(2, "label $%s"          , id);
     PRINT_FUNC(3, "pushframe"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(4, "createframe"NON_VAR , EMPTY_STR);
     return true;
@@ -354,10 +356,10 @@ bool gen_init() {
     PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(4,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
     PRINT_FUNC(5,   "defvar GF@&var2"   NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $main" NON_VAR, EMPTY_STR);
+    PRINT_FUNC(6, "jump $$main" NON_VAR, EMPTY_STR);
     DEBUG_PRINT_INSTR(20, MAIN, EOL DEVIDER NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR(21, MAIN, DEVIDER_2"MAIN LABEL" NON_VAR , EMPTY_STR);
-    PRINT_MAIN(7,   "label $main"       NON_VAR , EMPTY_STR);
+    PRINT_MAIN(7,   "label $$main"       NON_VAR , EMPTY_STR);
     PRINT_MAIN(8,   "createframe"       NON_VAR , EMPTY_STR);
     PRINT_MAIN(9,   "pushframe"         NON_VAR , EMPTY_STR);
     PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
@@ -510,6 +512,7 @@ bool dealloc_gen_var() {
     str_free(&cnt.func_call);
     str_free(&ifj_code[MAIN]);
     str_free(&ifj_code[FUNCTIONS]);
+    str_free(&ifj_code[WHILE]);
     return true;
 }
 

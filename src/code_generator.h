@@ -19,7 +19,7 @@
 /******************************************************************************
   *									MACROS
 *****************************************************************************/
-#define BLOCKS_NUM 2
+#define BLOCKS_NUM 3
 
 #define DEBUG_ANDREJ 0
 #define DEBUG_ZDENEK 0
@@ -41,6 +41,7 @@
 #define FORMAT_IF           " $%s$%d$if$ "
 #define FORMAT_ELSE         " $%s$%d$else$ "
 #define FORMAT_IF_END       " $%s$%d$if_end$ "
+#define FORMAT_WHILE        " $%s$%d$while$ "
 
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
@@ -68,6 +69,15 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
         if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
+            return false;                                                                   \
+        }                                                                                   \
+    } while(0)
+
+#define PRINT_WHILE(num, fmt, ...)                                                          \
+    do {                                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
+        INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
+        if (!str_concat_str2(&ifj_code[WHILE], instr##num)) {                               \
             return false;                                                                   \
         }                                                                                   \
     } while(0)
@@ -171,7 +181,7 @@ typedef struct cnts_s {
 extern cnts_t cnt;
 extern string_t ifj_code[BLOCKS_NUM];
 
-enum block_e {FUNCTIONS, MAIN};
+enum block_e {FUNCTIONS, MAIN, WHILE};
 
 typedef long long unsigned int llu_t;
 
@@ -315,13 +325,13 @@ bool is_write();
 "\ndefvar 	LF@substr$cmp"\
 "\n"\
 "\npushs LF@%0p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$str"\
 "\npushs LF@%1p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$i"\
 "\npushs LF@%2p"\
-"\ncall  &check_is_nil"\
+"\ncall  $check_is_nil"\
 "\npops  LF@substr$j"\
 "\n"\
 "\nmove 	LF@substr$ret1 		string@"\

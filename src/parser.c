@@ -441,7 +441,11 @@ bool statement() {
         deep++;
         NEXT_NONTERM(statement());
         EXPECTED_TOKEN(token.keyword == KW_END);
+
+        ////////////////////
         CODE_GEN(gen_while_end);
+        ////////////////////
+
         deep--;
 
         DEL_SYMTAB();
