@@ -11,6 +11,9 @@
 // TODO - not printing write("\n") - print only string@_  (empty string)
 // TODO - ascii spaces in strings (32)
 // TODO - clear stack
+// TODO - tointeger => return nil or exit 8 if arg nil?
+// TODO - string convert to ascii
+// TODO - muze byt v substr pouzita funkce clear
 
 
 /******************************************************************************
@@ -323,6 +326,7 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
+#if 0
 bool convert_str_to_hex(char *str, char *str_hex) {
     int len = strlen(str);
     char str_copy[len+1];
@@ -331,10 +335,10 @@ bool convert_str_to_hex(char *str, char *str_hex) {
 
     memset(str_hex, 0, len);
 
-    int loop=0;
+//    int loop=0;
     int i=0;
     int c;
-    while((c = *str_copy) != '\0') {
+//    while((c = *str_copy) != '\0') {
 //        switch (c) {
 //            case '\\':
 //                c=str_copy
@@ -345,20 +349,21 @@ bool convert_str_to_hex(char *str, char *str_hex) {
 //        str_hex[i]=
 //        loop+=1;
 //        i+=2;
-    }
+//    }
     str_hex[i++] = '\0';
     return true;
 }
+#endif
 
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
-    char str_hex[(5*strlen(token->attr.id.str)) + 1];
+//    char str_hex[(5*strlen(token->attr.id.str)) + 1];
     switch(token->type) {
         case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
         case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
-        case (T_STRING)	: convert_str_to_hex(token->attr.id.str, str_hex);
-                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, str_hex);                   break;
+        case (T_STRING)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
         default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
+//        convert_str_to_hex(token->attr.id.str, str_hex);
     }
 
     if (strcmp(cnt.func_call.str, "write") != 0)
