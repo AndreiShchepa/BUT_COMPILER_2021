@@ -5,8 +5,8 @@ function main ()
 	local a : string = nil
 	local f : string = "string"
 	if nil == f then
-		local b : number = ((a)/8)-nil
-	end
+		local b : string = ((a).."aaa")..nil
+	else end
 
 end
 
