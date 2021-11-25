@@ -5,6 +5,7 @@ end
 
 function main () 
 	local s : number = add(1,2)
+	write(s)
 end
 
 main()

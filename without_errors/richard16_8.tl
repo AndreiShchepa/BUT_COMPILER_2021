@@ -5,6 +5,7 @@ function main ()
 	local a : number = nil
 	if nil == "string" then
 		local b : number = ((a)/8)-nil
+		write(b)
 	else end
 
 end
