@@ -15,10 +15,144 @@
 #include "queue.h"
 #include "symtable.h"
 
+
+/******************************************************************************
+  *									MACROS
+*****************************************************************************/
 #define BLOCKS_NUM 2
 
 #define DEBUG_ANDREJ 0
 #define DEBUG_ZDENEK 1
+
+#define DEBUG_INSTR         1
+#define DEBUG_INSTR_2       1
+
+#define IFJ_CODE_START_LEN 10000
+#define MAX_LINE_LEN       300
+#define EOL                 "\n"
+#define EMPTY_STR           ""
+#define NON_VAR             "%s"
+#define DEVIDER             "################################################################################# "
+#define DEVIDER_2           "########## "
+#define FORMAT_VAR          " LF@$%s$%lu$%s$ "
+#define FORMAT_PARAM        " LF@%%%dp "
+#define FORMAT_IF           " $%s$%d$if$ "
+#define FORMAT_ELSE         " $%s$%d$else$ "
+#define FORMAT_IF_END       " $%s$%d$if_end$ "
+
+
+#define INIT_CONCAT_STR(num, fmt, ...)                                                      \
+    do {                                                                                    \
+        if (!DEBUG_INSTR_2) {                                                               \
+            sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
+        } else {                                                                            \
+            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
+                                    80-snprintf(NULL, 0, (fmt), __VA_ARGS__),           \
+                                    "#", __LINE__, __func__);                               \
+        }                                                                                   \
+    } while(0)                                                                              \
+
+#define PRINT_MAIN(num, fmt, ...)                                                           \
+    do {                                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
+        INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
+        if (!str_concat_str2(&ifj_code[MAIN], instr##num)) {                                \
+            return false;                                                                   \
+        }                                                                                   \
+    } while(0)
+
+#define PRINT_FUNC(num, fmt, ...)                                                           \
+    do {                                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
+        INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
+        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
+            return false;                                                                   \
+        }                                                                                   \
+    } while(0)
+
+#define PRINT_FUNC_BUILT_IN(num, fmt, ...)                                                           \
+    do {                                                                                    \
+        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
+        sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
+        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
+            return false;                                                                   \
+        }                                                                                   \
+    } while(0)
+
+
+
+#if DEBUG_INSTR
+#define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
+		do {                                                                        \
+			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
+			INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                         \
+			if (!str_concat_str2(&ifj_code[NUM_BLOCK], instr##num)) {               \
+				return false;                                                       \
+			}                                                                       \
+		} while(0)
+#else
+#define DEBUG_PRINT_INSTR(num, fmt, ...)
+#endif // DEBUG_INSTR
+
+#define PRINT_WHERE(...)                        \
+    do {                                        \
+        if (strcmp(cnt.func_name.str, "") == 0) {   \
+                PRINT_MAIN(__VA_ARGS__);            \
+        } else {                                    \
+                PRINT_FUNC(__VA_ARGS__);            \
+        }                                           \
+    } while(0)                                  \
+
+
+#define SWITCH_CASE(number)                             \
+        case number:                                    \
+            sprintf(tmp_str, "%d", number);             \
+            if(!str_add_char(&str_out, '\\')){          \
+                return false;                            \
+            }                                           \
+            if(!str_add_char(&str_out, '0')){           \
+                return false;                            \
+            }                                           \
+            if(!str_add_char(&str_out, tmp_str[0])){    \
+                return false;                             \
+            }                                           \
+            if (tmp_str[1] != '\0'){                    \
+                if(!str_add_char(&str_out, tmp_str[1])){      \
+                    return false;                         \
+                }                                       \
+            }                                           \
+            break;
+
+#define CODE_GEN(callback, ...)         \
+    do {                                \
+        if (!(callback)(__VA_ARGS__)) {   \
+            err = INTERNAL_ERR;                                     \
+            return false;                                           \
+        }                                                           \
+    } while(0)                          \
+
+#define QUEUE_ADD_ID(where_is_id_key)                               \
+    do {                                                            \
+        if (strcmp(cnt.func_call.str, "write") == 0) {              \
+               break;                                               \
+        } else if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
+            err = INTERNAL_ERR;                                     \
+            return false;                                           \
+        }                                                           \
+    } while(0);                                                     \
+
+#define QUEUE_ADD_ARGS(where_is_id_key) \
+    do {                              \
+        if (!queue_add_id_rear(queue_args, (where_is_id_key))) {    \
+            err = INTERNAL_ERR;                             \
+            return false;                                   \
+        }                           \
+    } while(0);                                 \
+
+
+/******************************************************************************
+  *									STRUCTS
+*****************************************************************************/
 
 typedef struct cnts_s {
     string_t func_name;
@@ -36,6 +170,11 @@ extern string_t ifj_code[BLOCKS_NUM];
 enum block_e {FUNCTIONS, MAIN};
 
 typedef long long unsigned int llu_t;
+
+/******************************************************************************
+  *									FUNCTIONS
+*****************************************************************************/
+
 
 bool alloc_ifj_code();
 bool init_ifj_code();

@@ -37,31 +37,7 @@ Queue* queue_id;
 Queue* queue_args;
 Queue* queue_expr;
 
-#define CODE_GEN(callback, ...)         \
-    do {                                \
-        if (!(callback)(__VA_ARGS__)) {   \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
-        }                                                           \
-    } while(0)                          \
 
-#define QUEUE_ADD_ID(where_is_id_key)                               \
-    do {                                                            \
-        if (strcmp(cnt.func_call.str, "write") == 0) {              \
-               break;                                               \
-        } else if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
-        }                                                           \
-    } while(0);                                                     \
-
-#define QUEUE_ADD_ARGS(where_is_id_key) \
-    do {                              \
-        if (!queue_add_id_rear(queue_args, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                             \
-            return false;                                   \
-        }                           \
-    } while(0);                                 \
 
 #define CHECK_INTERNAL_ERR(COND, ret) \
         do { \
