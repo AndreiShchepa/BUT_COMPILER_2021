@@ -161,7 +161,9 @@ typedef struct cnts_s {
     string_t func_call;
     unsigned int param_cnt;
     unsigned int if_cnt;
+    unsigned int if_cnt_max;
     unsigned int while_cnt;
+    unsigned int while_cnt_max;
     unsigned int deep;
     unsigned int ret_vals;
 } cnts_t;
