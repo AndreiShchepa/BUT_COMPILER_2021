@@ -33,7 +33,7 @@ if [ "$name" == "code_generator" ]; then
     fi
 
     for file in *.ifjcode; do
-        eval "./ic21int ${file} > ${file}.out"
+        eval "./ic21int < ${file} > ${file}.out"
     done
 
     for file in *.ifjcode; do
