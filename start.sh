@@ -20,6 +20,7 @@ valgrind=0           # run valgrind with input file
 help=0
 clean=0              # clean tests_code_gen directory, remove compiled codes
 tags=0
+run=0
 [[ "$#" -eq 0 ]] && iszero=1 || iszero=0
 
 while [ "$#" -gt 0 ]; do
@@ -66,6 +67,9 @@ while [ "$#" -gt 0 ]; do
     "--tags")
         tags=1
         ;;
+    "--run")
+        run=1
+        ;;
     "--help")
         help=1
         ;;
@@ -99,6 +103,13 @@ if [ "$compile" -eq 1 ] || [ "$exec" -eq 1 ]; then
     elif [ "$exec" -eq 1 ]; then
         eval "./compiler <../$in"
     fi
+    cd .. || exit 1
+fi
+
+if [ "$run" -eq 1 ]; then
+    cd tests_code_gen || exit 1
+    run_cmd="./ic21int $(basename "$in" .tl).ifjcode"
+    eval "$run_cmd"
     cd .. || exit 1
 fi
 
