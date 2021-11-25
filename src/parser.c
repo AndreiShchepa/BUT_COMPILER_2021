@@ -228,6 +228,11 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
+        if (FIND_VAR_IN_SYMTAB) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
+
         // Allocate structure for decl_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
 add_func_decl:
@@ -261,7 +266,16 @@ add_func_decl:
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
+        //////////////////
+        strcpy(cnt.func_name.str, token.attr.id.str);
         CODE_GEN(gen_func_start, token.attr.id.str);
+        //////////////////
+
+        if (FIND_VAR_IN_SYMTAB) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
 
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
@@ -285,9 +299,10 @@ add_func_def:
         deep++;
         NEXT_TOKEN();
         NEXT_NONTERM(params());
-        //        init_cnt();
-        // todo -func name
+
+        ////////////////////////
         CODE_GEN(gen_params);
+        ////////////////////////
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -311,7 +326,7 @@ add_func_def:
         return prog();
     }
     else if (token.type == T_ID) {
-        print_rule("4.  <prog> -> id_func ( <args> ) <prog>");
+        print_rule("4.  <prog> -> id ( <args> ) <prog>");
 
         tmp_func = FIND_FUNC_IN_SYMTAB;
 
@@ -470,6 +485,11 @@ bool statement() {
         ret = str_copy_str(&left_new_var, &token.attr.id);
         CHECK_INTERNAL_ERR(!ret, false);
 
+        if (FIND_FUNC_IN_SYMTAB) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
@@ -519,10 +539,27 @@ bool statement() {
         return statement();
     }
     else if (token.type == T_ID) {
-        if (FIND_FUNC_IN_SYMTAB) {
-            print_rule("13. <statement> -> id_func ( <args> ) <statement>");
+        print_rule("13. <statement> -> id <work_with_id> <statement>");
 
-            tmp_func = FIND_FUNC_IN_SYMTAB;
+        ret = str_copy_str(&left_new_var, &token.attr.id);
+        CHECK_INTERNAL_ERR(!ret, false);
+        NEXT_TOKEN();
+        NEXT_NONTERM(work_with_id());
+
+        return statement();
+    }
+
+    print_rule("16. <statement> -> e");
+    return true;
+}
+
+bool work_with_id() {
+    if (token.type == T_L_ROUND_BR) {
+        if (symtab_find(&global_symtab, left_new_var.str)) {
+            print_rule("16. <work_with_id> -> ( <args> )");
+
+            tmp_func = symtab_find(&global_symtab, left_new_var.str);
+            str_clear(&left_new_var);
             CHECK_SEM_DEF_ERR(!tmp_func);
 
             STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
@@ -530,15 +567,9 @@ bool statement() {
 
             /////////////////////////
             strcpy(cnt.func_call.str, tmp_func->key_id);
+            QUEUE_ADD_ID(tmp_func);
             /////////////////////////
 
-            NEXT_TOKEN();
-
-            /////////////////////////////
-            QUEUE_ADD_ID(tmp_func);
-            /////////////////////////////
-
-            EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
 
             NEXT_NONTERM(args());
@@ -548,45 +579,42 @@ bool statement() {
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
             ///////////////////////////
-            if (strcmp(cnt.func_call.str, "write") != 0) {
+            if (strcmp(cnt.func_call.str, "write") != 0)
                 CODE_GEN(gen_func_call_label);
-            }
+
+            while(!queue_isEmpty(queue_id)) // todo andrej
+                CODE_GEN(gen_init_var);
             ///////////////////////////
 
-            while(!queue_isEmpty(queue_id)){ // todo andrej
-//                write(a + 1)
-//                c = foo(a)
-//                CODE_GEN(gen_func_call_label);
-                CODE_GEN(gen_init_var);
-            }
             NEXT_TOKEN();
             str_clear(&cnt.func_call); // TODO - via CODE_GEN
-        }
-        else if (FIND_VAR_IN_SYMTAB) {
-            print_rule("14. <statement> -> id_var <vars> <statement>");
 
-            tmp_var = FIND_VAR_IN_SYMTAB;
-            CHECK_SEM_DEF_ERR(!tmp_var);
-
-            ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
-            CHECK_INTERNAL_ERR(!ret, false);
-
-			/////////////////////////
-            QUEUE_ADD_ID(tmp_var); // todo Andrej
-			/////////////////////////
-
-            NEXT_TOKEN();
-            NEXT_NONTERM(vars());
-        }
-        else {
-            err = SEM_DEF_ERR;
-            return false;
+            return true;
         }
 
-        return statement();
+        err = SEM_DEF_ERR;
+        return false;
     }
 
-    print_rule("16. <statement> -> e");
+    print_rule("17. <work_with_id> -> <vars>");
+
+    tmp_var = find_id_symtbs(&local_symtbs, left_new_var.str);
+    CHECK_SEM_DEF_ERR(!tmp_var);
+
+    ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
+    CHECK_INTERNAL_ERR(!ret, false);
+
+	/////////////////////////
+    QUEUE_ADD_ID(tmp_var); // todo Andrej
+    /////////////////////////
+
+    //NEXT_TOKEN();
+    NEXT_NONTERM(vars());
+    //////////////////////
+    while(!queue_isEmpty(queue_id))
+        CODE_GEN(gen_init_var);
+    //////////////////////
+
     return true;
 }
 
@@ -603,7 +631,10 @@ bool vars() {
         ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
 
+        ///////////////////////
         QUEUE_ADD_ID(tmp_var); // todo Andrej
+        ///////////////////////
+
         NEXT_TOKEN();
 
         return vars();
@@ -632,6 +663,11 @@ bool type_expr() {
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
+        ///////////////////////////
+        strcpy(cnt.func_call.str, token.attr.id.str);
+        QUEUE_ADD_ID(tmp_func);
+        ///////////////////////////
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
@@ -640,6 +676,10 @@ bool type_expr() {
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
+
+        /////////////////
+        CODE_GEN(gen_func_call_label);
+        /////////////////
         NEXT_TOKEN();
 
         return true;
@@ -709,6 +749,7 @@ bool def_var() {
 
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
     ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
+    str_clear(&left_new_var);
 
 	CHECK_INTERNAL_ERR(!ret, false);
 
@@ -746,6 +787,7 @@ bool init_assign() {
         ALLOC_VAR_IN_SYMTAB(&left_new_var);
         tmp_var->data.var->type.str[0] = left_new_var_type;
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
+        str_clear(&left_new_var);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -773,6 +815,7 @@ bool init_assign() {
     ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
     CHECK_INTERNAL_ERR(!ret, false);
     CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+    str_clear(&left_new_var);
 
     return true;
 }
@@ -839,6 +882,10 @@ bool params() {
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
 
+        if (FIND_FUNC_IN_SYMTAB) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
@@ -873,6 +920,10 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
+        if (FIND_FUNC_IN_SYMTAB) {
+            err = SEM_DEF_ERR;
+            return false;
+        }
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
