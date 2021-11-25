@@ -73,6 +73,7 @@ set(COMPILER_SOURCES
 	src/parser.c      src/parser.h
 	src/expressions.c src/expressions.h
 	src/code_generator.c src/code_generator.h
+    src/symstack.c    src/symstack.h
 	${COMMON_SOURCES}
 	)
 

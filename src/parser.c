@@ -17,6 +17,7 @@
 #include "str.h"
 #include "queue.h"
 #include "code_generator.h"
+#include "symstack.h"
 
 token_t token;
 int err;

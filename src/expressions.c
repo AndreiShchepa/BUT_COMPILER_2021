@@ -16,6 +16,7 @@
 #include "expressions.h"
 #include "symtable.h"
 #include "queue.h"
+#include "symstack.h"
 char postfix[500] = {0};
 
 #define DEBUG_ANDREJ 0

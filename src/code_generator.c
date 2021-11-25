@@ -1,4 +1,5 @@
 #include "code_generator.h"
+#include "symstack.h"
 #include <stdlib.h>
 
 /******************************************************************************
@@ -219,7 +220,7 @@ bool gen_param() {
 bool gen_def_var() {
     PRINT_FUNC(1, "defvar " FORMAT_VAR , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
     PRINT_FUNC(1, "move LF@$%s$%lu$%s$ nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
-   
+
     return true;
 }
 

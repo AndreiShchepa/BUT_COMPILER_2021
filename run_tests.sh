@@ -95,7 +95,7 @@ do
     all_files=$((all_files+1))
 
     if [[ "$valgrind_en" == "valgrind" ]]; then
-        valgrind --log-file="tmp.txt" build/compiler <$file 2>/dev/null
+        valgrind --log-file="tmp.txt" build/compiler <$file 2>/dev/null 1>/dev/null
         ret_val=$?
         OUT1=$(cat tmp.txt | grep -h 'in use at exit:')
         OUT2=$(cat tmp.txt | grep -h 'errors from')
@@ -113,7 +113,7 @@ do
 
         rm tmp.txt
     else
-        build/compiler <$file 2>/dev/null
+        build/compiler <$file 2>/dev/null 1>/dev/null
         ret_val=$?
     fi
 

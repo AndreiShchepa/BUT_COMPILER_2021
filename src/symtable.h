@@ -118,31 +118,6 @@ typedef struct {
 bool create_attrs();
 
 /*
- * @brief Deallocate array of symtables
- */
-void free_symtbs(arr_symtbs_t *symtbs);
-
-/*
- * @brief Deallocate and delete last symtable
- *        from array of local symtables
- */
-void delete_last_symtab(arr_symtbs_t *symtbs);
-
-/*
- * @brief Allocate and add new local symtable
- * @return On success true, otherwise false
- */
-bool add_symtab(arr_symtbs_t *symtbs);
-
-/*
- * @brief Search ID in last and pervious local tables
- * @param symtbs - pointer ro the array of local symtables
- * @param key - ID for searching
- * @return On success pointer to item, otherwise NULL
- */
-htab_item_t *find_id_symtbs(arr_symtbs_t *symtbs, const char *key);
-
-/*
  * @brief Sdbm algorithm for hash table
  * @return Hash of the string
  */
@@ -166,12 +141,6 @@ htab_item_t *symtab_find(const htable_t *table, const char *key);
  * @return Pointer to the created item, otherwise NULL
  */
 htab_item_t *symtab_add(htable_t *table, const string_t *s);
-
-/*
- * @brief Add attributes for IDs in symtables
- * @return On success true, otherwise false
- */
-bool symtab_add_params(htable_t *table, token_t *token, bool value);
 
 /*
  * @brief Table destructor
