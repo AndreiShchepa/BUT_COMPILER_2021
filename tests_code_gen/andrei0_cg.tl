@@ -25,7 +25,7 @@ function main ()
     else end
 
     local len : number = #str
-    write("Len of str = ", len, "str contains ", str)
+    write("Len of str = ", len, " str contains ", str)
 end
 
 main()

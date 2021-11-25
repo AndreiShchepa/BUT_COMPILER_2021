@@ -557,9 +557,6 @@ bool work_with_id() {
             ///////////////////////////
             if (strcmp(cnt.func_call.str, "write") != 0)
                 CODE_GEN(gen_func_call_label);
-
-            while(!queue_isEmpty(queue_id)) // todo andrej
-                CODE_GEN(gen_init_var);
             ///////////////////////////
 
             NEXT_TOKEN();
@@ -666,7 +663,6 @@ bool type_expr() {
     NEXT_NONTERM(expression(false, false));
 
     CODE_GEN(gen_expression); //todo Andrej
-    CODE_GEN(gen_init_var);  //todo Andrej
 
     NEXT_NONTERM(other_exp());
 
@@ -769,6 +765,8 @@ bool init_assign() {
         NEXT_TOKEN();
 
 		/////////////////////////
+        QUEUE_ADD_ID(tmp_var);      // todo Andrej
+        CODE_GEN(gen_def_var);      // todo Andrej
         while(!queue_isEmpty(queue_id)){ // todo andrej
             CODE_GEN(gen_init_var);
         }
