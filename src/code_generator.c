@@ -82,6 +82,8 @@
         }                                                                                   \
     } while(0)
 
+
+
 #if DEBUG_INSTR
 #define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
 		do {                                                                        \
@@ -105,7 +107,6 @@
     } while(0)                                  \
 
 
-
 /******************************************************************************
   *									GLOBAL VARS
 ******************************************************************************/
@@ -114,7 +115,7 @@ extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
 extern arr_symtbs_t local_symtbs;
-cnts_t cnt = {.func_name.alloc_size = 0};
+cnts_t cnt;
 
 /******************************************************************************
   *									FUNCTIONS
@@ -323,41 +324,90 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
-bool convert_str_to_hex(char *str, char *str_hex) {
-    int len = strlen(str);
-    char str_copy[len+1];
-    memset(str_copy, 0, len);
-    strcpy(str_copy, str);
+#define SWITCH_CASE(number)                        \
+        case number: \
+            sprintf(tmp_str, "%d", number);         \
+            str_add_char(&str_out, '\\');            \
+            str_add_char(&str_out, '0');             \
+            str_add_char(&str_out, tmp_str[0]);      \
+            if (tmp_str[1] != '\0'){                 \
+                str_add_char(&str_out, tmp_str[1]);  \
+            }                                      \
+            break;
 
-    memset(str_hex, 0, len);
 
-    int loop=0;
-    int i=0;
-    int c;
-    while((c = *str_copy) != '\0') {
-//        switch (c) {
-//            case '\\':
-//                c=str_copy
-//                case
-//                break;
-//        }
-//        strcat((char*)(str_hex+i),"\\%d", str_copy[loop]);
-//        str_hex[i]=
-//        loop+=1;
-//        i+=2;
+
+bool convert_str_to_ascii(string_t *str_in) {
+    string_t str_out;
+    if(!str_init(&str_out, strlen(str_in->str)*5)){
+        return false;
     }
-    str_hex[i++] = '\0';
+    int idx = 0;
+    char input_char = str_in->str[idx];
+    char tmp_str[3];
+
+    while(input_char != '\0') {
+        switch (input_char) {
+            SWITCH_CASE(0);
+            SWITCH_CASE(1);
+            SWITCH_CASE(2);
+            SWITCH_CASE(3);
+            SWITCH_CASE(4);
+            SWITCH_CASE(5);
+            SWITCH_CASE(6);
+            SWITCH_CASE(7);
+            SWITCH_CASE(8);
+            SWITCH_CASE(9);
+            SWITCH_CASE(10);
+            SWITCH_CASE(11);
+            SWITCH_CASE(12);
+            SWITCH_CASE(13);
+            SWITCH_CASE(14);
+            SWITCH_CASE(15);
+            SWITCH_CASE(16);
+            SWITCH_CASE(17);
+            SWITCH_CASE(18);
+            SWITCH_CASE(19);
+            SWITCH_CASE(20);
+            SWITCH_CASE(21);
+            SWITCH_CASE(22);
+            SWITCH_CASE(23);
+            SWITCH_CASE(24);
+            SWITCH_CASE(25);
+            SWITCH_CASE(26);
+            SWITCH_CASE(27);
+            SWITCH_CASE(28);
+            SWITCH_CASE(29);
+            SWITCH_CASE(30);
+            SWITCH_CASE(31);
+            SWITCH_CASE(32);
+
+            SWITCH_CASE(35);
+            SWITCH_CASE(96);
+
+            default:
+                if(!str_add_char(&str_out, input_char)){
+                    return false;
+                }
+                break;
+        }
+        idx++;
+        input_char = str_in->str[idx];
+    }
+    free(str_in->str);
+    str_in->str = str_out.str;
+    str_in->length = str_out.length;
+    str_in->alloc_size = str_out.alloc_size;
     return true;
 }
 
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
-    char str_hex[(5*strlen(token->attr.id.str)) + 1];
     switch(token->type) {
         case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
         case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
-        case (T_STRING)	: convert_str_to_hex(token->attr.id.str, str_hex);
-                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, str_hex);                   break;
+        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
+                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);                   break;
         default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
     }
 
@@ -440,6 +490,7 @@ bool gen_expression() {
                 PRINT_FUNC(3, "pushs float@%a" , queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
+                convert_str_to_ascii(&queue_expr->front->token->attr.id);
                 PRINT_FUNC(4, "pushs string@%s" , queue_expr->front->token->attr.id.str);
                 break;
             case T_KEYWORD:
@@ -539,3 +590,4 @@ bool dealloc_gen_var() {
     str_free(&ifj_code[FUNCTIONS]);
     return true;
 }
+
