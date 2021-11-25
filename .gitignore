@@ -7,7 +7,6 @@
 *.cache
 *.kcg
 *.ifjcode
-*.lua
 .idea
 .DS_Store
 compile_commands.json

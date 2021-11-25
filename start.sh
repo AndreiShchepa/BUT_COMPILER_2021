@@ -142,7 +142,6 @@ fi
 # remove from tests_code_gen compiled codes
 if [ "$clean" -eq 1 ]; then
     cd without_errors || exit 1
-    rm *.lua
     rm *.ifjcode
     rm *.out
     cd .. || exit 1
