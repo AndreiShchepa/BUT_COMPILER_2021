@@ -797,6 +797,7 @@ bool init_assign() {
         NEXT_TOKEN();
 
 		/////////////////////////
+		cnt.param_cnt = 0;
         CODE_GEN(gen_func_call_label);
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);

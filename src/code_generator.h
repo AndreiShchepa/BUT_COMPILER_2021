@@ -42,6 +42,7 @@
 #define FORMAT_ELSE         " $%s$%d$else$ "
 #define FORMAT_IF_END       " $%s$%d$if_end$ "
 #define FORMAT_WHILE        " $%s$%d$while$ "
+#define FORMAT_WHILE_END    " $%s$%d$while_end$ "
 
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
