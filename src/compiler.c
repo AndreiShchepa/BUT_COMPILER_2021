@@ -83,7 +83,9 @@ int ret;
 #endif
 
 #if !defined(DEBUG_EXPR) && !defined(DEBUG_RULES)
+if (err == NO_ERR) {
     gen_testing_helper();
+}
 #endif
 
     dealloc_gen_var();

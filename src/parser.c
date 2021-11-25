@@ -683,7 +683,7 @@ bool other_exp() {
             CODE_GEN(gen_init_var);  //todo Andrej
         }
         return other_exp();
-    } else if(len != cnt.ret_vals+1 && len != 0) { //        return  || return 1, 2 (3)
+    } else if(len > cnt.ret_vals+1 && len != 0) { //        return  || return 1, 2 (3)
         cnt.ret_vals++;
         gen_retval_nil();
         other_exp();
