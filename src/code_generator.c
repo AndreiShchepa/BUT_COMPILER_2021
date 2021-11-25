@@ -11,6 +11,9 @@
 // TODO - not printing write("\n") - print only string@_  (empty string)
 // TODO - ascii spaces in strings (32)
 // TODO - clear stack
+// TODO - tointeger => return nil or exit 8 if arg nil?
+// TODO - string convert to ascii
+// TODO - muze byt v substr pouzita funkce clear
 
 
 /******************************************************************************
@@ -105,6 +108,18 @@
                 PRINT_FUNC(__VA_ARGS__);            \
         }                                           \
     } while(0)                                  \
+
+
+#define SWITCH_CASE(number)                         \
+        case number:                                \
+            sprintf(tmp_str, "%d", number);         \
+            str_add_char(&str_out, '\\');           \
+            str_add_char(&str_out, '0');            \
+            str_add_char(&str_out, tmp_str[0]);     \
+            if (tmp_str[1] != '\0'){                \
+                str_add_char(&str_out, tmp_str[1]); \
+            }                                       \
+            break;
 
 
 /******************************************************************************
@@ -324,18 +339,6 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
-#define SWITCH_CASE(number)                        \
-        case number: \
-            sprintf(tmp_str, "%d", number);         \
-            str_add_char(&str_out, '\\');            \
-            str_add_char(&str_out, '0');             \
-            str_add_char(&str_out, tmp_str[0]);      \
-            if (tmp_str[1] != '\0'){                 \
-                str_add_char(&str_out, tmp_str[1]);  \
-            }                                      \
-            break;
-
-
 
 bool convert_str_to_ascii(string_t *str_in) {
     string_t str_out;
@@ -400,6 +403,7 @@ bool convert_str_to_ascii(string_t *str_in) {
     str_in->alloc_size = str_out.alloc_size;
     return true;
 }
+#endif
 
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
@@ -407,7 +411,7 @@ bool gen_func_call_args_const(token_t *token) {
         case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
         case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
         case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
-                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);                   break;
+                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
         default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
     }
 
