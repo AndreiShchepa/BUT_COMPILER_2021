@@ -37,7 +37,12 @@ enum block_e {FUNCTIONS, MAIN};
 
 typedef long long unsigned int llu_t;
 
+bool alloc_ifj_code();
+bool init_ifj_code();
+
+bool alloc_cnt();
 bool init_cnt();
+
 bool gen_init_built_int();
 
 bool gen_while_label();
@@ -81,7 +86,7 @@ bool is_write();
   *									BUILT-IN FUNCS
 *****************************************************************************/
 #define FUNC_TOINTEGER                                                        \
-"\nlabel $tointeger # tointeger(f : number) : integer						"\
+"label $tointeger # tointeger(f : number) : integer						"\
 "\n	# start																	"\
 "\n	createframe			# new TF											"\
 "\n	pushframe			# TF => LF											"\
@@ -106,52 +111,37 @@ bool is_write();
 "\n	return																	"
 
 #define FUNC_READI                                                        \
-"\nlabel $readi # readi() : integer										"\
-"\n	## start															"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	## logic															"\
-"\n	defvar		LF@readi_ret1											"\
-"\n	read 		LF@readi_ret1 int										"\
-"\n	pushs 		LF@readi_ret1											"\
-"\n																		"\
-"\n	## end																"\
-"\n	popframe															"\
-"\n	return																"
+"label $readi # readi() : integer"\
+"\ncreateframe"\
+"\npushframe"\
+"\ndefvar LF@readi_ret1"\
+"\nread   LF@readi_ret1 int"\
+"\npushs  LF@readi_ret1"\
+"\npopframe"\
+"\nreturn"
 
-#define FUNC_READN                                                        \
-"\nlabel $readn # readn() : number										"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@readn_ret1											"\
-"\n	read 		LF@readn_ret1 float										"\
-"\n	pushs 		LF@readn_ret1											"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"
+#define FUNC_READN              \
+"label $readn # readn() : number"  \
+"\ncreateframe"            \
+"\npushframe"              \
+"\ndefvar LF@readn_ret1"   \
+"\nread   LF@readn_ret1 float"\
+"\npushs  LF@readn_ret1"   \
+"\npopframe"               \
+"\nreturn"
 
-#define FUNC_READS                                                        \
-"\nlabel $reads # reads() : string										"\
-"\n	# start																"\
-"\n	createframe															"\
-"\n	pushframe															"\
-"\n																		"\
-"\n	# logic																"\
-"\n	defvar 		LF@reads_ret1											"\
-"\n	read 		LF@reads_ret1 string									"\
-"\n	pushs  		LF@reads_ret1											"\
-"\n																		"\
-"\n	# end																"\
-"\n	popframe															"\
-"\n	return																"
+#define FUNC_READS \
+"label $reads # reads() : string	"\
+"\ncreateframe"            \
+"\npushframe"              \
+"\ndefvar 	LF@reads_ret1"  \
+"\nread    LF@reads_ret1 string"\
+"\npushs   LF@reads_ret1"  \
+"\npopframe"               \
+"\nreturn"
 
 #define FUNC_WRITE      \
-"\nlabel &write"        \
+"label &write"        \
 "\npushframe"           \
 "\ncreateframe"         \
 "\ndefvar 		LF@&write_var_type"                                 \
@@ -163,7 +153,7 @@ bool is_write();
 "\nwrite 		string@nil"             \
 "\nlabel $write$end"                    \
 "\npopframe"                            \
-"\nreturn\n"
+"\nreturn"
 
 
 #if 0

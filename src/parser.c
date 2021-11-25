@@ -261,7 +261,11 @@ add_func_decl:
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
+        //////////////////
+        strcpy(cnt.func_name.str, token.attr.id.str);
         CODE_GEN(gen_func_start, token.attr.id.str);
+        //////////////////
 
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
@@ -285,9 +289,10 @@ add_func_def:
         deep++;
         NEXT_TOKEN();
         NEXT_NONTERM(params());
-        //        init_cnt();
-        // todo -func name
+
+        ////////////////////////
         CODE_GEN(gen_params);
+        ////////////////////////
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
@@ -530,13 +535,10 @@ bool statement() {
 
             /////////////////////////
             strcpy(cnt.func_call.str, tmp_func->key_id);
+            QUEUE_ADD_ID(tmp_func);
             /////////////////////////
 
             NEXT_TOKEN();
-
-            /////////////////////////////
-            QUEUE_ADD_ID(tmp_func);
-            /////////////////////////////
 
             EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
             NEXT_TOKEN();
@@ -548,17 +550,13 @@ bool statement() {
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
             ///////////////////////////
-            if (strcmp(cnt.func_call.str, "write") != 0) {
+            if (strcmp(cnt.func_call.str, "write") != 0)
                 CODE_GEN(gen_func_call_label);
-            }
+
+            while(!queue_isEmpty(queue_id)) // todo andrej
+                CODE_GEN(gen_init_var);
             ///////////////////////////
 
-            while(!queue_isEmpty(queue_id)){ // todo andrej
-//                write(a + 1)
-//                c = foo(a)
-//                CODE_GEN(gen_func_call_label);
-                CODE_GEN(gen_init_var);
-            }
             NEXT_TOKEN();
             str_clear(&cnt.func_call); // TODO - via CODE_GEN
         }
@@ -577,6 +575,10 @@ bool statement() {
 
             NEXT_TOKEN();
             NEXT_NONTERM(vars());
+            //////////////////////
+            while(!queue_isEmpty(queue_id))
+                CODE_GEN(gen_init_var);
+            //////////////////////
         }
         else {
             err = SEM_DEF_ERR;
@@ -603,7 +605,10 @@ bool vars() {
         ret = str_add_char(&tps_left, tmp_var->data.var->type.str[0]);
         CHECK_INTERNAL_ERR(!ret, false);
 
+        ///////////////////////
         QUEUE_ADD_ID(tmp_var); // todo Andrej
+        ///////////////////////
+
         NEXT_TOKEN();
 
         return vars();
@@ -632,6 +637,11 @@ bool type_expr() {
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
+        ///////////////////////////
+        strcpy(cnt.func_call.str, token.attr.id.str);
+        QUEUE_ADD_ID(tmp_func);
+        ///////////////////////////
+
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
@@ -640,6 +650,10 @@ bool type_expr() {
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
+
+        /////////////////
+        CODE_GEN(gen_func_call_label);
+        /////////////////
         NEXT_TOKEN();
 
         return true;
