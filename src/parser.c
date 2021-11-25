@@ -760,11 +760,12 @@ bool init_assign() {
 
     print_rule("26. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
-
+    CODE_GEN(gen_expression);     // todo Andrej
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
 
     ////////////////////////
-    QUEUE_ADD_ID(tmp_var);
+    QUEUE_ADD_ID(tmp_var);      // todo Andrej
+    CODE_GEN(gen_def_var);      // todo Andrej
     CODE_GEN(gen_init_var);     // todo Andrej
     ////////////////////////
 
