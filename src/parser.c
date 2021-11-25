@@ -889,7 +889,11 @@ bool params() {
         FILL_TYPE(&tmp_var->data.var->type);
 
         NEXT_NONTERM(type());
+
+        ///////////////////////
         QUEUE_ADD_ID(tmp_var);
+        ///////////////////////
+
         return other_params();
     }
     //	CODE_GEN(gen_params);
@@ -914,6 +918,7 @@ bool other_params() {
             return false;
         }
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
+        QUEUE_ADD_ID(tmp_var);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);

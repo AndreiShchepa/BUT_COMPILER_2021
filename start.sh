@@ -110,7 +110,7 @@ if [ "$compile" -eq 1 ] || [ "$exec" -eq 1 ]; then
 fi
 
 if [ "$run" -eq 1 ]; then
-    cd tests_code_gen || exit 1
+    cd without_errors || exit 1
     run_cmd="./ic21int $(basename "$in" .tl).ifjcode"
     eval "$run_cmd"
     cd .. || exit 1
