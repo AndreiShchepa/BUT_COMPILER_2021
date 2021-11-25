@@ -34,6 +34,10 @@
 #define DEVIDER_2 "########## "
 #define FORMAT_VAR " LF@$%s$%lu$%s$ "
 #define FORMAT_PARAM " LF@%%%dp "
+#define FORMAT_IF " $%s$%d$if$ "
+#define FORMAT_ELSE " $%s$%d$else$ "
+#define FORMAT_IF_END "$%s$%d$if_end$"
+
 
 
 #define DEBUG_GEN(fmt, ...) \
@@ -220,30 +224,31 @@ bool gen_param() {
 }
 
 bool gen_def_var() {
-    PRINT_FUNC(1, "defvar LF@$%s$%lu$%s$" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+    PRINT_FUNC(1, "defvar " FORMAT_VAR , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
     PRINT_FUNC(1, "move LF@$%s$%lu$%s$ nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+   
     return true;
 }
 
 bool gen_init_var() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(1, "move LF@$%s$%lu$%s$ GF@&var1" , cnt.func_name.str, queue_id->rear->id->deep, queue_id->rear->id->key_id);
+    PRINT_FUNC(1, "move " FORMAT_VAR " GF@&var1" , cnt.func_name.str, queue_id->rear->id->deep, queue_id->rear->id->key_id);
     queue_remove_rear(queue_id);
     return true;
 }
 
 bool gen_if_start() {
-    PRINT_FUNC(1, "label $%s$%d$if$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(1, "label " FORMAT_IF , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
 bool gen_if_else() {
-    PRINT_FUNC(2, "label $%s$%d$else$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "label " FORMAT_ELSE , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
 bool gen_if_end(/*TODO*/) {
-    PRINT_FUNC(3, "label $%s$%d$if_end$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
