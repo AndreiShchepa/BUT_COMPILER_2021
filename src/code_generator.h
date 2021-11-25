@@ -226,6 +226,7 @@ bool is_write();
   *									BUILT-IN FUNCS
 *****************************************************************************/
 #define FUNC_CHECK_IS_NIL \
+"\nlabel &check_is_nil"\
 "\npops GF@&var1"\
 "\ntype GF@&type1 GF@&var1"\
 "\njumpifeq $op_nil GF@&type1 string@nil"\
