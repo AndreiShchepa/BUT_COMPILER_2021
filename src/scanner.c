@@ -53,11 +53,11 @@ void set_source_file(FILE *file) {
 
 void recognize_keyword(token_t *token) {
         char* keywords[COUNT_KEYWORDS] = {"do", "global", "number", "else",
-                                              "if", "require", "end", "integer",
-                                              "return", "function", "local",
-                                              "string", "nil", "then", "while"};
+                                          "if", "require", "end", "integer",
+                                          "return", "function", "local",
+                                          "string", "nil", "then", "while"};
 
-        for(keywords_t kw = KW_DO; kw < COUNT_KEYWORDS; kw++) {
+        for (keywords_t kw = KW_DO; kw < COUNT_KEYWORDS; kw++) {
             if (!str_cmp_const_str(&token->attr.id, keywords[kw])) {
                 token->keyword = kw;
                 token->type = T_KEYWORD;
