@@ -28,87 +28,6 @@
 // funcs    = label &funcname
 
 
-/******************************************************************************
-  *									MACROS
-*****************************************************************************/
-#define DEBUG_INSTR         1
-#define DEBUG_INSTR_2       1
-
-#define IFJ_CODE_START_LEN 10000
-#define MAX_LINE_LEN       300
-#define EOL                 "\n"
-#define EMPTY_STR           ""
-#define NON_VAR             "%s"
-#define DEVIDER             "################################################################################# "
-#define DEVIDER_2           "########## "
-#define FORMAT_VAR          " LF@$%s$%lu$%s$ "
-#define FORMAT_PARAM        " LF@%%%dp "
-#define FORMAT_IF           " $%s$%d$if$ "
-#define FORMAT_ELSE         " $%s$%d$else$ "
-#define FORMAT_IF_END       " $%s$%d$if_end$ "
-
-
-#define INIT_CONCAT_STR(num, fmt, ...)                                                      \
-    do {                                                                                    \
-        if (!DEBUG_INSTR_2) {                                                               \
-            sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
-        } else {                                                                            \
-            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
-                                    80-snprintf(NULL, 0, (fmt), __VA_ARGS__),           \
-                                    "#", __LINE__, __func__);                               \
-        }                                                                                   \
-    } while(0)                                                                              \
-
-#define PRINT_MAIN(num, fmt, ...)                                                           \
-    do {                                                                                    \
-        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
-        INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
-        if (!str_concat_str2(&ifj_code[MAIN], instr##num)) {                                \
-            return false;                                                                   \
-        }                                                                                   \
-    } while(0)
-
-#define PRINT_FUNC(num, fmt, ...)                                                           \
-    do {                                                                                    \
-        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
-        INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
-        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
-        }                                                                                   \
-    } while(0)
-
-#define PRINT_FUNC_BUILT_IN(num, fmt, ...)                                                           \
-    do {                                                                                    \
-        char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
-        sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
-        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
-        }                                                                                   \
-    } while(0)
-
-#if DEBUG_INSTR
-#define DEBUG_PRINT_INSTR(num, NUM_BLOCK ,fmt, ...)                                 \
-		do {                                                                        \
-			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
-			INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                         \
-			if (!str_concat_str2(&ifj_code[NUM_BLOCK], instr##num)) {               \
-				return false;                                                       \
-			}                                                                       \
-		} while(0)
-#else
-	#define DEBUG_PRINT_INSTR(num, fmt, ...)
-#endif // DEBUG_INSTR
-
-#define PRINT_WHERE(...)                        \
-    do {                                        \
-        if (strcmp(cnt.func_name.str, "") == 0) {   \
-                PRINT_MAIN(__VA_ARGS__);            \
-        } else {                                    \
-                PRINT_FUNC(__VA_ARGS__);            \
-        }                                           \
-    } while(0)                                  \
-
-
 
 /******************************************************************************
   *									GLOBAL VARS
@@ -118,7 +37,7 @@ extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
 extern arr_symtbs_t local_symtbs;
-cnts_t cnt = {.func_name.alloc_size = 0};
+cnts_t cnt;
 
 /******************************************************************************
   *									FUNCTIONS
@@ -319,7 +238,7 @@ bool gen_func_call_write() {
 
 bool gen_func_call_args_var(htab_item_t *htab_item) {
     PRINT_WHERE(1, "defvar TF@%%%dp"       , cnt.param_cnt);
-    PRINT_WHERE(2, "move   TF@%%%dp LF@%s" , cnt.param_cnt, htab_item->key_id);
+    PRINT_WHERE(2, "move   TF@%%%dp LF@$%s$%lu$%s$" , cnt.param_cnt, cnt.func_name.str, htab_item->deep, htab_item->key_id);
 
     if (!is_write()) {
         cnt.param_cnt++;
@@ -327,44 +246,77 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
-#if 0
-bool convert_str_to_hex(char *str, char *str_hex) {
-    int len = strlen(str);
-    char str_copy[len+1];
-    memset(str_copy, 0, len);
-    strcpy(str_copy, str);
 
-    memset(str_hex, 0, len);
+bool convert_str_to_ascii(string_t *str_in) {
+    string_t str_out;
+    CODE_GEN(str_init, &str_out, strlen(str_in->str)*5);
 
-//    int loop=0;
-    int i=0;
-    int c;
-//    while((c = *str_copy) != '\0') {
-//        switch (c) {
-//            case '\\':
-//                c=str_copy
-//                case
-//                break;
-//        }
-//        strcat((char*)(str_hex+i),"\\%d", str_copy[loop]);
-//        str_hex[i]=
-//        loop+=1;
-//        i+=2;
-//    }
-    str_hex[i++] = '\0';
+    int idx = 0;
+    char input_char = str_in->str[idx];
+    char tmp_str[3];
+
+    while(input_char != '\0') {
+        switch (input_char) {
+            SWITCH_CASE(0);
+            SWITCH_CASE(1);
+            SWITCH_CASE(2);
+            SWITCH_CASE(3);
+            SWITCH_CASE(4);
+            SWITCH_CASE(5);
+            SWITCH_CASE(6);
+            SWITCH_CASE(7);
+            SWITCH_CASE(8);
+            SWITCH_CASE(9);
+            SWITCH_CASE(10);
+            SWITCH_CASE(11);
+            SWITCH_CASE(12);
+            SWITCH_CASE(13);
+            SWITCH_CASE(14);
+            SWITCH_CASE(15);
+            SWITCH_CASE(16);
+            SWITCH_CASE(17);
+            SWITCH_CASE(18);
+            SWITCH_CASE(19);
+            SWITCH_CASE(20);
+            SWITCH_CASE(21);
+            SWITCH_CASE(22);
+            SWITCH_CASE(23);
+            SWITCH_CASE(24);
+            SWITCH_CASE(25);
+            SWITCH_CASE(26);
+            SWITCH_CASE(27);
+            SWITCH_CASE(28);
+            SWITCH_CASE(29);
+            SWITCH_CASE(30);
+            SWITCH_CASE(31);
+            SWITCH_CASE(32);
+
+            SWITCH_CASE(35);
+            SWITCH_CASE(96);
+
+            default:
+                CODE_GEN(str_add_char, &str_out, input_char);
+                break;
+        }
+        idx++;
+        input_char = str_in->str[idx];
+    }
+    free(str_in->str);
+    str_in->str = str_out.str;
+    str_in->length = str_out.length;
+    str_in->alloc_size = str_out.alloc_size;
     return true;
 }
-#endif
+
 
 bool gen_func_call_args_const(token_t *token) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
-//    char str_hex[(5*strlen(token->attr.id.str)) + 1];
     switch(token->type) {
         case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
         case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
-        case (T_STRING)	: PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
+        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
+                          PRINT_WHERE(2, "move "  FORMAT_PARAM " string@%s", cnt.param_cnt, token->attr.id.str);        break;
         default       	: PRINT_WHERE(2, "move "  FORMAT_PARAM " nil@nil"  , cnt.param_cnt);                            break;
-//        convert_str_to_hex(token->attr.id.str, str_hex);
     }
 
     if (strcmp(cnt.func_call.str, "write") != 0)
@@ -446,6 +398,7 @@ bool gen_expression() {
                 PRINT_FUNC(3, "pushs float@%a" , queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
+                convert_str_to_ascii(&queue_expr->front->token->attr.id);
                 PRINT_FUNC(4, "pushs string@%s" , queue_expr->front->token->attr.id.str);
                 break;
             case T_KEYWORD:
@@ -545,3 +498,4 @@ bool dealloc_gen_var() {
     str_free(&ifj_code[FUNCTIONS]);
     return true;
 }
+
