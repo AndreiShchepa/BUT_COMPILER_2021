@@ -132,6 +132,17 @@ bool gen_while_label(char *key_id) {
 
 bool gen_while_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, cnt.while_cnt);
+
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
+
+    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
+
+    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
 	return true;
 }
@@ -202,7 +213,18 @@ bool gen_if_eval() {
     cnt.if_cnt_max++;
     cnt.if_cnt = cnt.if_cnt_max; // because this instruction is printed first
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_else$ GF@&type1 string@bool" , cnt.func_name.str, cnt.if_cnt);
+
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_else_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(6, "jump $%s$%d$pre_else$" , cnt.func_name.str, cnt.if_cnt);
+
+    PRINT_FUNC(7, "label $%s$%d$pre_else_zero$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
+
+    PRINT_FUNC(9, "label $%s$%d$pre_else$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 
