@@ -343,7 +343,9 @@ bool is_write();
 "\nmove 	LF@substr$while$cnt	int@0"\
 "\nmove 	LF@substr$char 		string@"\
 "\nmove 	LF@substr$cmp 		bool@false"\
-"\n"\
+"\n"                                                                       \
+"\nsub LF@substr$i LF@substr$i int@1"\
+"\nsub LF@substr$j LF@substr$j int@1"\
 "\n# i > j"\
 "\ngt 			LF@substr$cmp 		LF@substr$i	 	LF@substr$j"\
 "\nJUMPIFEQ 	$substr_label_end2 	LF@substr$cmp 	bool@true"\
@@ -381,7 +383,51 @@ bool is_write();
 "\npopframe"\
 "\nreturn"
 
-#define FUNC_ORD                                                        \
+#define FUNC_ORD \
+"\nlabel $ord # ord(s : string, i : integer) : integer"\
+"\n# start"\
+"\npushframe"\
+"\ncreateframe"\
+"\n"\
+"\n# logic"\
+"\ndefvar 		LF@ord$s"\
+"\ndefvar 		LF@ord$i"\
+"\ndefvar 		LF@ord$cmp"\
+"\ndefvar 		LF@ord$ret1"\
+"\ndefvar 		LF@ord$len"\
+"\n"\
+"\npushs LF@%0p"\
+"\ncall $check_is_nil"\
+"\npops LF@ord$s"\
+"\npushs LF@%1p"\
+"\ncall $check_is_nil"\
+"\npops LF@ord$i"\
+"\n"\
+"\nstrlen		LF@ord$len 		LF@ord$s"\
+"\n"\
+"\n# if i <= 0 or i > #s then"\
+"\nsub 		LF@ord$i LF@ord$i int@1"\
+"\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
+"\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i 	int@0"\
+"\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
+"\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
+"\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
+"\n"\
+"\nstri2int 	LF@ord$ret1 LF@ord$s LF@ord$i"\
+"\n"\
+"\nlabel $ord_label_end"\
+"\npushs LF@ord$ret1"\
+"\npopframe"\
+"\nreturn"\
+"\n"\
+"\nlabel $ord_label_end2"\
+"\npushs nil@nil"\
+"\npopframe"\
+"\nreturn"
+
+
+#if 0
 "\nlabel $ord # ord(s : string, i : integer) : integer"\
 "\n# start"\
 "\npushframe	"\
@@ -420,7 +466,8 @@ bool is_write();
 "\nlabel $ord_label_end2"\
 "\npushs nil@nil"\
 "\npopframe"\
-"\nreturn"                                                              \
+"\nreturn"
+#endif
 
 #define FUNC_CHR                                                        \
 "\nlabel $chr # chr(i : integer) : string"\

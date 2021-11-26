@@ -13,6 +13,26 @@ rm_out="1>/dev/null 2>/dev/null"
 err_files=0
 err_memory=0
 all_files=0
+help=0
+
+code_generator=0
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    "--code_generator")
+        code_generator=1
+        ;;
+    "--help")
+        help=1
+        ;;
+    esac
+    shift
+done
+
+if [ "${help}" -eq 1 ]; then
+    echo "./run_tests.sh --code_generator"
+    echo "./run_tests.sh --code_generator > without_errors_output.out"
+    exit 1
+fi
 
 if [ "$name" == "teal_ok" ];then
     cd without_errors || exit 1
@@ -25,30 +45,37 @@ if [ "$name" == "teal_ok" ];then
     exit 0
 fi
 
-if [ "$name" == "code_generator" ]; then
-    eval "./start.sh --clean"
-
+if [ "$code_generator" -eq 1 ]; then
     if [ $(uname) == "Darwin" ];then
-        eval "./start.sh --compile_to_lua"
+        eval "./start.sh --clean --compile_to_lua --compile_to_ifjcode --compile"
     fi
 
-    eval "./start.sh --compile_to_ifjcode"
-
-    cd without_errors || exit 1
+    #if [ $(uname) != "Darwin" ];then
+    #    for file in *.tl; do
+    #        eval "lua ${file%.*}.lua > ${file%.*}.lua.out"
+    #        eval "./ic21int ${file%.*}.ifjcode > ${file%.*}.ifjcode.out"
+    #    done
+    #fi
 
     if [ $(uname) != "Darwin" ];then
-        for file in *.lua; do
-            eval "lua ${file} > ${file}.out"
+        cd without_errors || exit 1
+        for file in *.tl; do
+            if [ "${file}" == "ifj21.tl" ]; then
+                break
+            fi
+            echo ""
+            echo "#############################################################################"
+            echo "${file}"
+            echo "LUA:"
+            eval "lua ${file%.*}.lua"
+            echo "-----------------------------------------------------------------------------"
+            echo "IFJCODE:"
+            eval "./ic21int ${file%.*}.ifjcode"
+            echo "#############################################################################"
+            echo ""
         done
+        cd .. || exit 1
     fi
-
-    for file in *.ifjcode; do
-        eval "./ic21int < ${file} > ${file}.out"
-    done
-
-    for file in *.ifjcode; do
-        eval "diff ${file%.*}.lua.out ${file%.*}.ifjcode.out"
-    done
 
     cd .. || exit 1
     exit 0

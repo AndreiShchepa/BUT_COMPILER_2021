@@ -80,6 +80,21 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# remove from tests_code_gen compiled codes
+if [ "$clean" -eq 1 ]; then
+    cd without_errors || exit 1
+    rm *.lua
+    rm *.ifjcode
+    rm *.out
+    cd .. || exit 1
+
+    cd without_errors_input || exit 1
+    rm *.lua
+    rm *.ifjcode
+    rm *.out
+    cd .. || exit 1
+fi
+
 if [ "$help" -eq 1 ] || [ "$iszero" -eq 1 ]; then
     echo "USAGE:"
     echo "# file must have .tl extension"
@@ -138,6 +153,7 @@ if [ "$compile_to_ifjcode" -eq 1 ]; then
     for file in ../without_errors/*.tl; do
 #        echo $file
         if [ "$file" != "../without_errors/ifj21.tl" ]; then
+            echo "${file}"
             compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
             eval "$compile_cmd" || exit 1
         fi
@@ -145,6 +161,7 @@ if [ "$compile_to_ifjcode" -eq 1 ]; then
     for file in ../without_errors_input/*.tl; do
 #        echo $file
         if [ "$file" != "../without_errors_input/ifj21.tl" ]; then
+            echo "${file}"
             compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
             eval "$compile_cmd" || exit 1
         fi
@@ -152,13 +169,6 @@ if [ "$compile_to_ifjcode" -eq 1 ]; then
     cd .. || exit 1
 fi
 
-# remove from tests_code_gen compiled codes
-if [ "$clean" -eq 1 ]; then
-    cd without_errors || exit 1
-    rm *.ifjcode
-    rm *.out
-    cd .. || exit 1
-fi
 
 # valgrind
 if [ "$valgrind" -eq 1 ]; then

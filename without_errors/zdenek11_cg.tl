@@ -1,6 +1,6 @@
 require "ifj21"
 
-function foo(a:integer)
+function foo(a:integer):integer
 	return a
 end
 
