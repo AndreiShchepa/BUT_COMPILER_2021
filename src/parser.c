@@ -693,13 +693,15 @@ bool type_expr() {
 
     /////////////////////////
     CODE_GEN(gen_expression); //todo Andrej
+
+    /////////////////////////
+
+    NEXT_NONTERM(other_exp());
+    /////////////////////////
     while (!queue_isEmpty(queue_id)) {
         CODE_GEN(gen_init_var);
     }
     /////////////////////////
-
-    NEXT_NONTERM(other_exp());
-
     if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
         err = SEM_OTHER_ERR;
         return false;
