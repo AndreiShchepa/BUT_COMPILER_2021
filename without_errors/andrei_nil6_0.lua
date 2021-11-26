@@ -8,6 +8,7 @@ function main()
    local nil_var
 
    local id = int + dec * int * dec - int + dec / (int + dec - nil_var)
+   write(str, od)
 end
 
 main()

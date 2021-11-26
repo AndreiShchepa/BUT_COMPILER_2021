@@ -16,6 +16,8 @@
 // TODO - muze byt v substr pouzita funkce clear
 // TODO - substr, ord, chr - i <= 0 is right???
 // TODO - while multi declaration
+// TODO - local a:integre = expre (rozdelit local a:integer)
+// TODO - todo idx from 1 in substr, ord
 
 
 /******************************************************************************
@@ -77,6 +79,7 @@ bool init_cnt() {
     cnt.while_cnt       = 0;
     cnt.while_cnt_max   = 0;
     cnt.deep            = 0;
+    cnt.in_while        = false;
     return true;
 }
 
@@ -133,21 +136,28 @@ bool gen_while_label(char *key_id) {
     cnt.while_cnt_max++;
     cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_WHILE(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
 	return true;
 }
 
 bool gen_while_eval() {
-    PRINT_WHILE(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_WHILE(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
 	return true;
 }
 
 bool gen_while_end() {
-    PRINT_WHILE(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
-    PRINT_WHILE(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
     cnt.while_cnt--;
+    return true;
+}
+
+bool gen_concat_while_functions() {
+    cnt.in_while = false;
+    PRINT_FUNC_BUILT_IN(1, "%s", ifj_code[WHILE].str);
+    str_clear(&ifj_code[WHILE]);
     return true;
 }
 
@@ -228,6 +238,9 @@ bool gen_func_end() {
 }
 
 int where_to_print() {
+    if (cnt.in_while) {
+        return WHILE;
+    }
     return (strcmp(cnt.func_name.str, "") == 0) ? MAIN : FUNCTIONS;
 }
 

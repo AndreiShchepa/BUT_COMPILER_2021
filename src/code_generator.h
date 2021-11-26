@@ -69,7 +69,7 @@
     do {                                                                                    \
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
-        if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
+        if (!str_concat_str2(&ifj_code[(cnt.in_while) ? WHILE : FUNCTIONS], instr##num)) {                           \
             return false;                                                                   \
         }                                                                                   \
     } while(0)
@@ -175,8 +175,10 @@ typedef struct cnts_s {
     unsigned int if_cnt_max;
     unsigned int while_cnt;
     unsigned int while_cnt_max;
+    unsigned int while_cnt_deep;
     unsigned int deep;
     unsigned int ret_vals;
+    bool         in_while;
 } cnts_t;
 
 extern cnts_t cnt;
@@ -201,6 +203,7 @@ bool gen_while_label();
 bool gen_while_start();
 bool gen_while_end();
 bool gen_while_eval();
+bool gen_concat_while_functions();
 
 bool gen_params();
 bool gen_param();
