@@ -562,7 +562,7 @@ bool is_write();
 "\njumpifeq $continue_end_div GF@&type2 string@float"           \
 "\ncall $retyping_var2"                                         \
 "\nlabel $continue_end_div"                                     \
-"\njumpifeq $div_zero_error GF@&var2 int@0"                     \
+"\njumpifeq $div_zero_error GF@&var2 float@0x0.0p+0"                     \
 "\npushs GF@&var1"                                              \
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
@@ -581,7 +581,7 @@ bool is_write();
 "\ntype GF@&type2 GF@&var2"                                     \
 "\njumpifeq $op_nil GF@&type1 string@nil"                       \
 "\njumpifeq $op_nil GF@&type2 string@nil"                       \
-"\njumpifeq $idiv_zero_error GF@&var2 int@0"                     \
+"\njumpifeq $idiv_zero_error GF@&var2 float@0x0.0p+0"                     \
 "\npushs GF@&var1"                                              \
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
