@@ -689,7 +689,12 @@ bool type_expr() {
 
     NEXT_NONTERM(expression(false, false));
 
+    /////////////////////////
     CODE_GEN(gen_expression); //todo Andrej
+    while (!queue_isEmpty(queue_id)) {
+        CODE_GEN(gen_init_var);
+    }
+    /////////////////////////
 
     NEXT_NONTERM(other_exp());
 
