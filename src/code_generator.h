@@ -467,12 +467,14 @@ bool is_write();
 *****************************************************************************/
 #define FUNC_OP_NIL \
 "\nlabel $op_nil"\
+"\nexit int@8"
+
+#if 0
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
 "\nmove TF@%0p string@ERROR\\0328:\\032Unexpected\\032nil\\032value\\032in\\032the\\032parameter.\\010"\
-"\ncall $write"\
-"\nexit int@8"
-
+"\ncall $write"
+#endif
 
 #define FUNC_RETYPING_VAR1      \
 "\nlabel $retyping_var1"        \
@@ -525,11 +527,15 @@ bool is_write();
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
 "\nlabel $div_zero_error"                                       \
+"\nexit int@9\n"
+
+
+#if 0
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
 "\nmove TF@%0p string@ERROR\\0329:\\032Unexpected\\032zero\\032division.\\010"\
-"\ncall $write"                                                                \
-"\nexit int@9\n"
+"\ncall $write"
+#endif
 
 #define FUNC_CHECK_IDIV                                          \
 "\nlabel $check_idiv"                                            \
@@ -544,12 +550,14 @@ bool is_write();
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
 "\nlabel $idiv_zero_error"                                       \
+"\nexit int@9\n"
+
+#if 0
 "\ncreateframe"\
 "\ndefvar TF@%0p"\
 "\nmove TF@%0p string@ERROR\\0329:\\032Unexpected\\032zero\\032division.\\010"\
-"\ncall $write"                                                                \
-"\nexit int@9\n"
-
+"\ncall $write"
+#endif
 
 
 
