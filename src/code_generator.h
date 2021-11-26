@@ -519,7 +519,32 @@ bool is_write();
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
 "\nlabel $div_zero_error"                                       \
+"\ncreateframe"\
+"\ndefvar TF@%0p"\
+"\nmove TF@%0p string@ERROR\\0329:\\032Unexpected\\032zero\\032division.\\010"\
+"\ncall $write"                                                                \
 "\nexit int@9\n"
+
+#define FUNC_CHECK_IDIV                                          \
+"\nlabel $check_idiv"                                            \
+"\npops GF@&var2"                                               \
+"\npops GF@&var1"                                               \
+"\ntype GF@&type1 GF@&var1"                                     \
+"\ntype GF@&type2 GF@&var2"                                     \
+"\njumpifeq $op_nil GF@&type1 string@nil"                       \
+"\njumpifeq $op_nil GF@&type2 string@nil"                       \
+"\njumpifeq $idiv_zero_error GF@&var2 int@0"                     \
+"\npushs GF@&var1"                                              \
+"\npushs GF@&var2"                                              \
+"\nreturn"                                                      \
+"\nlabel $idiv_zero_error"                                       \
+"\ncreateframe"\
+"\ndefvar TF@%0p"\
+"\nmove TF@%0p string@ERROR\\0329:\\032Unexpected\\032zero\\032division.\\010"\
+"\ncall $write"                                                                \
+"\nexit int@9\n"
+
+
 
 
 #define FUNC_CHECK_COMP                                       \
@@ -530,6 +555,8 @@ bool is_write();
 "\ntype GF@&type2 GF@&var2"                                   \
 "\njumpifeq $continue_end_comp GF@&type1 string@nil"          \
 "\njumpifeq $continue_end_comp GF@&type2 string@nil"          \
+"\njumpifeq $continue_end_comp GF@&type1 string@string"         \
+"\njumpifeq $continue_end_comp GF@&type2 string@string"    \
 "\njumpifeq $continue_mid_comp GF@&type1 string@int"          \
 "\njumpifeq $continue_end_comp GF@&type2 string@float"        \
 "\ncall $retyping_var2"                                       \

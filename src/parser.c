@@ -5,7 +5,9 @@
  *
  * @brief Implement functions processing rules for syntax analysis
  *
- * @author Andrei Shchapaniak <xshcha00>
+ * @author  Andrei Shchapaniak  <xshcha00>
+ *          Andrej Binovsky     <xbinov00>
+ *          Zdenek Lapes        <xlapes02>
  */
 
 #include <stdio.h>
@@ -691,13 +693,15 @@ bool type_expr() {
 
     /////////////////////////
     CODE_GEN(gen_expression); //todo Andrej
+
+    /////////////////////////
+
+    NEXT_NONTERM(other_exp());
+    /////////////////////////
     while (!queue_isEmpty(queue_id)) {
         CODE_GEN(gen_init_var);
     }
     /////////////////////////
-
-    NEXT_NONTERM(other_exp());
-
     if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
         err = SEM_OTHER_ERR;
         return false;
@@ -1152,7 +1156,7 @@ int parser() {
     queue_args = queue_init();
 
 #ifndef DEBUG_ANDREJ
-// profesionalni debug, master of C language
+// profesionalni debug, master of C language by Andrej Binovsky
 #endif
 
     ret = str_init(&token.attr.id, 20);
