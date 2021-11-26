@@ -110,7 +110,7 @@ if [ "$compile" -eq 1 ] || [ "$exec" -eq 1 ]; then
 fi
 
 if [ "$run" -eq 1 ]; then
-    cd without_errors || exit 1
+    cd "$(dirname "${in}")" || exit 1
     run_cmd="./ic21int $(basename "$in" .tl).ifjcode"
     eval "$run_cmd"
     cd .. || exit 1
