@@ -539,7 +539,7 @@ bool is_write();
 "\ntype GF@&type2 GF@&var2"                                     \
 "\njumpifeq $op_nil GF@&type1 string@nil"                       \
 "\njumpifeq $op_nil GF@&type2 string@nil"                       \
-"\njumpifeq $idiv_zero_error GF@&var2 float@0x0.0p+0"                     \
+"\njumpifeq $idiv_zero_error GF@&var2 int@0"                     \
 "\npushs GF@&var1"                                              \
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
@@ -551,6 +551,13 @@ bool is_write();
 "\nexit int@9\n"
 
 
+#define FUNC_CHECK_IS_NIL_CONCAT                                \
+"\nlabel $check_is_nil_concat"                                  \
+"\ntype GF@&type1 GF@&var1"                                     \
+"\ntype GF@&type2 GF@&var2"                                     \
+"\njumpifeq $op_nil GF@&type1 string@nil"                       \
+"\njumpifeq $op_nil GF@&type2 string@nil"                       \
+"\nreturn"
 
 
 #define FUNC_CHECK_COMP                                       \

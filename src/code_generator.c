@@ -109,7 +109,8 @@ bool gen_init_built_ins() {
     PRINT_FUNC_BUILT_IN(17, "%s", FUNC_CHECK_OP);      DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(18, "%s", FUNC_CHECK_DIV);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(19, "%s", FUNC_CHECK_IDIV);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN(20, "%s", FUNC_CHECK_COMP);
+    PRINT_FUNC_BUILT_IN(20, "%s", FUNC_CHECK_COMP);      DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(200, "%s", FUNC_CHECK_IS_NIL_CONCAT);  DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR  (21, FUNCTIONS, DEVIDER_2"END BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR  (22, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR  (23, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
@@ -513,6 +514,7 @@ bool gen_expression() {
                 PRINT_FUNC(44, "nots" NON_VAR , EMPTY_STR);
                 break;
             case T_LENGTH:
+                PRINT_FUNC(100, "call $check_is_nil" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(45, "pops GF@&var1" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(46, "strlen GF@&var1 GF@&var1" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(47, "pushs GF@&var1" NON_VAR , EMPTY_STR);
@@ -520,6 +522,7 @@ bool gen_expression() {
             case T_CONCAT:
                 PRINT_FUNC(48, "pops GF@&var2" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(49, "pops GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(100, "call $check_is_nil_concat" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(50, "concat GF@&var1 GF@&var1 GF@&var2" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(51, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 break;
