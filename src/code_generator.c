@@ -142,8 +142,8 @@ bool gen_while_eval() {
     PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, cnt.while_cnt);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
 
-    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
 	return true;
 }
 
