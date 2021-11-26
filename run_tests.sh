@@ -29,7 +29,9 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ "${help}" -eq 1 ]; then
+    echo "MACOS"
     echo "./run_tests.sh --code_generator"
+    echo "UBUNTU"
     echo "./run_tests.sh --code_generator > without_errors_output.out"
     exit 1
 fi
