@@ -537,6 +537,7 @@ bool is_write();
 "\njumpifeq $continue_end_op GF@&type1 GF@&type2"             \
 "\njumpifeq $continue_mid_op GF@&type1 string@float"          \
 "\ncall $retyping_var1"                                       \
+"\njump $continue_end_op"                                     \
 "\nlabel $continue_mid_op"                                    \
 "\ncall $retyping_var2"                                       \
 "\nlabel $continue_end_op"                                    \
