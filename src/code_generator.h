@@ -427,48 +427,6 @@ bool is_write();
 "\nreturn"
 
 
-#if 0
-"\nlabel $ord # ord(s : string, i : integer) : integer"\
-"\n# start"\
-"\npushframe	"\
-"\ncreateframe"\
-"\n"\
-"\n# logic"\
-"\ndefvar 		LF@ord$s"\
-"\ndefvar 		LF@ord$i"\
-"\ndefvar 		LF@ord$cmp"\
-"\ndefvar 		LF@ord$ret1"\
-"\ndefvar 		LF@ord$len"\
-"\n"\
-"\npushs LF@%0p"\
-"\ncall $check_is_nil"\
-"\npops LF@ord$s"\
-"\npushs LF@%1p"\
-"\ncall $check_is_nil"\
-"\npops LF@ord$i"\
-"\n"\
-"\nstrlen		LF@ord$len 		LF@ord$s"\
-"\n"\
-"\ngt 			LF@ord$cmp 		LF@ord$i 	LF@ord$len"\
-"\nJUMPIFEQ 	$ord_label_end 	LF@ord$cmp 	bool@true"\
-"\nlt 			LF@ord$cmp 		LF@ord$i 	int@0"\
-"\nJUMPIFEQ 	$ord_label_end2	LF@ord$cmp 	bool@true"\
-"\nlt 			LF@ord$cmp 		LF@ord$i	LF@ord$len"\
-"\nJUMPIFNEQ 	$ord_label_end2	LF@ord$cmp	bool@true"\
-"\n"\
-"\nstri2int 	LF@ord$ret1 LF@ord$s LF@ord$i"\
-"\n"\
-"\nlabel $ord_label_end"\
-"\npushs LF@ord$ret1"\
-"\npopframe"\
-"\nreturn"\
-"\n"\
-"\nlabel $ord_label_end2"\
-"\npushs nil@nil"\
-"\npopframe"\
-"\nreturn"
-#endif
-
 #define FUNC_CHR                                                        \
 "\nlabel $chr # chr(i : integer) : string"\
 "\n## start"\

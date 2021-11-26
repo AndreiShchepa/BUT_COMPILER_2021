@@ -6,18 +6,7 @@
  *                                  TODO
  *****************************************************************************/
 // TODO - check vars, params, if, while numbering - tests - redefinition
-// TODO - change if in func PRINT_FUNC else PRINT_MAIN
-// TODO - format params in func
-// TODO - not printing write("\n") - print only string@_  (empty string)
-// TODO - ascii spaces in strings (32)
-// TODO - clear stack
-// TODO - tointeger => return nil or exit 8 if arg nil?
-// TODO - string convert to ascii
-// TODO - muze byt v substr pouzita funkce clear
-// TODO - substr, ord, chr - i <= 0 is right???
-// TODO - while multi declaration
-// TODO - local a:integre = expre (rozdelit local a:integer)
-// TODO - todo idx from 1 in substr, ord
+// TODO - vypis ERROR 8 and 9 from ifjcode yes/no?
 
 
 /******************************************************************************

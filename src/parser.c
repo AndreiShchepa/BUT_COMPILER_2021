@@ -333,6 +333,7 @@ add_func_def:
         NEXT_NONTERM(args());
 
 		////////////////////////////////
+		cnt.param_cnt = 0;
 		CODE_GEN(gen_func_call_label); // call label
 		////////////////////////////////
 

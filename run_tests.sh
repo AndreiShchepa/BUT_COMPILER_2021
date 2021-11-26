@@ -21,7 +21,7 @@ in=""
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-    "*.tl")
+    *".tl")
         in="$1"
         ;;
     "--code_generator")
@@ -57,15 +57,9 @@ if [ "$name" == "teal_ok" ];then
 fi
 
 if [ "$code_generator" -eq 1 ]; then
+    eval "./start.sh --compile"
     if [ $(uname) == "Darwin" ];then
-        eval "./start.sh --clean --compile_to_lua --compile_to_ifjcode --compile"
-    fi
-
-    if [ "$in" != "" ]; then
-        lua_cmd="lua ${in%.*}.lua"
-        ifjcode_cmd="./ic21int ${in%.*}.ifjcode"
-        ret_val_lua=$(${lua_cmd})
-        ret_val_ifjcode=$($ifjcode_cmd)
+        eval "./start.sh --clean --compile_to_lua --compile_to_ifjcode"
     fi
 
     if [ $(uname) != "Darwin" ];then
@@ -85,16 +79,22 @@ if [ "$code_generator" -eq 1 ]; then
                     echo "${file}"
                 fi
             else
-                echo ""
-                echo "#############################################################################"
-                echo "${file}"
-                echo "LUA:"
-                eval "${lua_cmd}"
-                echo "-----------------------------------------------------------------------------"
-                echo "IFJCODE:"
-                eval "${ifjcode_cmd}"
-                echo "#############################################################################"
-                echo ""
+                ret_val_lua=$(${lua_cmd})
+                ret_val_ifjcode=$($ifjcode_cmd)
+                if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
+                    if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
+                        echo ""
+                        echo "#############################################################################"
+                        echo "${file}"
+                        echo "LUA:"
+                        eval "${lua_cmd}"
+                        echo "-----------------------------------------------------------------------------"
+                        echo "IFJCODE:"
+                        eval "${ifjcode_cmd}"
+                        echo "#############################################################################"
+                        echo ""
+                    fi
+                fi
             fi
         done
         cd .. || exit 1
