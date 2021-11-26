@@ -17,9 +17,13 @@ help=0
 
 code_generator=0
 only_names=0
+in=""
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
+    "*.tl")
+        in="$1"
+        ;;
     "--code_generator")
         code_generator=1
         ;;
@@ -57,21 +61,23 @@ if [ "$code_generator" -eq 1 ]; then
         eval "./start.sh --clean --compile_to_lua --compile_to_ifjcode --compile"
     fi
 
-    #if [ $(uname) != "Darwin" ];then
-    #    for file in *.tl; do
-    #        eval "lua ${file%.*}.lua > ${file%.*}.lua.out"
-    #        eval "./ic21int ${file%.*}.ifjcode > ${file%.*}.ifjcode.out"
-    #    done
-    #fi
+    if [ "$in" != "" ]; then
+        lua_cmd="lua ${in%.*}.lua"
+        ifjcode_cmd="./ic21int ${in%.*}.ifjcode"
+        ret_val_lua=$(${lua_cmd})
+        ret_val_ifjcode=$($ifjcode_cmd)
+    fi
 
     if [ $(uname) != "Darwin" ];then
         cd without_errors || exit 1
         for file in *.tl; do
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
+
             if [ "${file}" == "ifj21.tl" ]; then
-                break
+                continue
             fi
+
             if [ "$only_names" -eq 1 ]; then
                 ret_val_lua=$(${lua_cmd})
                 ret_val_ifjcode=$($ifjcode_cmd)
