@@ -13,6 +13,8 @@ rm_out="1>/dev/null 2>/dev/null"
 err_files=0
 err_memory=0
 all_files=0
+run_lua=0
+run_ifjcode=0
 help=0
 
 code_generator=0
@@ -29,6 +31,12 @@ while [ "$#" -gt 0 ]; do
         ;;
     "--only_names")
         only_names=1
+        ;;
+    "--run_lua")
+        run_lua=1
+        ;;
+    "--run_ifjcode")
+        run_ifjcode=1
         ;;
     "--help")
         help=1
@@ -68,20 +76,18 @@ if [ "$code_generator" -eq 1 ]; then
         for file in *.tl; do
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
+            [[ "$run_lua"     -eq 1 ]] && ret_val_lua=$(${lua_cmd})       || ret_val_lua=""
+            [[ "$run_ifjcode" -eq 1 ]] && ret_val_ifjcode=$($ifjcode_cmd) || ret_val_ifjcode=""
 
             if [ "${file}" == "ifj21.tl" ]; then
                 continue
             fi
 
             if [ "$only_names" -eq 1 ]; then
-                ret_val_lua=$(${lua_cmd})
-                ret_val_ifjcode=$($ifjcode_cmd)
                 if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
                     echo "${file}"
                 fi
             else
-                ret_val_lua=$(${lua_cmd})
-                ret_val_ifjcode=$($ifjcode_cmd)
                 if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
                     if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
                         echo ""
