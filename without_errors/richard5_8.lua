@@ -1,9 +1,7 @@
 require("ifj21")
-
-
 function main()
-   local id = nil - nil
-   write(id)
+   local a = nil
+   local b = ord(a, 1, 5)
 end
 
 main()

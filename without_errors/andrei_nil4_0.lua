@@ -8,6 +8,7 @@ function main()
    local nil_var
 
    local id = nil_var + 12
+   write(str, int, dec, id)
 end
 
 main()

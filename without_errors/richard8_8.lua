@@ -1,9 +1,7 @@
 require("ifj21")
-
-
 function main()
-   local id = nil - nil
-   write(id)
+   local a = nil
+   local b = tointeger(a)
 end
 
 main()

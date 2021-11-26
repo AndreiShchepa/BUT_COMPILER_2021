@@ -1,6 +1,3 @@
-require("ifj21")
-
-
 
 function f(x)
    if x < 10 then return x - 1

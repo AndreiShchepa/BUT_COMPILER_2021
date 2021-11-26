@@ -8,6 +8,7 @@ function main()
    local nil_var
 
    local id = dec / nil_var
+   write(id, str, int)
 end
 
 main()

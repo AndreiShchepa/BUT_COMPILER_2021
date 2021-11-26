@@ -1,4 +1,3 @@
-require("ifj21")
 function whitespaces()
 
 

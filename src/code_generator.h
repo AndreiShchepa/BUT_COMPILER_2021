@@ -516,6 +516,10 @@ bool is_write();
 "\npushs GF@&var2"                                              \
 "\nreturn"                                                      \
 "\nlabel $div_zero_error"                                       \
+"\ncreateframe"\
+"\ndefvar TF@%0p"\
+"\nmove TF@%0p string@ERROR\\0329:\\032Unexpected\\032zero\\032division.\\010"\
+"\ncall $write"                                                                \
 "\nexit int@9\n"
 
 

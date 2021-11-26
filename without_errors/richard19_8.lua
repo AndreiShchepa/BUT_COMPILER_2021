@@ -1,9 +1,8 @@
 require("ifj21")
 
-
 function main()
-   local id = nil - nil
-   write(id)
+   local a = nil
+   local b = (a) + 5 + 4
 end
 
 main()
