@@ -424,6 +424,8 @@ bool statement() {
 
 		///////////////////////////////////
         strcpy(cnt.func_name.str, item->key_id);
+        cnt.while_cnt_deep++;
+        cnt.in_while = true;
         CODE_GEN(gen_while_label);
 		///////////////////////////////////
 
@@ -446,6 +448,11 @@ bool statement() {
 
         ////////////////////
         CODE_GEN(gen_while_end);
+        cnt.while_cnt_deep--;
+        cnt.in_while = (cnt.while_cnt_deep == 0) ? false : true;
+        if (cnt.while_cnt_deep == 0) {
+            CODE_GEN(gen_concat_while_functions);
+        }
         ////////////////////
 
         deep--;
@@ -474,6 +481,7 @@ bool statement() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
+
 
         //FILL_TYPE(&tmp_var->data.var->type);
         FILL_TYPE(&tps_left);
@@ -683,7 +691,12 @@ bool type_expr() {
 
     NEXT_NONTERM(expression(false, false));
 
+    /////////////////////////
     CODE_GEN(gen_expression); //todo Andrej
+    while (!queue_isEmpty(queue_id)) {
+        CODE_GEN(gen_init_var);
+    }
+    /////////////////////////
 
     NEXT_NONTERM(other_exp());
 
@@ -819,7 +832,9 @@ bool init_assign() {
 
     ////////////////////////
     QUEUE_ADD_ID(tmp_var);      // todo Andrej
+    cnt.in_while = false;
     CODE_GEN(gen_def_var);      // todo Andrej
+    cnt.in_while = (cnt.while_cnt_deep == 0) ? false : true;
     CODE_GEN(gen_init_var);     // todo Andrej
     ////////////////////////
 
