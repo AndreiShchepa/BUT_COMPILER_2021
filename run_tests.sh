@@ -58,8 +58,9 @@ fi
 
 if [ "$code_generator" -eq 1 ]; then
     eval "./start.sh --compile"
+        eval "./start.sh --compile_to_ifjcode"
     if [ $(uname) == "Darwin" ];then
-        eval "./start.sh --clean --compile_to_lua --compile_to_ifjcode"
+        eval "./start.sh --clean --compile_to_lua"
     fi
 
     if [ $(uname) != "Darwin" ];then
