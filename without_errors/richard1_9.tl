@@ -2,7 +2,8 @@ require "ifj21"
 function main ()
 	local a : string = ""
 	local b : integer = 80
-	local c : integer = 80//#a
+	local c : integer = b//#a
+	c = b
 end
 
 main()

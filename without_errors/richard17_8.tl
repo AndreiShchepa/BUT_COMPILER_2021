@@ -6,6 +6,7 @@ function main ()
 	local f : string = "string"
 	if nil == f then
 		local b : string = ((a).."aaa")..nil
+		write(b)
 	else end
 
 end
