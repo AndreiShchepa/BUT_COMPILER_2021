@@ -51,23 +51,7 @@ bool str_add_char(string_t *s, const char c);
 bool str_copy_str(string_t *s_dst, const string_t *s_src);
 
 /*
- * @param s1 - dynamic string
- * @param s2 - other dynamic string
- * @return if      (s1 is equal to s2)     { 0 }
- *         else if (s1 is less than s2)    { <0 }
- *         else if (s1 is greater than s2) { >0 }
- */
-int str_cmp_str(const string_t *s1, const string_t *s2);
-
-
-/*
- * TODO
- */
-bool str_concat_str(string_t *s_dest, const string_t *s1, const string_t *s2);
-
-
-/*
- * TODO
+ * @brief Concatenate string s2 to string s1
  */
 bool str_concat_str2(string_t *s1, const char *s2);
 
@@ -79,11 +63,6 @@ bool str_concat_str2(string_t *s1, const char *s2);
  *         else if (s1 is greater than s2) { >0 }
  */
 int str_cmp_const_str(const string_t *s1, const char *s2);
-
-/*
- * @return Pointer to dynamic string
- */
-char *str_get_str(const string_t *s);
 
 /*
  * @return Length of dynamic string

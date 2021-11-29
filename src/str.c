@@ -88,29 +88,8 @@ bool str_copy_str(string_t *s_dst, const string_t *s_src) {
 	return true;
 }
 
-bool str_concat_str(
-		string_t *s_dest,
-		const string_t *s1,
-		const string_t *s2)
-{
-	if (!s1 || !s2 || !s1->str || !s2->str) {
-		return false;
-	}
-
-	if (!str_init(s_dest, s1->length + s2->length + 1)) {
-		return false;
-	}
-
-	s_dest->length = s1->length + s2->length;
-	memcpy(s_dest->str, s1->str, s1->length);
-	memcpy(s_dest->str + s1->length, s2->str, s2->length + 1);
-
-	return true;
-}
-
 bool str_concat_str2(string_t *s1, const char *s2) {
 	if (!s1 || !s1->str || !s2) {
-        err = INTERNAL_ERR;
         return false;
     }
 
@@ -118,7 +97,6 @@ bool str_concat_str2(string_t *s1, const char *s2) {
 
 	if (len+1 >= s1->alloc_size) {
 		if(!(s1->str = (char*)realloc(s1->str, s1->alloc_size*2))) {
-		    err = INTERNAL_ERR;
             return false;
 		}
 
@@ -131,16 +109,8 @@ bool str_concat_str2(string_t *s1, const char *s2) {
 	return true;
 }
 
-int str_cmp_str(const string_t *s1, const string_t *s2) {
-	return strcmp(s1->str, s2->str);
-}
-
 int str_cmp_const_str(const string_t *s1, const char *s2) {
 	return strcmp(s1->str, s2);
-}
-
-char *str_get_str(const string_t *s) {
-	return s->str;
 }
 
 int str_get_len(const string_t *s) {

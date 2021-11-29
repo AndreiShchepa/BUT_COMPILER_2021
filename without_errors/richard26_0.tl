@@ -9,9 +9,9 @@ function sconcatenuj( word1 : string,  word2 : string,  word3 : string,
 		local sentence : string = az_tu(word1, word2, word3, word4, word5, word6)
 		return sentence
 	end
-function main () 
+function main ()
 	local sentence : string = "AndreiJeNajvacsiFrajerNaSkole"
-	write(sentence, "\n") 
+	write(sentence, "\n")
 	local word5 : string = substr(sentence, 0, 5)
 	local word6 : string = substr(sentence, 6, 7)
 	local word1 : string = substr(sentence, 8, 15)
@@ -19,7 +19,7 @@ function main ()
 	local word3 : string = substr(sentence, 22, 23)
 	local word4 : string = substr(sentence, 24, 28)
 	local concatenate : string = sconcatenuj(word1, word2, word3, word4, word5, word6)
-	write(concatenate) 
+	write(concatenate)
 end
 
 main()
