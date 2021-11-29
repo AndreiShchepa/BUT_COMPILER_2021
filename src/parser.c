@@ -40,23 +40,6 @@ Queue* queue_args;
 Queue* queue_expr;
 
 
-
-#define CHECK_INTERNAL_ERR(COND, ret) \
-        do { \
-            if (COND) { \
-                err = INTERNAL_ERR; \
-                return ret; \
-            } \
-        } while(0);
-
-#define CHECK_SEM_DEF_ERR(COND) \
-        do { \
-            if (COND) { \
-                err = SEM_DEF_ERR; \
-                return false; \
-            } \
-        } while(0);
-
 #define FILL_TYPE(IDX) \
         do { \
             switch (token.keyword) { \

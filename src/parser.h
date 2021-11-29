@@ -26,6 +26,22 @@
     #define print_rule(s)
 #endif
 
+#define CHECK_INTERNAL_ERR(COND, ret) \
+        do { \
+            if (COND) { \
+                err = INTERNAL_ERR; \
+                return ret; \
+            } \
+        } while(0);
+
+#define CHECK_SEM_DEF_ERR(COND) \
+        do { \
+            if (COND) { \
+                err = SEM_DEF_ERR; \
+                return false; \
+            } \
+        } while(0);
+
 // Get next token and check for INTERNAL/SCANNER error
 #define NEXT_TOKEN() \
         err = get_next_token(&token); \
