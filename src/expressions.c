@@ -202,7 +202,7 @@ void print_stack_debug(List * list) {
                PrintElement->already_reduced);
         if(PrintElement->element_token.type == T_ID){
             printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
-        } else if (PrintElement->element_token.type == T_STRING){
+        } else if (PrintElement->element_token.type == T_STRING && !PrintElement->already_reduced) {
             printf("\tstring: \"%s\"\n", PrintElement->element_token.attr.id.str);
         } else {
             printf("\n");
@@ -274,7 +274,8 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if (DelElement->element_token.type == T_ID || DelElement->element_token.type == T_STRING) {
+        if (DelElement->element_token.type == T_ID ||
+           (DelElement->element_token.type == T_STRING && !DelElement->already_reduced)) {
             str_free(&DelElement->element_token.attr.id);
         }
 
