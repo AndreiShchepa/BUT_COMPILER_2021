@@ -4,9 +4,8 @@ function main ()
     --if nil == nil then else
     --end
 
-    local a : string = "aaaa
-aaa"
-    write(10000009)
+    local a : string = "aaaaaaa"
+    write(0000e-9)
 end
 
 main()
