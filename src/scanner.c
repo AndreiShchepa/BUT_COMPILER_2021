@@ -854,9 +854,9 @@ int scan_other_lexem(token_t *token) {
         case '*':
             token->type = T_MUL;
             break;
-        case '-':
+        /*case '-':
             token->type = T_MINUS;
-            break;
+            break;*/
         case '(':
             token->type = T_L_ROUND_BR;
             break;
