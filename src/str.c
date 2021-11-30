@@ -71,15 +71,15 @@ bool str_copy_str(string_t *s_dst, const string_t *s_src) {
 		return false;
 	}
 
-	if (s_src->length > s_dst->alloc_size) {
-		char *tmp;
+	if (s_src->length + 1 > s_dst->alloc_size) {
+        char *tmp;
 		tmp = realloc(s_dst->str, s_src->length + 1);
 		if (!tmp) {
 			return false;
 		}
 
 		s_dst->str = tmp;
-		s_dst->alloc_size = s_src->alloc_size;
+		s_dst->alloc_size = s_src->length + 1;
 	}
 
 	s_dst->length = s_src->length;
