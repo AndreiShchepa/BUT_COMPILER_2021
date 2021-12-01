@@ -93,7 +93,7 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_ID(IDX, KEY)                           \
         do {                                            \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
-            CHECK_SEM_DEF_ERR(!var);                    \
+            CHECK_SEM_DEF_ERR(!var);             \
             types_E[IDX] = var->data.var->type.str[0];  \
         } while(0)
 
@@ -435,11 +435,10 @@ bool Close(List * list) {
         }
 
         if (Ei->element_token.type == T_ID) {
-            //printf("Tu som: %s type %d\n", Ei->element_token.attr.id.str, Ei->element_token.type);
             GET_TYPE_ID(0, Ei->element_token.attr.id.str);
             // Change type from X (ID) into float / int / string
             Ei->type = var->data.var->type.str[0];
-            //printf("0:Funkcia mi vratila typ %c\n", types_E[0]);
+
         }
         else {
             GET_TYPE_TERM(0);
@@ -770,7 +769,6 @@ start_expr:
     print_stack_expr(list);
 
 end_expr:
-
     // We are reducing the expression by using our rules
     while (Close(list)) {
         print_stack_expr(list);
@@ -783,6 +781,7 @@ end_expr:
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
+
         ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT    ? 'I':
                                        list->lastElement->element_token.type == T_STRING ? 'S':
                                        list->lastElement->element_token.type == T_FLOAT  ? 'F':

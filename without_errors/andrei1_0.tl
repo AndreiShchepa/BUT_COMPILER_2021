@@ -1,7 +1,8 @@
 require "ifj21"
 
 function foo() : string
-    return
+    local a : string = "str"
+    return a
 end
 
 function main ()

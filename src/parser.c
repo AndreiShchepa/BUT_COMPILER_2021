@@ -150,7 +150,7 @@ Queue* queue_expr;
 
 bool type_compatibility() {
     if (tmp_func != NULL && tmp_func->data.func->func_write) {
-        for (long unsigned int i = 0; i < tps_right.length; i++) {
+        for (int i = 0; i < str_get_len(&tps_right); i++) {
             if (tps_right.str[i] == 'U') {
                 err = SEM_FUNC_ERR;
                 return false;
@@ -160,12 +160,12 @@ bool type_compatibility() {
         return true;
     }
 
-    if (tps_left.length > tps_right.length) {
+    if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
         err = SEM_FUNC_ERR;
         return false;
     }
     else {
-        for (long unsigned int i = 0; i < tps_left.length; i++) {
+        for (int i = 0; i < str_get_len(&tps_left); i++) {
             if ((tps_left.str[i] == tps_right.str[i]) ||
                 (tps_left.str[i] == 'F' && tps_right.str[i] == 'I') ||
                 (tps_right.str[i] == 'N'))
@@ -204,12 +204,6 @@ bool prog() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        // check if function with the same name has already existed
-        if (FIND_VAR_IN_SYMTAB) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
-
         // Allocate structure for decl_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->decl == true, add_func_decl);
 add_func_decl:
@@ -229,12 +223,17 @@ add_func_decl:
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
+
+        // fill decl_func.argv
         NEXT_NONTERM(type_params());
+
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
+
+        // fill decl_func.rets
         NEXT_NONTERM(type_returns());
 
-        // check if decl a def of function have the same tpes of args and rets
+        // check if decl a def of function have the same types of args and rets
         CHECK_TPS_DEF_DECL_FUNCS();
 
         return prog();
@@ -250,12 +249,6 @@ add_func_decl:
         strcpy(cnt.func_name.str, token.attr.id.str);
         CODE_GEN(gen_func_start, token.attr.id.str);
         //////////////
-
-        // check if function with the same name has already existed
-        if (FIND_VAR_IN_SYMTAB) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
 
         // Allocate structure for def_function in symtable //
         ADD_FUNC_TO_SYMTAB(item->data.func->def == true, add_func_def);
@@ -506,11 +499,6 @@ bool statement() {
         NEXT_NONTERM(type());
         NEXT_NONTERM(def_var());
 
-        //ALLOC_VAR_IN_SYMTAB(&left_new_var);
-        //ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
-        //CHECK_INTERNAL_ERR(!ret, false);
-        //str_clear(&tps_left);
-
         return statement();
     }
     else if (token.keyword == KW_RETURN) {
@@ -585,11 +573,6 @@ bool work_with_id() {
             STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                          &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
-            // GEN_CODE //
-            //strcpy(cnt.func_call.str, tmp_func->key_id);
-            //QUEUE_ADD_ID(tmp_func);
-            //////////////
-
             NEXT_TOKEN();
 
             NEXT_NONTERM(args());
@@ -626,7 +609,6 @@ bool work_with_id() {
     QUEUE_ADD_ID(tmp_var); // todo Andrej
     /////////////////////////
 
-    //NEXT_TOKEN();
     NEXT_NONTERM(vars());
 
     return true;
@@ -668,6 +650,7 @@ bool type_expr() {
     tmp_func = FIND_FUNC_IN_SYMTAB;
     int  num_var = 0;
     int  num_return = 0;
+
     if (token.type == T_ID && tmp_func) {
         print_rule("20. <type_expr> -> id_func ( <args> )");
 
@@ -676,38 +659,40 @@ bool type_expr() {
         num_var = str_get_len(&tps_left);
 
         CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
+
         num_return = str_get_len(tmp_func->data.func->def == true ? &tmp_func->data.func->def_attr.rets : &tmp_func->data.func->decl_attr.rets);
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
-        ///////////////////////////
+        // CODE_GEN //
         CODE_GEN(gen_func_call_start);
         strcpy(cnt.func_call.str, token.attr.id.str);
         QUEUE_ADD_ID(tmp_func);
-        ///////////////////////////
+        //////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(args());
 
+        NEXT_NONTERM(args());
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
 
-        /////////////////
+        // CODE_GEN //
         cnt.param_cnt = 0;
         CODE_GEN(gen_func_call_label);
-        /////////////////
+        //////////////
+
         NEXT_TOKEN();
 
-        //////////////////////
+        // CODE_GEN //
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
         }
         while(!queue_isEmpty(queue_id))
             CODE_GEN(gen_init_var);
-        //////////////////////
+        //////////////
 
         return true;
     }
@@ -716,17 +701,18 @@ bool type_expr() {
 
     NEXT_NONTERM(expression(false, false));
 
-    /////////////////////////
+    // CODE_GEN //
     CODE_GEN(gen_expression); //todo Andrej
-
-    /////////////////////////
+    //////////////
 
     NEXT_NONTERM(other_exp());
-    /////////////////////////
+
+    // CODE_GEN //
     while (!queue_isEmpty(queue_id)) {
         CODE_GEN(gen_init_var);
     }
-    /////////////////////////
+    //////////////
+
     if (str_get_len(&tps_left) > str_get_len(&tps_right)) {
         err = SEM_OTHER_ERR;
         return false;
@@ -744,7 +730,7 @@ bool other_exp() {
         NEXT_TOKEN();
 
         bool is_return = false;
-        if(queue_isEmpty(queue_expr)){ // is return
+        if (queue_isEmpty(queue_expr)) { // is return
             is_return = true;
         }
 
@@ -753,11 +739,12 @@ bool other_exp() {
         cnt.ret_vals++;
         CODE_GEN(gen_expression); //todo Andrej
 
-        if(!is_return){
+        if (!is_return) {
             CODE_GEN(gen_init_var);  //todo Andrej
         }
+
         return other_exp();
-    } else if(len > cnt.ret_vals+1 && len != 0) { //        return  || return 1, 2 (3)
+    } else if (len > cnt.ret_vals + 1 && len != 0) { //        return  || return 1, 2 (3)
         cnt.ret_vals++;
         gen_retval_nil();
         other_exp();
@@ -772,12 +759,6 @@ bool def_var() {
         print_rule("24. <def_var> -> = <init_assign>");
 
         NEXT_TOKEN();
-
-        // variable has initial value //
-        //tmp_var->data.var->val_nil = false;
-        //////////////////////////////
-//        QUEUE_ADD_ID(tmp_var); //todo Andrej
-        //////////////////////////////
 
         return init_assign();
     }
@@ -817,26 +798,29 @@ bool init_assign() {
         STR_COPY_STR(&tps_left,                           tmp_func->data.func->def == true,
                      &tmp_func->data.func->def_attr.argv, &tmp_func->data.func->decl_attr.argv);
 
-        ///////////////////////////
+        // GEN_CODE //
         CODE_GEN(gen_func_call_start);
         strcpy(cnt.func_call.str, token.attr.id.str);
         QUEUE_ADD_ID(tmp_func);
-        ///////////////////////////
+        //////////////
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_L_ROUND_BR);
         NEXT_TOKEN();
-        NEXT_NONTERM(args());
 
+        NEXT_NONTERM(args());
+        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
+
+        // create new variable in a local table of symbols
         ALLOC_VAR_IN_SYMTAB(&left_new_var);
         tmp_var->data.var->type.str[0] = left_new_var_type;
-        CHECK_COMPATIBILITY(SEM_FUNC_ERR);
         str_clear(&left_new_var);
+        left_new_var_type = '\0';
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
         NEXT_TOKEN();
 
-		/////////////////////////
+		// GEN_CODE //
 		cnt.param_cnt = 0;
         CODE_GEN(gen_func_call_label);
         for(int i = num_return - num_var; i > 0; i--){
@@ -847,26 +831,31 @@ bool init_assign() {
         while(!queue_isEmpty(queue_id)){ // todo andrej
             CODE_GEN(gen_init_var);
         }
-		/////////////////////////
+		//////////////
 
         return true;
     }
 
     print_rule("27. <init_assign> -> <expression>");
     NEXT_NONTERM(expression(false, false));
+
     CODE_GEN(gen_expression);     // todo Andrej
+
+    // add new declare variable to local table of symbols
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
 
-    ////////////////////////
+    // GEN_CODE //
     QUEUE_ADD_ID(tmp_var);      // todo Andrej
     cnt.in_while = false;
     CODE_GEN(gen_def_var);      // todo Andrej
     cnt.in_while = (cnt.while_cnt_deep == 0) ? false : true;
     CODE_GEN(gen_init_var);     // todo Andrej
-    ////////////////////////
+    //////////////
 
+    // fill type of new declare variable
     ret = str_copy_str(&tmp_var->data.var->type, &tps_left);
     CHECK_INTERNAL_ERR(!ret, false);
+
     CHECK_COMPATIBILITY(SEM_TYPE_COMPAT_ERR);
     str_clear(&left_new_var);
 
@@ -878,11 +867,11 @@ bool type_returns() {
         print_rule("28. <type_returns> -> : <type> <other_types_returns>");
 
         NEXT_TOKEN();
-        // add type of param to function in symtab //
+        // add type of param to function in symtab
         FILL_TYPE(working_func == 1 ?
                   &item->data.func->def_attr.rets :
                   &item->data.func->decl_attr.rets);
-        /////////////////////////////////////////////
+
         NEXT_NONTERM(type());
 
         return other_types_returns();
@@ -897,11 +886,11 @@ bool other_types_returns() {
         print_rule("30. <other_types_returns> -> , <type> <other_types_returns>");
 
         NEXT_TOKEN();
-        // add type of param to function in symtab //
+        // add type of param to function in symtab
         FILL_TYPE(working_func == 1 ?
                   &item->data.func->def_attr.rets :
                   &item->data.func->decl_attr.rets);
-        /////////////////////////////////////////////
+
         NEXT_NONTERM(type());
 
         return other_types_returns();
@@ -916,12 +905,11 @@ bool other_types_params() {
         print_rule("32. <other_types_params> -> , <type> <other_types_params>");
 
         NEXT_TOKEN();
-        // add type of param to decl_function in symtab //
+
+        // add type of param to decl_function in symtab
         if (working_func == 0) {
             FILL_TYPE(&item->data.func->decl_attr.argv);
         }
-        //////////////////////////////////////////////////
-
         NEXT_NONTERM(type());
 
         return other_types_params();
@@ -935,21 +923,13 @@ bool params() {
     if (token.type == T_ID) {
         print_rule("34. <params> -> id : <type> <other_params>");
 
-        if (FIND_FUNC_IN_SYMTAB) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
 
-        // add type of param to def_function in symtab //
-        if (working_func == 1) {
-            FILL_TYPE(&item->data.func->def_attr.argv);
-        }
-
+        FILL_TYPE(&item->data.func->def_attr.argv);
         FILL_TYPE(&tmp_var->data.var->type);
 
         NEXT_NONTERM(type());
@@ -960,11 +940,6 @@ bool params() {
 
         return other_params();
     }
-    //	CODE_GEN(gen_params);
-
-    //if (working_func == 1) {
-    //    FILL_TYPE(&item->data.func->def_attr.argv);
-    //}
 
     print_rule("35. <params> -> e");
     return true;
@@ -977,10 +952,6 @@ bool other_params() {
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
 
-        if (FIND_FUNC_IN_SYMTAB) {
-            err = SEM_DEF_ERR;
-            return false;
-        }
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
         QUEUE_ADD_ID(tmp_var);
 
@@ -988,12 +959,7 @@ bool other_params() {
         EXPECTED_TOKEN(token.type == T_COLON);
         NEXT_TOKEN();
 
-        // add type of param to def_function in symtab //
-        if (working_func == 1) {
-            FILL_TYPE(&item->data.func->def_attr.argv);
-        }
-        /////////////////////////////////////////////////
-
+        FILL_TYPE(&item->data.func->def_attr.argv);
         FILL_TYPE(&tmp_var->data.var->type);
         NEXT_NONTERM(type());
 
@@ -1005,11 +971,10 @@ bool other_params() {
 }
 
 bool type_params() {
-    // add type of param to decl_function in symtab //
+    // add type of param to decl_function in symtab
     if (working_func == 0) {
         FILL_TYPE(&item->data.func->decl_attr.argv);
     }
-    //////////////////////////////////////////////////
 
     if (type()) {
         print_rule("38. <type_params> -> <type> <other_types_params>");
@@ -1050,8 +1015,8 @@ bool param_to_func() {
         ///////////////////////////
 
         // add to tps_right types of tokens
-        //printf("id with name %s has type %c\n", tmp_var->key_id, tmp_var->data.var->type.str[0]);
         ret = str_add_char(&tps_right, tmp_var->data.var->type.str[0]);
+        CHECK_INTERNAL_ERR(!ret, false);
     }
     else if (TOKEN_TERM()) {
         print_rule("43. <param_to_func> -> <term>");
@@ -1061,14 +1026,12 @@ bool param_to_func() {
         return false;
     }
 
-    // CHECK_INTERNAL_ERR(!ret, false);
-
     NEXT_TOKEN();
     return true;
 }
 
 bool term() {
-    print_rule("44. 45. 46. 47. <term> -> str|int|float|nil");
+    print_rule("44. 45. 46. 47. <term> -> str|int|num|nil");
     // add to tps_right types of tokens
     ret = str_add_char(&tps_right, token.type == T_INT    ? 'I' :
                                    token.type == T_STRING ? 'S' :
