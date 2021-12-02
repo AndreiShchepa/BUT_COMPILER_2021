@@ -127,13 +127,11 @@ char Rules[][LENGTH_OF_RULES] = {
                 find->element_token.type = T_NONE;                               \
                 find->type = 'C';                                                \
             }                                                                    \
-            else if (strcmp(types_E, "SS") == 0 || strcmp(types_E, "SN") == 0 || \
-                     strcmp(types_E, "NS") == 0) {                               \
+            else if (strcmp(types_E, "SS") == 0) {                               \
                 find->element_token.type = T_STRING;                             \
                 find->type = 'S';                                                \
             }                                                                    \
-            else if (strcmp(types_E, "II") == 0 || strcmp(types_E, "IN") == 0 || \
-                     strcmp(types_E, "NI") == 0) {                               \
+            else if (strcmp(types_E, "II") == 0) {                               \
                 find->element_token.type = T_INT;                                \
                 find->type = 'I';                                                \
             }                                                                    \
@@ -144,41 +142,33 @@ char Rules[][LENGTH_OF_RULES] = {
         } while(0)
 
 
-#define CHECK_CONC_LENGTH()                                       \
-        do {                                                      \
-            if (strcmp(types_E, "SS") && strcmp(types_E, "NN") && \
-                strcmp(types_E, "NS") && strcmp(types_E, "SN"))   \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_CONC_LENGTH()                                         \
+        do {                                                        \
+            if (strcmp(types_E, "SS"))                              \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
-#define CHECK_COMPARISON()                                        \
-        do {                                                      \
-            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
-                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
-                strcmp(types_E, "NN") && strcmp(types_E, "NI") && \
-                strcmp(types_E, "IN") && strcmp(types_E, "NF") && \
-                strcmp(types_E, "FN") && strcmp(types_E, "NS") && \
-                strcmp(types_E, "SN") && strcmp(types_E, "SS"))   \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_COMPARISON()                                          \
+        do {                                                        \
+            if (!strcmp(types_E, "SI") || !strcmp(types_E, "IS") || \
+                !strcmp(types_E, "FS") || !strcmp(types_E, "SF"))   \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
-#define CHECK_NUMBER()                                            \
-        do {                                                      \
-            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
-                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
-                strcmp(types_E, "NN") && strcmp(types_E, "NI") && \
-                strcmp(types_E, "IN") && strcmp(types_E, "NF") && \
-                strcmp(types_E, "FN"))                            \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_NUMBER()                                              \
+        do {                                                        \
+            if (strcmp(types_E, "II") && strcmp(types_E, "IF") &&   \
+                strcmp(types_E, "FI") && strcmp(types_E, "FF"))     \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
 #define FIRST_SYMBOL_NO_IN_EXPR                                 \
@@ -470,6 +460,11 @@ bool Close(List * list) {
                 // If we are doing comparison rules
             }
             else if (rule >= 8 && rule <= 13) {
+                // Special case where we only allow value nil with comparison == and ~=
+                if(rule != 12 && rule != 13 && (Ei->type == 'N' || Ej->type == 'N')){
+                    err = SEM_ARITHM_REL_ERR;
+                    return false;
+                }
                 CHECK_COMPARISON();
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter
@@ -482,8 +477,7 @@ bool Close(List * list) {
                 CHECK_NUMBER();
                 // Special case where we are trying to divide with rule
                 // for integers and the values are not integers
-                if (rule == 6 && strcmp(types_E, "II") && strcmp(types_E, "IN") &&
-                                strcmp(types_E, "NI") && strcmp(types_E, "NN")){
+                if (rule == 6 && strcmp(types_E, "II")){
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
