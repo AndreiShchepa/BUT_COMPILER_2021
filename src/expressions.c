@@ -154,7 +154,8 @@ char Rules[][LENGTH_OF_RULES] = {
 #define CHECK_COMPARISON()                                          \
         do {                                                        \
             if (!strcmp(types_E, "SI") || !strcmp(types_E, "IS") || \
-                !strcmp(types_E, "FS") || !strcmp(types_E, "SF"))   \
+                !strcmp(types_E, "FS") || !strcmp(types_E, "SF") || \
+                types_E[0] == 'C'      || types_E[1] == 'C'    )    \
             {                                                       \
                 err = SEM_ARITHM_REL_ERR;                           \
                 return false;                                       \
