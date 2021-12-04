@@ -16,8 +16,8 @@
  * Scanner slúži pre lexikálnu analýzu a v jeho rozhraní je zadefinovaná čásť kodu pod menom
  * NEXT_TOKEN() v ktorom voláme funkciu get_next_token(&token). Táto funkcia zo vstupu
  * načíta jeden lexém pomocou konečnáho automatu, určí jeho typ, keyword, hodnotu 
- * alebo meno premennej, či obsah stringu a uloží do globálneho token cez pointer ktorý ukazuje
- * na štruktúru s hodnotami tokenu.
+ * alebo meno premennej, či obsah stringu a uloží do globálneho tokenu cez pointer ktorý ukazuje
+ * na štruktúru s hodnotami daného globálneho tokenu.
  */
 •precedenčná syntaktická analýza
     •zdola hore, výrazy
