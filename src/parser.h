@@ -81,161 +81,174 @@ extern int err;
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern arr_symtbs_t local_symtbs;
+
 /*
  * @brief process start of the code
  *
- * 1. <prolog> -> require term_str <prog>
+ * 1. <prolog> -> require t_string <prog>
  */
 bool prolog();
 
 /*
  * @brief process all rules start with nonterminal <prog>
  *
- * 2. <prog> -> GLOBAL ID : FUNCTION ( <type_params> ) <type_returns> <prog>
- * 3. <prog> -> FUNCTION ID ( <params> ) <type_returns> <statement> <return_type> END <prog>
- * 4. <prog> -> ID_FUNC ( <args> ) <prog>
+ * 2. <prog> -> GLOBAL ID : FUNCTION ( <arg_T> ) <ret_T> <prog>
+ * 3. <prog> -> FUNCTION ID ( <arg> ) <ret_T> <stmt> END <prog>
+ * 4. <prog> -> ID ( <param> ) <prog>
  * 5. <prog> -> EOF
  */
 bool prog();
 
 /*
+ * @brief process all possible types of variables as arguments in functions
+ *
+ * 6. <arg_T> -> <type> <next_arg_T>
+ * 7. <arg_T> -> e
+ */
+bool arg_T();
+
+/*
+ * @brief process all possible types of variables in function arguments
+ *
+ * 8. <next_arg_T> -> , <type> <next_arg_T>
+ * 9. <next_arg_T> -> e
+ */
+bool next_arg_T();
+
+/*
+ * @brief process all possible types of variables in function return
+ *
+ * 10. <ret_T> -> : <type> <next_ret_T>
+ * 11. <ret_T> -> e
+ */
+bool ret_T();
+
+/*
+ * @brief process all possible types of variables in function return
+ *
+ * 12. <next_ret_T> -> , <type> <next_ret_T>
+ * 13. <next_ret_T> -> e
+ */
+bool next_ret_T();
+
+/*
+ * @brief process params as arguments for function
+ *
+ * 14. <arg> -> ID : <type> <next_arg>
+ * 15. <arg> -> e
+ */
+bool arg();
+
+/*
+ * @brief process params as arguments for function
+ *
+ * 16. <next_arg> -> , ID : <type> <next_arg>
+ * 17. <next_arg> -> e
+ */
+bool next_arg();
+
+/*
  * @brief process all possible types of variables
  *
- * 6. <type> -> integer
- * 7. <type> -> number
- * 8. <type> -> string
- * 9. <type> -> nil
+ * 18. <type> -> integer
+ * 19. <type> -> number
+ * 20. <type> -> string
+ * 21. <type> -> nil
  */
 bool type();
 
 /*
  * @brief process all rules start with nonterminal <statement>
  *
- * 10. <statement> -> IF <expression> THEN <statement> ELSE <statement> END <statement>
- * 11. <statement> -> WHILE <expression> DO <statement> END <statement>
- * 12. <statement> -> LOCAL ID_VAR : <type> <def_var> <statement>
- * 13. <statement> -> ID_FUNC ( <args> ) <statement>
- * 14. <statement> -> ID_VAR <vars> <statement>
- * 15. <statement> -> RETURN <expression> <other_exp> <statement>
- * 16. <statement> -> e
+ * 22. <stmt> -> IF <expr> THEN <stmt> ELSE <stmt> END <stmt>
+ * 23. <stmt> -> WHILE <expr> DO <stmt> END <stmt>
+ * 24. <stmt> -> LOCAL ID : <type> <def_var> <stmt>
+ * 25. <stmt> -> RETURN <expr> <next_exp> <stmt>
+ * 26. <stmt> -> ID <fork_id> <stmt>
+ * 27. <stmt> -> e
  */
-bool statement();
-
-bool work_with_id();
-
-/*
- * @brief process rules for multiply assigning
- *
- * 17. <vars> -> , ID_VAR <vars>
- * 18. <vars> -> = <type_expr>
- */
-bool vars();
-
-/*
- * @brief process rules for assigning
- *
- * 19. <type_expr> -> ID_FUNC ( <args> )
- * 20. <type_expr> -> <expression> <other_exp>
- */
-bool type_expr();
-
-/*
- * @brief process myltiply assigning
- *
- * 21. <other_exp> -> , <expression> <other_exp>
- * 22. <other_exp> -> e
- */
-bool other_exp();
+bool stmt();
 
 /*
  * @brief process rules for definition of variables
  *
- * 23. <def_var> -> <init_assign>
- * 24. <def_var> -> e
+ * 28. <def_var> -> = <one_assign>
+ * 29. <def_var> -> e
  */
 bool def_var();
 
 /*
  * @brief process rules for the first initializing of variables
  *
- * 25. <init_assign> -> ID_FUNC ( <args> )
- * 26. <init_assign> -> <expression>
+ * 30. <one_assign> -> ID ( <param> )
+ * 31. <one_assign> -> <expr>
  */
-bool init_assign();
-
-/*
- * @brief process all possible types of variables in function return
- *
- * 27. <type_returns> -> : <type> <other_types_returns>
- * 28. <type_returns> -> e
- */
-bool type_returns();
-
-/*
- * @brief process all possible types of variables in function return
- *
- * 29. <other_types_returns> -> , <type> <other_types_returns>
- * 30. <other_types_returns> -> e
- */
-bool other_types_returns();
-
-/*
- * @brief process all possible types of variables in function arguments
- *
- * 31. <other_types_params> -> , <type> <other_types_params>
- * 32. <other_types_params> -> e
- */
-bool other_types_params();
-
-/*
- * @brief process params as arguments for function
- *
- * 33. <params> -> e
- * 34. <params> -> ID : <type> <other_params>
- */
-bool params();
-
-/*
- * @brief process params as arguments for function
- *
- * 35. <other_params> -> , ID : <type> <other_params>
- * 36. <other_params> -> e
- */
-bool other_params();
-
-/*
- * @brief process all possible types of variables as arguments in functions
- *
- * 37. <type_params> -> <type> <other_types_params>
- * 38. <type_params> -> e
- */
-bool type_params();
+bool one_assign();
 
 /*
  * @brief process all possible args
  *
- * 39. <args> -> <param_to_func> <other_args>
- * 40. <args> -> e
+ * 32. <param> -> <param_val> <next_param>
+ * 33. <param> -> e
  */
-bool args();
+bool param();
 
 /*
  * @brief process args
  *
- * 41. <param_to_func> -> ID_VAR
- * 42. <param_to_func> -> TERM
+ * 34. <param_val> -> ID
+ * 35. <param_val> -> <term>
  */
-bool param_to_func();
+bool param_val();
 
+/*
+ *
+ * 36. <term> -> t_string
+ * 37. <term> -> t_integer
+ * 38. <term> -> t_number
+ * 39. <term> -> nil
+ */
 bool term();
 
 /*
  * @brief process all possible other args
  *
- * 43. <other_args> -> , <param_to_func> <other_args>
- * 44. <other_args> -> e
+ * 40. <next_param> -> , <param_val> <next_param>
+ * 41. <next_param> -> e
  */
-bool other_args();
+bool next_param();
+
+/*
+ * @brief process multiply expressions
+ *
+ * 42. <next_expr> -> , <expr> <next_expr>
+ * 43. <next_expr> -> e
+ */
+bool next_expr();
+
+/*
+ * @brief
+ *
+ * 44. <fork_id> -> ( <param> )
+ * 45. <fork_id> -> <next_id>
+ */
+bool fork_id();
+
+/*
+ * @brief process rules for multiply assigning
+ *
+ * 46. <next_id> -> , ID <next_id>
+ * 47. <next_id> -> = <mult_assign>
+ */
+bool next_id();
+
+/*
+ * @brief process rules for assigning
+ *
+ * 48. <mult_assign> -> ID ( <param> )
+ * 49. <mult_assign> -> <expr> <next_expr>
+ */
+bool mult_assign();
 
 /*
  * @brief get first token and start the parser
