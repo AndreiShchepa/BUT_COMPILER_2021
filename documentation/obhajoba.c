@@ -6,7 +6,7 @@
  */
 •štruktúra projektu
 /**
- * Našu implementáciu je možné rozdeliť do 4 samostatných modulov: scanner, 
+ * Našu implementáciu je možné rozdeliť do 5 samostatných modulov: scanner, 
  * precedenčná syntaktická analýza, parser, generátor kódu a pomocné dátové štruktúry.
  * Analýzu vykonávame v jedinom priechode vstupu.
  */
