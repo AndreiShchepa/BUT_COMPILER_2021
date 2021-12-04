@@ -657,7 +657,7 @@ void Deallocate(List * list) {
     }
 }
 
-bool expression(bool bool_condition, bool bool_empty) {
+bool expr(bool bool_condition, bool bool_empty) {
     (void)bool_condition;
     bool ret;
     char data[3] = {"$"};
