@@ -41,7 +41,6 @@ typedef enum states {
     START,                  // state  for starting
     I1,                     // state  for identifier scanning
     N1, N2, N3, N4, N5, N6, // states for number scanning
-                        N7,
 
     S1, S2, S3, S4, S5, S6, // states for string scanning
       S7, S8, S9, S10, S11,
