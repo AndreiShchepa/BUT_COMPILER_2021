@@ -27,8 +27,8 @@
  * Precedenčná syntaktická analýza je modul ktorý zaisťuje spracovanie výrazov metódou zdola hore.
  * Vo svojom rozhraní obsahuje expression(), ktorú volá parser, ked chce precedenčnej analýze predať
  * riadenie vo chvíli, kedy očakáva výraz. Postupne spracováva tokeny, ktoré volá skrz časť kodu
- * definovanú pod meno GET_TOKEN v ktorej sa nachádza funkcie get_next_token a pomocou precedenčnej 
- * tabuľky symbolov určuje precedenciu dané výrazy redukuje podľa pravidiel.
+ * definovanú pod meno GET_TOKEN v ktorej sa nachádza funkcia get_next_token a pomocou precedenčnej 
+ * tabuľky symbolov určuje precedenciu a dané výrazy redukuje podľa pravidiel.
  * Pokiaľ rozhranie expression narazí na dva po sebe idúce ***?neterminály?*** predá riadenie späť
  * parseru ktorý zaručí kontrolu či sa jedná o koniec výrazu alebo chybný zápis výrazu s dvomi
  * **?i?** hneď po sebe. 
@@ -52,7 +52,7 @@
  */
 •prostredie
 /**
- * Programovali jsme v prostredí Clionu s aktuálnou verziou gcc na linux mint a ubuntu
+ * Programovali sme v prostredí Clionu s aktuálnou verziou gcc na linux mint a ubuntu
  * a používali sme verzovací systém git spolu s portálom GitHub. 
  */
 •komunikácia
