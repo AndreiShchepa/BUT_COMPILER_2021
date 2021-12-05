@@ -12,14 +12,26 @@ function sconcatenuj( word1 : string,  word2 : string,  word3 : string,
 function main ()
     local sentence : string = "AndreiJeNajvacsiFrajerNaSkole"
     write(sentence, "\n")
-    local word5 : string = substr(sentence, 0, 5)
-    local word6 : string = substr(sentence, 6, 7)
-    local word1 : string = substr(sentence, 8, 15)
-    local word2 : string = substr(sentence, 16, 21)
-    local word3 : string = substr(sentence, 22, 23)
-    local word4 : string = substr(sentence, 24, 28)
+    local word1 : string = substr(sentence, 1, 6)
+    write(word1, "\n")
+
+    local word2 : string = substr(sentence, 7, 8)
+    write(word2, "\n")
+
+    local word3 : string = substr(sentence, 9, 16)
+    write(word3, "\n")
+
+    local word4 : string = substr(sentence, 17, 22)
+    write(word4, "\n")
+
+    local word5 : string = substr(sentence, 23, 24)
+    write(word5, "\n")
+
+    local word6 : string = substr(sentence, 25, 29)
+    write(word6, "\n")
+
     local concatenate : string = sconcatenuj(word1, word2, word3, word4, word5, word6)
-    write(concatenate)
+    write(concatenate, "\n")
 end
 
 main()

@@ -253,7 +253,7 @@ int scan_number(token_t *token) {
         token->type = T_FLOAT;
     }
     else {
-        if ((counter_0 == 2 && str_get_len(&token->attr.id.str) != 2) ||  counter_0 > 2) {
+        if ((counter_0 == 2 && str_get_len(&token->attr.id) != 2) ||  counter_0 > 2) {
             return SCANNER_ERR;
         }
 
