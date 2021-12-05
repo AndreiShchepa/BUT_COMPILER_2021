@@ -1,7 +1,8 @@
 require "ifj21"
 
 function main()
-    local id : integer = 1 - (2 + 9) + nil
+    local a : integer
+    local id : integer = 1 - (2 + 9) + a
     while do end
 end
 

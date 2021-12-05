@@ -15,9 +15,9 @@ end
 function g(x : integer) : integer
   if x > 0 then
     write("calling f with ", x, "\n")
-    local x : integer = f(x)  -- pøekryji parametr x, ale a po zavolání f(x) [Teal varuje!]
+    local x : integer = f(x)  -- pÃ¸ekryji parametr x, ale aÂ po zavolÃ¡nÃ­ f(x) [Teal varuje!]
     return x
-  else return 200 end  -- proè musí bıt pøed end bílı znak?
+  else return 200 end  -- proÃ¨ musÃ­ bÃ½t pÃ¸ed end bÃ­lÃ½ znak?
 end
 
 function main()

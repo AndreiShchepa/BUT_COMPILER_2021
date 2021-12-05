@@ -83,7 +83,7 @@ int ret;
 #endif
 
 #if !defined(DEBUG_EXPR) && !defined(DEBUG_RULES)
-if (err == NO_ERR) {
+if (ret == NO_ERR) {
     gen_testing_helper();
 }
 #endif

@@ -93,7 +93,7 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_ID(IDX, KEY)                           \
         do {                                            \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
-            CHECK_SEM_DEF_ERR(!var);                    \
+            CHECK_SEM_DEF_ERR(!var);             \
             types_E[IDX] = var->data.var->type.str[0];  \
         } while(0)
 
@@ -127,13 +127,11 @@ char Rules[][LENGTH_OF_RULES] = {
                 find->element_token.type = T_NONE;                               \
                 find->type = 'C';                                                \
             }                                                                    \
-            else if (strcmp(types_E, "SS") == 0 || strcmp(types_E, "SN") == 0 || \
-                     strcmp(types_E, "NS") == 0) {                               \
+            else if (strcmp(types_E, "SS") == 0) {                               \
                 find->element_token.type = T_STRING;                             \
                 find->type = 'S';                                                \
             }                                                                    \
-            else if (strcmp(types_E, "II") == 0 || strcmp(types_E, "IN") == 0 || \
-                     strcmp(types_E, "NI") == 0) {                               \
+            else if (strcmp(types_E, "II") == 0) {                               \
                 find->element_token.type = T_INT;                                \
                 find->type = 'I';                                                \
             }                                                                    \
@@ -144,41 +142,34 @@ char Rules[][LENGTH_OF_RULES] = {
         } while(0)
 
 
-#define CHECK_CONC_LENGTH()                                       \
-        do {                                                      \
-            if (strcmp(types_E, "SS") && strcmp(types_E, "NN") && \
-                strcmp(types_E, "NS") && strcmp(types_E, "SN"))   \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_CONC_LENGTH()                                         \
+        do {                                                        \
+            if (strcmp(types_E, "SS"))                              \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
-#define CHECK_COMPARISON()                                        \
-        do {                                                      \
-            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
-                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
-                strcmp(types_E, "NN") && strcmp(types_E, "NI") && \
-                strcmp(types_E, "IN") && strcmp(types_E, "NF") && \
-                strcmp(types_E, "FN") && strcmp(types_E, "NS") && \
-                strcmp(types_E, "SN") && strcmp(types_E, "SS"))   \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_COMPARISON()                                          \
+        do {                                                        \
+            if (!strcmp(types_E, "SI") || !strcmp(types_E, "IS") || \
+                !strcmp(types_E, "FS") || !strcmp(types_E, "SF") || \
+                types_E[0] == 'C'      || types_E[1] == 'C'    )    \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
-#define CHECK_NUMBER()                                            \
-        do {                                                      \
-            if (strcmp(types_E, "II") && strcmp(types_E, "IF") && \
-                strcmp(types_E, "FI") && strcmp(types_E, "FF") && \
-                strcmp(types_E, "NN") && strcmp(types_E, "NI") && \
-                strcmp(types_E, "IN") && strcmp(types_E, "NF") && \
-                strcmp(types_E, "FN"))                            \
-            {                                                     \
-                err = SEM_ARITHM_REL_ERR;                         \
-                return false;                                     \
-            }                                                     \
+#define CHECK_NUMBER()                                              \
+        do {                                                        \
+            if (strcmp(types_E, "II") && strcmp(types_E, "IF") &&   \
+                strcmp(types_E, "FI") && strcmp(types_E, "FF"))     \
+            {                                                       \
+                err = SEM_ARITHM_REL_ERR;                           \
+                return false;                                       \
+            }                                                       \
         } while(0)
 
 #define FIRST_SYMBOL_NO_IN_EXPR                                 \
@@ -202,7 +193,7 @@ void print_stack_debug(List * list) {
                PrintElement->already_reduced);
         if(PrintElement->element_token.type == T_ID){
             printf("\tvariable: %s\n", PrintElement->element_token.attr.id.str);
-        } else if (PrintElement->element_token.type == T_STRING){
+        } else if (PrintElement->element_token.type == T_STRING && !PrintElement->already_reduced) {
             printf("\tstring: \"%s\"\n", PrintElement->element_token.attr.id.str);
         } else {
             printf("\n");
@@ -274,7 +265,8 @@ void Dispose(ElementPtr Element) {
         DelElement = TempElement;
         TempElement = TempElement->nextElement;
         // We previously saved the names of the variables, we need to free them
-        if (DelElement->element_token.type == T_ID || DelElement->element_token.type == T_STRING) {
+        if (DelElement->element_token.type == T_ID ||
+           (DelElement->element_token.type == T_STRING && !DelElement->already_reduced)) {
             str_free(&DelElement->element_token.attr.id);
         }
 
@@ -434,11 +426,10 @@ bool Close(List * list) {
         }
 
         if (Ei->element_token.type == T_ID) {
-            //printf("Tu som: %s type %d\n", Ei->element_token.attr.id.str, Ei->element_token.type);
             GET_TYPE_ID(0, Ei->element_token.attr.id.str);
             // Change type from X (ID) into float / int / string
             Ei->type = var->data.var->type.str[0];
-            //printf("0:Funkcia mi vratila typ %c\n", types_E[0]);
+
         }
         else {
             GET_TYPE_TERM(0);
@@ -470,6 +461,11 @@ bool Close(List * list) {
                 // If we are doing comparison rules
             }
             else if (rule >= 8 && rule <= 13) {
+                // Special case where we only allow value nil with comparison == and ~=
+                if(rule != 12 && rule != 13 && (Ei->type == 'N' || Ej->type == 'N')){
+                    err = SEM_ARITHM_REL_ERR;
+                    return false;
+                }
                 CHECK_COMPARISON();
                 // If we found any other rules other than
                 // i = 0, (E) = 1 operations where it doesn't matter
@@ -482,8 +478,7 @@ bool Close(List * list) {
                 CHECK_NUMBER();
                 // Special case where we are trying to divide with rule
                 // for integers and the values are not integers
-                if (rule == 6 && strcmp(types_E, "II") && strcmp(types_E, "IN") &&
-                                strcmp(types_E, "NI") && strcmp(types_E, "NN")){
+                if (rule == 6 && strcmp(types_E, "II")){
                     err = SEM_ARITHM_REL_ERR;
                     return false;
                 }
@@ -663,7 +658,7 @@ void Deallocate(List * list) {
     }
 }
 
-bool expression(bool bool_condition, bool bool_empty) {
+bool expr(bool bool_condition, bool bool_empty) {
     (void)bool_condition;
     bool ret;
     char data[3] = {"$"};
@@ -769,7 +764,6 @@ start_expr:
     print_stack_expr(list);
 
 end_expr:
-
     // We are reducing the expression by using our rules
     while (Close(list)) {
         print_stack_expr(list);
@@ -782,6 +776,7 @@ end_expr:
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
+
         ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT    ? 'I':
                                        list->lastElement->element_token.type == T_STRING ? 'S':
                                        list->lastElement->element_token.type == T_FLOAT  ? 'F':
