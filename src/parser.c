@@ -148,6 +148,7 @@ Queue* queue_expr;
         ret = str_copy_str(DST, COND ? SRC_1 : SRC_2); \
         CHECK_INTERNAL_ERR(!ret, false)
 
+
 bool type_compatibility() {
     if (tmp_func != NULL && tmp_func->data.func->func_write) {
         for (int i = 0; i < str_get_len(&tps_right); i++) {
@@ -430,6 +431,9 @@ bool arg() {
     if (token.type == T_ID) {
         print_rule("14. <arg> -> id : <type> <next_arg>");
 
+        // check if we have declare function with the same name
+        CHECK_SEM_DEF_ERR(symtab_find(&global_symtab, token.attr.id.str));
+
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
 
         NEXT_TOKEN();
@@ -458,6 +462,9 @@ bool next_arg() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
+        // check if we have declare function with the same name
+        CHECK_SEM_DEF_ERR(symtab_find(&global_symtab, token.attr.id.str));
 
         ALLOC_VAR_IN_SYMTAB(&token.attr.id);
         QUEUE_ADD_ID(tmp_var);
@@ -608,6 +615,9 @@ bool stmt() {
 
         NEXT_TOKEN();
         EXPECTED_TOKEN(token.type == T_ID);
+
+        // check if we have declare function with the same name
+        CHECK_SEM_DEF_ERR(symtab_find(&global_symtab, token.attr.id.str));
 
         // Allocate structure for variable in symtable //
         // remember name of declaration variable
