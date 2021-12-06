@@ -60,8 +60,9 @@ tags=0
 [[ "$#" -eq 0 ]] && usage
 
 
-#############
-#############
+#################
+#   SWITCHERS
+#################
 while [ "$#" -gt 0 ]; do
     case "$1" in
     "RULES")
@@ -162,7 +163,7 @@ if [ "$build" -eq 1 ] || [ "$run_compiler" -eq 1 ]; then          # build projec
     eval "rm -rf *"
     eval "cmake $params .."
     eval "make -j16"
-    if [ "$in" != "" ] && [ "$run_compiler" -eq 1 ] && [ "$stdout" -eq 1 ]; then          # --run_compiler && --out => create compiled .ifjcode
+    if [ "$in" != "" ] && [ "$run_compiler" -eq 1 ] && [ "$stdout" -eq 0 ]; then          # --run_compiler && --out => create compiled .ifjcode
         eval "./compiler <../$in >../${in%.*}.ifjcode"
     elif [ "$in" != "" ] &&  [ "$run_compiler" -eq 1 ]; then                            # --exec => build and print to stdout
         eval "./compiler <../$in"

@@ -9,6 +9,7 @@ end
 
 function main()
 	write("bbb \n") local a : integer = foo() 
+	write(a)
 	write("bbb\n")
 	return
 end

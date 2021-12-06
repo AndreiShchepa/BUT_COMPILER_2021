@@ -1,5 +1,20 @@
 #!/bin/bash
 
+
+usage() {
+    echo "MACOS"
+    echo "./run_tests.sh --code_generator"
+    echo "UBUNTU"
+    echo "./run_tests.sh --code_generator > without_errors_output.out"
+    exit 0
+}
+
+error_exit() {
+    echo "ERROR"
+    exit 1
+}
+
+
 RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
@@ -20,12 +35,8 @@ help=0
 code_generator=0
 only_names=0
 in=""
+[[ "$#" -eq 0 ]] && usage
 
-
-error_exit() {
-    echo "ERROR"
-    exit 1
-}
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -45,19 +56,12 @@ while [ "$#" -gt 0 ]; do
         run_ifjcode=1
         ;;
     "--help")
-        help=1
+        usage
         ;;
     esac
     shift
 done
 
-if [ "${help}" -eq 1 ]; then
-    echo "MACOS"
-    echo "./run_tests.sh --code_generator"
-    echo "UBUNTU"
-    echo "./run_tests.sh --code_generator > without_errors_output.out"
-    exit 1
-fi
 
 if [ "$name" == "teal_ok" ];then
     cd without_errors || exit 1
