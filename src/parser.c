@@ -52,7 +52,6 @@ string_t tps_right;
 bool working_func;
 
 Queue* queue_id;
-Queue* queue_args;
 Queue* queue_expr;
 
 
@@ -1151,7 +1150,6 @@ int parser() {
 
     queue_expr = queue_init();
     queue_id = queue_init();
-    queue_args = queue_init();
 
 #ifndef DEBUG_ANDREJ
 // profesionalni debug, master of C language by Andrej Binovsky
@@ -1193,6 +1191,7 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
+
 
     return err;
 }
