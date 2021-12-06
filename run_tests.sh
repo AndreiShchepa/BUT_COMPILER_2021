@@ -21,6 +21,12 @@ code_generator=0
 only_names=0
 in=""
 
+
+error_exit() {
+    echo "ERROR"
+    exit 1
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
     *".tl")
@@ -72,7 +78,7 @@ if [ "$code_generator" -eq 1 ]; then
     fi
 
     if [ $(uname) != "Darwin" ];then
-        cd without_errors || exit 1
+        cd without_errors || error_exit
         for file in *.tl; do
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
@@ -104,10 +110,10 @@ if [ "$code_generator" -eq 1 ]; then
                 fi
             fi
         done
-        cd .. || exit 1
+        cd .. || error_exit
     fi
 
-    cd .. || exit 1
+    cd .. || error_exit
     exit 0
 fi
 
