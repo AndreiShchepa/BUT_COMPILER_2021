@@ -260,49 +260,49 @@ bool gen_init_built_ins();
 bool gen_label_item();
 
 /**
- * @brief
+ * @brief Generate declaration of variable and initialize it with nil
  * @return On success True, otherwise False
  */
 bool gen_def_var();
 
 /**
- * @brief Generate declaration of variable and initialize it with nil
+ * @brief Generate initialization of variable with value from stack
  * @return On success True, otherwise False
  */
 bool gen_init_var();
 
 /**
- * @brief Generate initialization of variable with value from stack
+ * @brief Generate label if
  * @return On success True, otherwise False
  */
 bool gen_if_start();
 
 /**
- * @brief Generate label if
+ * @brief Generate label else
  * @return On success True, otherwise False
  */
 bool gen_if_else();
 
 /**
- * @brief Generate label else
+ * @brief Generate label end of if else
  * @return On success True, otherwise False
  */
 bool gen_if_end();
 
 /**
- * @brief Generate label end of if else
+ * @brief Generate evaluation of if expression
  * @return On success True, otherwise False
  */
 bool gen_if_eval();
 
 /**
- * @brief Generate evaluation of if expression
+ * @brief Generate if jump based on result of evaluation
  * @return On success True, otherwise False
  */
 bool gen_if_end_jump();
 
 /**
- * @brief Generate if jump based on result of evaluation
+ * @brief
  * @param key_id
  * @return On success True, otherwise False
  */
