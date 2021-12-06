@@ -192,7 +192,7 @@ typedef long long unsigned int llu_t;
   *									FUNCTIONS
 *****************************************************************************/
 /**
- *
+ * @brief
  * @return On success True, otherwise False
  */
 bool gen_testing_helper();
@@ -266,43 +266,43 @@ bool gen_label_item();
 bool gen_def_var();
 
 /**
- * @brief
+ * @brief Generate declaration of variable and initialize it with nil
  * @return On success True, otherwise False
  */
 bool gen_init_var();
 
 /**
- * @brief
+ * @brief Generate initialization of variable with value from stack
  * @return On success True, otherwise False
  */
 bool gen_if_start();
 
 /**
- * @brief
+ * @brief Generate label if
  * @return On success True, otherwise False
  */
 bool gen_if_else();
 
 /**
- * @brief
+ * @brief Generate label else
  * @return On success True, otherwise False
  */
 bool gen_if_end();
 
 /**
- * @brief
+ * @brief Generate label end of if else
  * @return On success True, otherwise False
  */
 bool gen_if_eval();
 
 /**
- * @brief
+ * @brief Generate evaluation of if expression
  * @return On success True, otherwise False
  */
 bool gen_if_end_jump();
 
 /**
- * @brief
+ * @brief Generate if jump based on result of evaluation
  * @param key_id
  * @return On success True, otherwise False
  */
@@ -404,13 +404,13 @@ bool is_write();
 bool convert_str_to_ascii(string_t *str_in);
 
 /**
- * @brief
+ * @brief Generate push value nil on stack
  * @return On success True, otherwise False
  */
 bool gen_retval_nil();
 
 /**
- * @brief
+ * @brief Generate expression and result push on stack
  * @return On success True, otherwise False
  */
 bool gen_expression();
