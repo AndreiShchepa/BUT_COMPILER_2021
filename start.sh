@@ -163,11 +163,6 @@ if [ "$build" -eq 1 ] || [ "$run_compiler" -eq 1 ]; then          # build projec
     eval "rm -rf *"
     eval "cmake $params .."
     eval "make -j16"
-    if [ "$in" != "" ] && [ "$run_compiler" -eq 1 ] && [ "$stdout" -eq 0 ]; then          # --run_compiler && --out => create compiled .ifjcode
-        eval "./compiler <../$in >../${in%.*}.ifjcode"
-    elif [ "$in" != "" ] &&  [ "$run_compiler" -eq 1 ]; then                            # --exec => build and print to stdout
-        eval "./compiler <../$in"
-    fi
     cd .. || exit 1
 fi
 
@@ -199,6 +194,15 @@ fi
 #######################
 #       RUN
 #######################
+if [ "$run_compiler" -eq 1 ] && [ "$in" != "" ];then
+    if [ "$stdout" -eq 0 ]; then          # --run_compiler && --out => create compiled .ifjcode
+        eval "build/compiler <$in >${in%.*}.ifjcode"
+    else                             # --exec => build and print to stdout
+        eval "build/compiler <$in"
+    fi
+fi
+
+
 if [ "$run_ifjcode" -eq 1 ]; then
     cd "$(dirname "${in}")" || exit 1
     run_cmd="./ic21int $(basename "$in" .tl).ifjcode"

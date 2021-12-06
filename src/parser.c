@@ -1149,7 +1149,7 @@ int parser() {
     set_source_file(f);
 
     queue_expr = queue_init();
-    queue_id = queue_init();
+    queue_id   = queue_init();
 
 #ifndef DEBUG_ANDREJ
 // profesionalni debug, master of C language by Andrej Binovsky
