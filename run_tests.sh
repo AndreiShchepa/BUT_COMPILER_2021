@@ -30,6 +30,7 @@ err_memory=0
 all_files=0
 run_lua=0
 run_ifjcode=0
+valgrind=0
 help=0
 
 code_generator=0
@@ -54,6 +55,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     "--run_ifjcode")
         run_ifjcode=1
+        ;;
+    "--valgrind")
+        valgrind=1
         ;;
     "--help")
         usage
@@ -190,6 +194,38 @@ elif [[ "$expected_err" -ge "3" ]] && [[ "$expected_err" -le "7" ]]; then
 else
     echo "This script doesnt support this type of error $expected_error"
     exit 1
+fi
+
+declare -a without_errors_folders=("input" \
+                                   "buitin_func" \
+                                   "nil" \
+                                   "write_value"  \
+                                   "zero")
+if [ "${valgrind}" -eq 1 ]; then
+    for i in "${without_errors_folders[@]}"; do
+        for name in without_errors/${i}/*.tl; do
+            if [[ -f "${name}" ]]; then
+                valgrind --log-file="tmp.txt" build/compiler <$name 2>/dev/null 1>/dev/null
+                ret_val=$?
+                OUT1=$(cat tmp.txt | grep -h 'in use at exit:')
+                OUT2=$(cat tmp.txt | grep -h 'errors from')
+                if [[ "$OUT1" == *"0 bytes in 0 blocks"* ]]; then
+                    if [[ "$OUT2" != *"0 errors from 0 contexts"* ]]; then
+                        err_memory=$((err_memory+1))
+                        printf "$file ${RED}ERROR${NC} with memory\n"
+                        echo ""
+                    fi
+                else
+                    err_memory=$((err_memory+1))
+                    printf "$file ${RED}ERROR${NC} with memory\n"
+                    echo ""
+                fi
+
+                rm tmp.txt
+            fi
+        done
+    done
+    exit 0
 fi
 
 for file in ${folder}/${name}*_${expected_err}.tl;
