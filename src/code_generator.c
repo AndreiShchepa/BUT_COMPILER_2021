@@ -409,7 +409,6 @@ bool gen_expression() {
                 PRINT_FUNC(2, "pushs int@%llu" , (llu_t)queue_expr->front->token->attr.num_i); //ubuntu chce lu
                 break;
             case T_FLOAT:
-                // todo format (asi je treba skontrolovat)
                 PRINT_FUNC(3, "pushs float@%a" , queue_expr->front->token->attr.num_f);
                 break;
             case T_STRING:
