@@ -78,21 +78,6 @@ bool init_cnt() {
     return true;
 }
 
-bool gen_file_start() {
-    return true;
-}
-
-bool gen_int2char(Queue *queue, token_t *symb_1) {
-    (void )queue;
-    (void )symb_1;
-//    PRINT_FUNC(0, "INT2CHAR LF@%s LF@%s", queue->front->id->key_id, symb_1->attr.id, NULL);
-    return true;
-}
-
-bool gen_func_label() {
-    return true;
-}
-
 bool gen_init() {
     if (!alloc_ifj_code()   ||
         !init_ifj_code()    ||
@@ -133,15 +118,15 @@ bool gen_init() {
 
 bool gen_init_built_ins() {
 #if DEBUG_BUILT_IN
-    DEBUG_PRINT_INSTR  ( 1, FUNCTIONS, EOL EOL DEVIDER NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR  ( 2, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR  ( 3, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR  ( 4, FUNCTIONS, DEVIDER_2"BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN( 5, "%s", FUNC_CHECK_IS_NIL);  DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN( 6, "%s", FUNC_TOINTEGER);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN( 7, "%s", FUNC_READI);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN( 8, "%s", FUNC_READN);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN( 9, "%s", FUNC_READS);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (1 , FUNCTIONS, EOL EOL DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (2 , FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (3 , FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (4 , FUNCTIONS, DEVIDER_2"BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(5 , "%s", FUNC_CHECK_IS_NIL);  DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(6 , "%s", FUNC_TOINTEGER);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(7 , "%s", FUNC_READI);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(8 , "%s", FUNC_READN);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(9 , "%s", FUNC_READS);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(10, "%s", FUNC_WRITE);         DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(11, "%s", FUNC_SUBSTR);        DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(12, "%s", FUNC_ORD);           DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
@@ -153,28 +138,24 @@ bool gen_init_built_ins() {
     PRINT_FUNC_BUILT_IN(18, "%s", FUNC_CHECK_DIV);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(19, "%s", FUNC_CHECK_IDIV);     DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
     PRINT_FUNC_BUILT_IN(20, "%s", FUNC_CHECK_COMP);      DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    PRINT_FUNC_BUILT_IN(200, "%s", FUNC_CHECK_IS_NIL_CONCAT);  DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR  (21, FUNCTIONS, DEVIDER_2"END BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR  (22, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
+    PRINT_FUNC_BUILT_IN(21, "%s", FUNC_CHECK_IS_NIL_CONCAT);  DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (22, FUNCTIONS, DEVIDER_2"END BUILT-IN FUNCTIONS" NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR  (23, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
     DEBUG_PRINT_INSTR  (24, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR  (25, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR);
 #endif
-    return true;
-}
-
-bool gen_label_item() {
     return true;
 }
 
 bool gen_def_var() {
     PRINT_FUNC(1, "defvar " FORMAT_VAR , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
-    PRINT_FUNC(1, "move   " FORMAT_VAR " nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
+    PRINT_FUNC(2, "move   " FORMAT_VAR " nil@nil" , cnt.func_name.str, queue_id->front->id->deep, queue_id->front->id->key_id);
     return true;
 }
 
 bool gen_init_var() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(1, "move " FORMAT_VAR " GF@&var1" , cnt.func_name.str, queue_id->rear->id->deep, queue_id->rear->id->key_id);
+    PRINT_FUNC(2, "move " FORMAT_VAR " GF@&var1" , cnt.func_name.str, queue_id->rear->id->deep, queue_id->rear->id->key_id);
     queue_remove_rear(queue_id);
     return true;
 }
@@ -185,7 +166,7 @@ bool gen_if_start() {
 }
 
 bool gen_if_else() {
-    PRINT_FUNC(2, "label " FORMAT_ELSE , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(1, "label " FORMAT_ELSE , cnt.func_name.str, cnt.if_cnt);
     return true;
 }
 

@@ -192,31 +192,31 @@ typedef long long unsigned int llu_t;
   *									FUNCTIONS
 *****************************************************************************/
 /**
- * @brief
+ * @brief print generated .ifjcode on stdout
  * @return On success True, otherwise False
  */
 bool gen_testing_helper();
 
 /**
- * @brief
+ * @brief allocates all strings for generating .ifjcode
  * @return On success True, otherwise False
  */
 bool alloc_ifj_code();
 
 /**
- * @brief
+ * @brief clears all dynamic strings
  * @return On success True, otherwise False
  */
 bool init_ifj_code();
 
 /**
- * @brief
+ * @brief allocates strings in cnt structure
  * @return On success True, otherwise False
  */
 bool alloc_cnt();
 
 /**
- * @brief
+ * @brief initialize cnt structure
  * @return On success True, otherwise False
  */
 bool init_cnt();
@@ -225,39 +225,13 @@ bool init_cnt();
  * @brief
  * @return On success True, otherwise False
  */
-bool gen_file_start();
-
-/**
- * @brief
- * @param queue
- * @param symb_1
- * @return On success True, otherwise False
- */
-bool gen_int2char(Queue *queue, token_t *symb_1);
-
-/**
- * @brief
- * @return On success True, otherwise False
- */
-bool gen_func_label();
-
-/**
- * @brief
- * @return On success True, otherwise False
- */
 bool gen_init();
 
 /**
- * @brief
+ * @brief generate all built-in functions into string string fo functions
  * @return On success True, otherwise False
  */
 bool gen_init_built_ins();
-
-/**
- * @brief
- * @return On success True, otherwise False
- */
-bool gen_label_item();
 
 /**
  * @brief Generate declaration of variable and initialize it with nil
