@@ -121,11 +121,6 @@ while [ "$#" -gt 0 ]; do
 done
 
 
-if [ "$non_args" -eq 1 ]; then
-    usage
-fi
-
-
 #######################
 #       CLEAN
 #######################
@@ -158,22 +153,38 @@ fi
 #######################
 #       BUILD
 #######################
-if [ "$build" -eq 1 ] || [ "$run_compiler" -eq 1 ]; then          # build project or  build prokect and "$in" file
-    cd build || exit 1
+if [ "$build" -eq 1 ]; then          # build project or  build prokect and "$in" file
+    cd build || error_exit
     eval "rm -rf *"
     eval "cmake $params .."
     eval "make -j16"
-    cd .. || exit 1
+    cd .. || error_exit
 fi
 
 
+declare -a without_errors_folders=("input" \
+                                   "buitin_func" \
+                                   "nil" \
+                                   "write_value"  \
+                                   "zero")
 if [ "$build_lua" -eq 1 ]; then
-    cd without_errors || exit 1
-    for file in *.tl; do
-        compile_cmd="tl gen \"$file\""
-        eval "$compile_cmd" || error_exit
-    done
-    cd ..
+    echo "TODO"
+#    cd without_errors || error_exit
+#    for i in "${without_errors_folders[@]}"; do
+#        for name in without_errors/${i}/*.tl; do
+#            echo  $(dirname ${name})
+#            cd $(dirname ${name}) || error_exit
+#            f=$(basename ${name})
+#            echo  ${f}
+#            if [[ -f "${f}" ]] ; then
+#                echo ${f}
+##                compile_cmd="tl gen \"${name}\""
+##                eval "$compile_cmd" || error_exit
+#            fi
+#            cd ../.. || error_exit
+#        done
+#    done
+#    cd .. || error_exit
 fi
 
 
@@ -196,9 +207,9 @@ fi
 #######################
 if [ "$run_compiler" -eq 1 ] && [ "$in" != "" ];then
     if [ "$stdout" -eq 0 ]; then          # --run_compiler && --out => create compiled .ifjcode
-        eval "build/compiler <$in >${in%.*}.ifjcode"
+        eval "./build/compiler <$in >${in%.*}.ifjcode"
     else                             # --exec => build and print to stdout
-        eval "build/compiler <$in"
+        eval "./build/compiler <$in"
     fi
 fi
 

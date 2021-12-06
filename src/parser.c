@@ -286,6 +286,10 @@ add_func_def:
         NEXT_NONTERM(stmt());
 
         // GEN_CODE //
+        while (cnt.ret_vals > 0 && !cnt.in_return) {
+            CODE_GEN(gen_retval_nil);
+            cnt.ret_vals--;
+        }
         CODE_GEN(init_cnt);
         //////////////
 
@@ -399,6 +403,8 @@ bool ret_T() {
                   &item->data.func->decl_attr.rets);
 
         NEXT_NONTERM(type());
+
+        cnt.ret_vals++;
 
         return next_ret_T();
     }
@@ -636,6 +642,7 @@ bool stmt() {
         return stmt();
     }
     else if (token.keyword == KW_RETURN) {
+        cnt.in_return = true;
         cnt.ret_vals = 0;
 
         print_rule("25. <stmt> -> return <expr> <next_expr> <stmt>");
@@ -886,12 +893,12 @@ bool next_expr() {
 
         NEXT_NONTERM(expr(false, false));
 
+		///////////////////
         cnt.ret_vals++;
         CODE_GEN(gen_expression); //todo Andrej
-
-        if (!is_return) {
+        if (!is_return)
             CODE_GEN(gen_init_var);  //todo Andrej
-        }
+		///////////////////
 
         return next_expr();
     } else if (len > cnt.ret_vals + 1 && len != 0) { //        return  || return 1, 2 (3)

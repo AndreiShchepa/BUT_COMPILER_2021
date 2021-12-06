@@ -178,6 +178,7 @@ typedef struct cnts_s {
     unsigned int while_cnt_deep;
     unsigned int deep;
     unsigned int ret_vals;
+    bool 		 in_return;
     bool         in_while;
 } cnts_t;
 
