@@ -195,7 +195,6 @@ if [ "$build_ifjcode" -eq 1 ]; then
 fi
 
 
-
 #######################
 #       RUN
 #######################
@@ -212,7 +211,7 @@ if [ "$valgrind" -eq 1 ]; then
                             --leak-check=full                   \
                             --show-leak-kinds=all               \
                             --track-origins=yes                 \
-                            ./build/compiler ${in}"
+                            ./build/compiler < ${in}"
     eval "$valgrind_cmd"
 fi
 
