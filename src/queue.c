@@ -26,11 +26,14 @@ Queue* queue_init(){
 void queue_dispose(Queue *queue) {
     QueueElementPtr *tmp;
     while (!queue_isEmpty(queue)) {
+        if(queue->front->token){
+            str_free(&queue->front->token->attr.id);
+            free(queue->front->token);
+        }
         tmp = queue->front;
         queue->front = queue->front->previous_element;
         free(tmp);
     }
-
 }
 
 void queue_free(Queue *queue){

@@ -324,6 +324,9 @@ bool is_write() {
 }
 
 bool convert_str_to_ascii(string_t *str_in) {
+    if(strlen(str_in->str) == 0){
+        return true;
+    }
     string_t str_out;
     CODE_GEN(str_init, &str_out, strlen(str_in->str)*5);
 
@@ -412,6 +415,7 @@ bool gen_expression() {
             case T_STRING:
                 convert_str_to_ascii(&queue_expr->front->token->attr.id);
                 PRINT_FUNC(4, "pushs string@%s" , queue_expr->front->token->attr.id.str);
+                str_free(&queue_expr->front->token->attr.id);
                 break;
             case T_KEYWORD:
                 if(queue_expr->front->token->keyword == KW_NIL){
