@@ -23,6 +23,12 @@ tags=0
 run=0
 [[ "$#" -eq 0 ]] && iszero=1 || iszero=0
 
+
+error_exit() {
+    echo "ERROR"
+    exit 1
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
     "RULES")
@@ -82,17 +88,17 @@ done
 
 # remove from tests_code_gen compiled codes
 if [ "$clean" -eq 1 ]; then
-    cd without_errors || exit 1
+    cd without_errors || error_exit
     rm *.lua
     rm *.ifjcode
     rm *.out
-    cd .. || exit 1
+    cd .. || error_exit
 
-    cd without_errors_input || exit 1
+    cd without_errors_input || error_exit
     rm *.lua
     rm *.ifjcode
     rm *.out
-    cd .. || exit 1
+    cd .. || error_exit
 fi
 
 if [ "$help" -eq 1 ] || [ "$iszero" -eq 1 ]; then
