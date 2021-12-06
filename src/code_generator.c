@@ -34,6 +34,12 @@ cnts_t cnt;
 /******************************************************************************
   *									FUNCTIONS
 ******************************************************************************/
+bool gen_testing_helper() {
+    fprintf(stdout, "%s", ifj_code[FUNCTIONS].str);
+    fprintf(stdout, "%s", ifj_code[MAIN].str);
+    return true;
+}
+
 bool alloc_ifj_code() {
     if (!str_init(&ifj_code[MAIN]     , IFJ_CODE_START_LEN) ||
         !str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
@@ -87,6 +93,43 @@ bool gen_func_label() {
     return true;
 }
 
+bool gen_init() {
+    if (!alloc_ifj_code()   ||
+        !init_ifj_code()    ||
+        !alloc_cnt()        ||
+        !init_cnt()) {
+        return ((err = INTERNAL_ERR) == NO_ERR);
+    }
+    PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
+    PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
+    PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
+    PRINT_FUNC(4,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
+    PRINT_FUNC(5,   "defvar GF@&var2"   NON_VAR , EMPTY_STR);
+    PRINT_FUNC(6, "jump $$main" NON_VAR, EMPTY_STR);
+    DEBUG_PRINT_INSTR(20, MAIN, EOL DEVIDER NON_VAR , EMPTY_STR);
+    DEBUG_PRINT_INSTR(21, MAIN, DEVIDER_2"MAIN LABEL" NON_VAR , EMPTY_STR);
+    PRINT_MAIN(7,   "label $$main"       NON_VAR , EMPTY_STR);
+    PRINT_MAIN(8,   "createframe"       NON_VAR , EMPTY_STR);
+    PRINT_MAIN(9,   "pushframe"         NON_VAR , EMPTY_STR);
+    PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
+
+    if (!gen_init_built_ins()) {
+        return ((err = INTERNAL_ERR) == NO_ERR);
+    }
+
+    DEBUG_PRINT_INSTR(26, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(27, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(28, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(29, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(31, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(32, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(33, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(34, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
+    DEBUG_PRINT_INSTR(35, FUNCTIONS, DEVIDER_2"FUNCTIONS" NON_VAR , EMPTY_STR); // above will "#" from before call
+    //str_free(&cnt.func_name);
+    return (err == NO_ERR);
+}
 
 bool gen_init_built_ins() {
 #if DEBUG_BUILT_IN
@@ -120,64 +163,6 @@ bool gen_init_built_ins() {
 }
 
 bool gen_label_item() {
-    return true;
-}
-
-bool gen_while_label(char *key_id) {
-    cnt.while_cnt_max++;
-    cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
-    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
-	return true;
-}
-
-bool gen_while_eval() {
-    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, cnt.while_cnt);
-
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
-
-    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
-
-    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
-	return true;
-}
-
-bool gen_while_end() {
-    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
-    DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
-    cnt.while_cnt--;
-    return true;
-}
-
-bool gen_concat_while_functions() {
-    cnt.in_while = false;
-    PRINT_FUNC_BUILT_IN(1, "%s", ifj_code[WHILE].str);
-    str_clear(&ifj_code[WHILE]);
-    return true;
-}
-
-bool gen_params() {
-    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"params" NON_VAR , EMPTY_STR);
-
-    QueueElementPtr *queue_elem = queue_id->front;
-    for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
-        PRINT_FUNC(2, "defvar "FORMAT_VAR             , cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id);
-        PRINT_FUNC(3, "move   "FORMAT_VAR FORMAT_PARAM, cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id, i);
-    }
-    DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
-    // TODO - remove one by one
-    queue_dispose(queue_id);
-    return true;
-}
-
-bool gen_param() {
     return true;
 }
 
@@ -234,6 +219,46 @@ bool gen_if_end_jump() {
     return true;
 }
 
+bool gen_while_label(char *key_id) {
+    cnt.while_cnt_max++;
+    cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
+    return true;
+}
+
+bool gen_while_eval() {
+    PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, cnt.while_cnt);
+
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
+    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
+
+    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
+
+    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    return true;
+}
+
+bool gen_while_end() {
+    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
+    DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
+    cnt.while_cnt--;
+    return true;
+}
+
+bool gen_concat_while_functions() {
+    cnt.in_while = false;
+    PRINT_FUNC_BUILT_IN(1, "%s", ifj_code[WHILE].str);
+    str_clear(&ifj_code[WHILE]);
+    return true;
+}
+
 bool gen_func_start(char *id) {
     DEBUG_PRINT_INSTR(1, FUNCTIONS,	EOL DEVIDER NON_VAR, EMPTY_STR);
     PRINT_FUNC(2, "label $%s"          , id);
@@ -250,15 +275,22 @@ bool gen_func_end() {
     return true;
 }
 
-int where_to_print() {
-    if (cnt.in_while) {
-        return WHILE;
+bool gen_params() {
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"params" NON_VAR , EMPTY_STR);
+
+    QueueElementPtr *queue_elem = queue_id->front;
+    for (int i = 0; queue_elem; queue_elem = queue_elem->previous_element, i++) {
+        PRINT_FUNC(2, "defvar "FORMAT_VAR             , cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id);
+        PRINT_FUNC(3, "move   "FORMAT_VAR FORMAT_PARAM, cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id, i);
     }
-    return (strcmp(cnt.func_name.str, "") == 0) ? MAIN : FUNCTIONS;
+    DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
+    // TODO - remove one by one
+    queue_dispose(queue_id);
+    return true;
 }
 
-bool is_write() {
-    return (strcmp(cnt.func_call.str, "write") == 0) ? true : false;
+bool gen_param() {
+    return true;
 }
 
 bool gen_func_call_start() {
@@ -281,6 +313,42 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
+bool gen_func_call_args_const(token_t *token) {
+    PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
+    switch(token->type) {
+        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
+        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
+        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
+            PRINT_WHERE(2, "move "  FORMAT_ARGS " string@%s", cnt.param_cnt, token->attr.id.str);        break;
+        default       	: PRINT_WHERE(2, "move "  FORMAT_ARGS " nil@nil"  , cnt.param_cnt);                            break;
+    }
+
+    if (strcmp(cnt.func_call.str, "write") != 0)
+        cnt.param_cnt++;
+    return true;
+}
+
+bool gen_func_call_label() {
+    if (strcmp(cnt.func_call.str, "write") == 0) {
+        PRINT_WHERE(1, "call $write" NON_VAR, EMPTY_STR);
+        return true;
+    }
+
+    PRINT_WHERE(1, "call $%s" , queue_id->rear->id->key_id);
+    queue_remove_rear(queue_id);
+    return true;
+}
+
+int where_to_print() {
+    if (cnt.in_while) {
+        return WHILE;
+    }
+    return (strcmp(cnt.func_name.str, "") == 0) ? MAIN : FUNCTIONS;
+}
+
+bool is_write() {
+    return (strcmp(cnt.func_call.str, "write") == 0) ? true : false;
+}
 
 bool convert_str_to_ascii(string_t *str_in) {
     string_t str_out;
@@ -343,79 +411,8 @@ bool convert_str_to_ascii(string_t *str_in) {
     return true;
 }
 
-
-bool gen_func_call_args_const(token_t *token) {
-    PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
-    switch(token->type) {
-        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
-        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
-        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
-                          PRINT_WHERE(2, "move "  FORMAT_ARGS " string@%s", cnt.param_cnt, token->attr.id.str);        break;
-        default       	: PRINT_WHERE(2, "move "  FORMAT_ARGS " nil@nil"  , cnt.param_cnt);                            break;
-    }
-
-    if (strcmp(cnt.func_call.str, "write") != 0)
-        cnt.param_cnt++;
-    return true;
-}
-
-bool gen_func_call_label() {
-    if (strcmp(cnt.func_call.str, "write") == 0) {
-        PRINT_WHERE(1, "call $write" NON_VAR, EMPTY_STR);
-        return true;
-    }
-
-    PRINT_WHERE(1, "call $%s" , queue_id->rear->id->key_id);
-    queue_remove_rear(queue_id);
-	return true;
-}
-
-bool gen_init() {
-    if (!alloc_ifj_code()   ||
-        !init_ifj_code()    ||
-        !alloc_cnt()        ||
-        !init_cnt()) {
-        return ((err = INTERNAL_ERR) == NO_ERR);
-    }
-    PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
-    PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
-    PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);
-    PRINT_FUNC(4,   "defvar GF@&var1"   NON_VAR , EMPTY_STR);
-    PRINT_FUNC(5,   "defvar GF@&var2"   NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $$main" NON_VAR, EMPTY_STR);
-    DEBUG_PRINT_INSTR(20, MAIN, EOL DEVIDER NON_VAR , EMPTY_STR);
-    DEBUG_PRINT_INSTR(21, MAIN, DEVIDER_2"MAIN LABEL" NON_VAR , EMPTY_STR);
-    PRINT_MAIN(7,   "label $$main"       NON_VAR , EMPTY_STR);
-    PRINT_MAIN(8,   "createframe"       NON_VAR , EMPTY_STR);
-    PRINT_MAIN(9,   "pushframe"         NON_VAR , EMPTY_STR);
-    PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
-
-    if (!gen_init_built_ins()) {
-        return ((err = INTERNAL_ERR) == NO_ERR);
-    }
-
-    DEBUG_PRINT_INSTR(26, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(27, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(28, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(29, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(30, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(31, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(32, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(33, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(34, FUNCTIONS, DEVIDER NON_VAR , EMPTY_STR); // above will "#" from before call
-    DEBUG_PRINT_INSTR(35, FUNCTIONS, DEVIDER_2"FUNCTIONS" NON_VAR , EMPTY_STR); // above will "#" from before call
-    //str_free(&cnt.func_name);
-    return (err == NO_ERR);
-}
-
 bool gen_retval_nil() {
     PRINT_FUNC(1, "pushs nil@nil " NON_VAR, EMPTY_STR);
-    return true;
-}
-
-bool gen_testing_helper() {
-    fprintf(stdout, "%s", ifj_code[FUNCTIONS].str);
-    fprintf(stdout, "%s", ifj_code[MAIN].str);
     return true;
 }
 
@@ -543,4 +540,3 @@ bool dealloc_gen_var() {
     str_free(&ifj_code[WHILE]);
     return true;
 }
-

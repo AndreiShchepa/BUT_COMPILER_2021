@@ -191,50 +191,235 @@ typedef long long unsigned int llu_t;
 /******************************************************************************
   *									FUNCTIONS
 *****************************************************************************/
-bool alloc_ifj_code();
-bool init_ifj_code();
-
-bool alloc_cnt();
-bool init_cnt();
-
-bool gen_init_built_int();
-
-bool gen_while_label();
-bool gen_while_start();
-bool gen_while_end();
-bool gen_while_eval();
-bool gen_concat_while_functions();
-
-bool gen_params();
-bool gen_param();
-
-bool gen_if_start();
-bool gen_if_else(/*TODO*/);
-bool gen_if_end();
-
-bool gen_func_start(char *id);
-bool gen_func_end();
-bool gen_func_call_write();
-bool gen_func_call_start();
-bool gen_func_call_args_var();
-bool gen_func_call_args_const();
-bool gen_func_call_label();
-
-bool code_gen_print_ifj_code21();
-bool gen_expression();
-bool gen_init();
-bool code_gen();
-bool gen_expression();
-bool gen_if_eval();
-bool gen_if_end_jump();
-bool gen_def_var();
-bool gen_init_var();
-bool dealloc_gen_var();
-bool gen_retval_nil();
+/**
+ *
+ * @return On success True, otherwise False
+ */
 bool gen_testing_helper();
 
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool alloc_ifj_code();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool init_ifj_code();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool alloc_cnt();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool init_cnt();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_file_start();
+
+/**
+ * @brief
+ * @param queue
+ * @param symb_1
+ * @return On success True, otherwise False
+ */
+bool gen_int2char(Queue *queue, token_t *symb_1);
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_func_label();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_init();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_init_built_ins();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_label_item();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_def_var();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_init_var();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_if_start();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_if_else();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_if_end();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_if_eval();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_if_end_jump();
+
+/**
+ * @brief
+ * @param key_id
+ * @return On success True, otherwise False
+ */
+bool gen_while_label(char *key_id);
+
+/**
+ * @brief
+ * @param key_id
+ * @return On success True, otherwise False
+ */
+bool gen_while_eval();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_while_end();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_concat_while_functions();
+
+/**
+ * @brief
+ * @param id
+ * @return On success True, otherwise False
+ */
+bool gen_func_start(char *id);
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_func_end();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_params();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_param();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_start();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_write();
+
+/**
+ * @brief
+ * @param htab_item
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_args_var(htab_item_t *htab_item);
+
+/**
+ * @brief
+ * @param token
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_args_const(token_t *token);
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_label();
+
+/**
+ * @brief
+ * @return
+ */
 int where_to_print();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
 bool is_write();
+
+/**
+ * @brief
+ * @param str_in
+ * @return On success True, otherwise False
+ */
+bool convert_str_to_ascii(string_t *str_in);
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_retval_nil();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_expression();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool dealloc_gen_var();
 
 
 /******************************************************************************
