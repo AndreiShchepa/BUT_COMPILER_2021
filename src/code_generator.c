@@ -270,17 +270,9 @@ bool gen_params() {
     return true;
 }
 
-bool gen_param() {
-    return true;
-}
-
 bool gen_func_call_start() {
     DEBUG_PRINT_INSTR(1, where_to_print(), EOL DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
     PRINT_WHERE(1, "createframe" NON_VAR, EMPTY_STR);
-    return true;
-}
-
-bool gen_func_call_write() {
     return true;
 }
 

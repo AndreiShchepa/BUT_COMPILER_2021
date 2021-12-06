@@ -276,97 +276,85 @@ bool gen_if_eval();
 bool gen_if_end_jump();
 
 /**
- * @brief
+ * @brief generate while label
  * @param key_id
  * @return On success True, otherwise False
  */
 bool gen_while_label(char *key_id);
 
 /**
- * @brief
+ * @brief Generate evaluating for condition of while
  * @param key_id
  * @return On success True, otherwise False
  */
 bool gen_while_eval();
 
 /**
- * @brief
+ * @brief generate label where to jump if condition for repeting while cycle is false
  * @return On success True, otherwise False
  */
 bool gen_while_end();
 
 /**
- * @brief
+ * @brief concatenate code for variables outside while with while logic
  * @return On success True, otherwise False
  */
 bool gen_concat_while_functions();
 
 /**
- * @brief
+ * @brief generate label for function with creating of LF
  * @param id
  * @return On success True, otherwise False
  */
 bool gen_func_start(char *id);
 
 /**
- * @brief
+ * @brief destroy LF and return from function
  * @return On success True, otherwise False
  */
 bool gen_func_end();
 
 /**
- * @brief
+ * @brief handle taking parameters for function
  * @return On success True, otherwise False
  */
 bool gen_params();
 
 /**
- * @brief
- * @return On success True, otherwise False
- */
-bool gen_param();
-
-/**
- * @brief
+ * @brief generaet new TF for calling function
  * @return On success True, otherwise False
  */
 bool gen_func_call_start();
 
 /**
- * @brief
- * @return On success True, otherwise False
- */
-bool gen_func_call_write();
-
-/**
- * @brief
+ * @brief create arguments for calling function on TF from variable
  * @param htab_item
  * @return On success True, otherwise False
  */
 bool gen_func_call_args_var(htab_item_t *htab_item);
 
 /**
- * @brief
+ * @brief create arguments for calling function on TF from const
  * @param token
  * @return On success True, otherwise False
  */
 bool gen_func_call_args_const(token_t *token);
 
 /**
- * @brief
+ * @brief generate call command for  write function or any other function
  * @return On success True, otherwise False
  */
 bool gen_func_call_label();
 
 /**
- * @brief
+ * @brief decide where to print ifjcode (WHILE, MAIN, FUNCTIONS)
  * @return
  */
 int where_to_print();
 
 /**
- * @brief
- * @return On success True, otherwise False
+ * @brief check if is calling funtion write
+ * @return if is write return true, otherwise false
  */
 bool is_write();
 
@@ -390,7 +378,7 @@ bool gen_retval_nil();
 bool gen_expression();
 
 /**
- * @brief
+ * @brief deallocate all string need for code_generator
  * @return On success True, otherwise False
  */
 bool dealloc_gen_var();
