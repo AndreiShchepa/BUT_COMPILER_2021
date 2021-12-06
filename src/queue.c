@@ -27,7 +27,9 @@ void queue_dispose(Queue *queue) {
     QueueElementPtr *tmp;
     while (!queue_isEmpty(queue)) {
         if(queue->front->token){
-            str_free(&queue->front->token->attr.id);
+            if (queue->front->token->type == T_ID || queue->front->token->type == T_STRING) {
+                str_free(&queue->front->token->attr.id);
+            }
             free(queue->front->token);
         }
         tmp = queue->front;
