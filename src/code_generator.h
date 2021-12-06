@@ -402,7 +402,12 @@ bool dealloc_gen_var();
 "\ncreateframe	# new TF"\
 "\ndefvar LF@$tointeger$0p_type"\
 "\npushs LF@%0p"\
-"\ncall $check_is_nil"\
+"\npops GF@&var1"\
+"\ntype GF@&type1 LF@%0p"\
+"\njumpifneq $continue GF@&type1 string@nil"\
+"\npushs GF@&var1"\
+"\nreturn"\
+"\nlabel $tointeger$continue"\
 "\nTYPE	LF@$tointeger$0p_type LF@%0p"\
 "\njumpifneq $tointeger$end LF@$tointeger$0p_type string@float"\
 "\nfloat2ints"\
@@ -543,6 +548,13 @@ bool dealloc_gen_var();
 "\ndefvar 		LF@ord$cmp"\
 "\ndefvar 		LF@ord$ret1"\
 "\ndefvar 		LF@ord$len"\
+"\n"\
+"\nmove 		LF@ord$s		nil@nil"\
+"\nmove 		LF@ord$i		nil@nil"\
+"\nmove 		LF@ord$cmp		nil@nil"\
+"\nmove 		LF@ord$ret1		nil@nil"\
+"\nmove 		LF@ord$len		nil@nil"\
+"\n"\
 "\n"\
 "\npushs LF@%0p"\
 "\ncall $check_is_nil"\
