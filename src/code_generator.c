@@ -200,11 +200,11 @@ bool gen_if_end_jump() {
     return true;
 }
 
-bool gen_while_label(char *key_id) {
+bool gen_while_label() {
     cnt.while_cnt_max++;
     cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label "FORMAT_WHILE , key_id, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , cnt.func_name.str, cnt.while_cnt);
     return true;
 }
 

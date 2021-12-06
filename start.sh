@@ -212,6 +212,7 @@ if [ "$valgrind" -eq 1 ]; then
                             --leak-check=full                   \
                             --show-leak-kinds=all               \
                             --track-origins=yes                 \
+                            --log-file="valgrind.out"           \
                             ./build/compiler < ${in}"
     eval "$valgrind_cmd"
 fi

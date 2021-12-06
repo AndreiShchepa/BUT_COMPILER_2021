@@ -568,7 +568,7 @@ bool stmt() {
         strcpy(cnt.func_name.str, item->key_id);
         cnt.while_cnt_deep++;
         cnt.in_while = true;
-        CODE_GEN(gen_while_label, 0);
+        CODE_GEN(gen_while_label);
 		//////////////
 
         // after expression() in tps_right is final type of expr

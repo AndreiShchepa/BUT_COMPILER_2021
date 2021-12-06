@@ -280,7 +280,7 @@ bool gen_if_end_jump();
  * @param key_id
  * @return On success True, otherwise False
  */
-bool gen_while_label(char *key_id);
+bool gen_while_label();
 
 /**
  * @brief Generate evaluating for condition of while
