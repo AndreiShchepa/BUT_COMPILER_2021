@@ -25,6 +25,8 @@
   *									GLOBAL VARS
 ******************************************************************************/
 string_t ifj_code[BLOCKS_NUM];
+Queue *queue_if;
+Queue *queue_while;
 extern Queue* queue_id;
 extern Queue* queue_expr;
 extern int err;
@@ -62,6 +64,10 @@ bool alloc_cnt() {
         !str_init(&cnt.func_call, IFJ_CODE_START_LEN)) {
         return false;
     }
+
+    if(!(queue_if = queue_init()) && !(queue_while = queue_init())){
+        return false;
+    }
     return true;
 }
 
@@ -70,8 +76,6 @@ bool init_cnt() {
     str_clear(&cnt.func_call);
 
     cnt.param_cnt       = 0;
-    cnt.if_cnt          = 0;
-    cnt.else_cnt        = 0;
     cnt.if_cnt_max      = 0;
     cnt.while_cnt       = 0;
     cnt.while_cnt_max   = 0;
@@ -165,75 +169,75 @@ bool gen_init_var() {
 }
 
 bool gen_if_start() {
-    PRINT_FUNC(1, "label " FORMAT_IF , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(1, "label " FORMAT_IF , cnt.func_name.str, queue_if->rear->cnt_if);
     return true;
 }
 
 bool gen_if_else() {
-    PRINT_FUNC(1, "label " FORMAT_ELSE , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(1, "label " FORMAT_ELSE , cnt.func_name.str, queue_if->rear->cnt_if);
     return true;
 }
 
 bool gen_if_end() {
-    PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, cnt.if_cnt); // TODO - richard23_0.tl 433,465 same label (label  $najvacsi_numb$2$if_end$)
-    cnt.if_cnt--;
+    PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, queue_if->rear->cnt_if);
+    queue_remove_rear(queue_if);
     return true;
 }
 
 bool gen_if_eval() {
-    cnt.if_cnt_max++;
-    cnt.if_cnt = cnt.if_cnt_max; // because this instruction is printed first
+    queue_add_rear(queue_if);
+    queue_if->rear->cnt_if = ++cnt.if_cnt_max;
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_else$ GF@&type1 string@bool" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_else$ GF@&type1 string@bool" , cnt.func_name.str, queue_if->rear->cnt_if);
 
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_else_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_else_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_if->rear->cnt_if);
     PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $%s$%d$pre_else$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(6, "jump $%s$%d$pre_else$" , cnt.func_name.str, queue_if->rear->cnt_if);
 
-    PRINT_FUNC(7, "label $%s$%d$pre_else_zero$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(7, "label $%s$%d$pre_else_zero$" , cnt.func_name.str, queue_if->rear->cnt_if);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
 
-    PRINT_FUNC(9, "label $%s$%d$pre_else$" , cnt.func_name.str, cnt.if_cnt);
-    PRINT_FUNC(10, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(9, "label $%s$%d$pre_else$" , cnt.func_name.str, queue_if->rear->cnt_if);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, queue_if->rear->cnt_if);
     return true;
 }
 
 bool gen_if_end_jump() {
-    PRINT_FUNC(2, "jump $%s$%d$if_end$" , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(2, "jump $%s$%d$if_end$" , cnt.func_name.str, queue_if->rear->cnt_if);
     return true;
 }
 
 bool gen_while_label() {
-    cnt.while_cnt_max++;
-    cnt.while_cnt = cnt.while_cnt_max; // because this instruction is printed first
+    queue_add_rear(queue_while);
+    queue_if->rear->cnt_while = ++cnt.while_cnt_max;
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label "FORMAT_WHILE , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , cnt.func_name.str, queue_if->rear->cnt_while);
     return true;
 }
 
 bool gen_while_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, queue_if->rear->cnt_while);
 
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_if->rear->cnt_while);
     PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, queue_if->rear->cnt_while);
 
-    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, queue_if->rear->cnt_while);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
 
-    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, queue_if->rear->cnt_while);
     return true;
 }
 
 bool gen_while_end() {
-    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, cnt.while_cnt);
-    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, cnt.while_cnt);
+    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, queue_if->rear->cnt_while);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
-    cnt.while_cnt--;
+    queue_remove_rear(queue_while);
     return true;
 }
 
@@ -519,5 +523,7 @@ bool dealloc_gen_var() {
     str_free(&ifj_code[MAIN]);
     str_free(&ifj_code[FUNCTIONS]);
     str_free(&ifj_code[WHILE]);
+    queue_free(queue_if);
+    queue_free(queue_while);
     return true;
 }
