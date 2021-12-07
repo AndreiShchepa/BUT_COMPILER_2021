@@ -3,8 +3,11 @@ require "ifj21"
 global g : function (integer) : integer  -- deklarace funkce
 
 function f(x : integer) : integer
+  write(x)
   if x < 10then return x-1
+  write(x)
   else
+  write(x)
     x = x - 1
     write("calling g with ", x, "\n")
     local res : integer = g(x)
