@@ -892,8 +892,7 @@ bool next_expr() {
 		///////////////////
         cnt.ret_vals++;
         CODE_GEN(gen_expression); //todo Andrej
-        if (!cnt.in_return)
-            CODE_GEN(gen_init_var);  //todo Andrej
+
 		///////////////////
 
         return next_expr();
