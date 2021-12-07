@@ -509,6 +509,7 @@ bool type() {
 }
 
 bool stmt() {
+    cnt.in_return = 0;              // reset - because if multiple_returns in function cancle func earlier.
     if (token.keyword == KW_IF) {
         print_rule("22. <stmt> -> if <expr> then <stmt> else <stmt>"
                 " end <stmt>");
