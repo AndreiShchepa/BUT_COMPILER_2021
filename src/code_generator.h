@@ -26,7 +26,7 @@
 
 #define DEBUG_INSTR                 1
 #define DEBUG_BUILT_IN              1
-#define DEBUG_INSTR_WITH_GEN_INFO   1
+#define DEBUG_INSTR_WITH_GEN_INFO   0
 
 #define IFJ_CODE_START_LEN 10000
 #define MAX_LINE_LEN       300
