@@ -21,6 +21,8 @@ declare -a without_errors_folders=( "buitin_func"\
                                    "while"\
                                    "write_value"\
                                    )
+#                                   "ondroid"\
+#                                   "ondroid_err"\
 #                                   "ifj21.tl"\
 #                                   "ic21int"\
 #                                   "input"\
