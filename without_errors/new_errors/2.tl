@@ -15,6 +15,7 @@ else
 end
 
 while 1 do
+write("jsem to")
 -- Calculate next iteration to get a bit closer
 local root: number = 0.5 * (x + n/x)
 
@@ -37,6 +38,7 @@ write ("Type your number: ")
 
 local n: number = readn()
 local eps: number = 0.000001
+write(n, "\n")
 
 local result: number = sqrt(n, eps)
 

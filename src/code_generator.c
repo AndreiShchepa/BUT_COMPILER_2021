@@ -35,6 +35,7 @@ cnts_t cnt;
   *									FUNCTIONS
 ******************************************************************************/
 bool gen_testing_helper() {
+    PRINT_MAIN(1,   "exit int@0"       NON_VAR , EMPTY_STR);
     fprintf(stdout, "%s", ifj_code[FUNCTIONS].str);
     fprintf(stdout, "%s", ifj_code[MAIN].str);
     return true;

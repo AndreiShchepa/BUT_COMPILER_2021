@@ -400,10 +400,11 @@ bool dealloc_gen_var();
 "\npushs LF@%0p"\
 "\npops GF@&var1"\
 "\ntype GF@&type1 LF@%0p"\
-"\njumpifneq $continue GF@&type1 string@nil"\
+"\njumpifneq $tointeger$continue GF@&type1 string@nil"\
 "\npushs GF@&var1"\
 "\nreturn"\
 "\nlabel $tointeger$continue"\
+"\npushs GF@&var1"\
 "\nTYPE	LF@$tointeger$0p_type LF@%0p"\
 "\njumpifneq $tointeger$end LF@$tointeger$0p_type string@float"\
 "\nfloat2ints"\
