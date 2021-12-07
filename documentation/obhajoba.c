@@ -76,6 +76,7 @@
  * predchozich bloku.
  *
  */
+
 •generátor
     •generuje 3AC??
     •Postfix z expression
