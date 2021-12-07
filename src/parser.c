@@ -919,6 +919,7 @@ bool fork_id() {
             print_rule("44. <fork_id> -> ( <param> )");
 
             // GEN_CODE //
+            CODE_GEN(gen_func_call_start);
             strcpy(cnt.func_call.str, tmp_func->key_id);
             QUEUE_ADD_ID(tmp_func);
             //////////////
@@ -941,6 +942,7 @@ bool fork_id() {
             // GEN_CODE //
             if (strcmp(cnt.func_call.str, "write") != 0)
                 CODE_GEN(gen_func_call_label);
+            cnt.param_cnt = 0;
             //////////////
 
             NEXT_TOKEN();
