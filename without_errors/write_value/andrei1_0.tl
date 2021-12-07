@@ -10,6 +10,8 @@ function main ()
     --end
     local b : string = foo()
     local a : string = "aaaaaaa"
+    write(a)
+    write(b)
     write(009E4)
 end
 

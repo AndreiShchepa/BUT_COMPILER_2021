@@ -425,6 +425,7 @@ bool next_ret_T() {
 
         NEXT_NONTERM(type());
 
+        cnt.ret_vals++;
         return next_ret_T();
     }
 
