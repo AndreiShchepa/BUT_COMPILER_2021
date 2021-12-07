@@ -169,13 +169,17 @@ if [ "$build" -eq 1 ]; then          # build project or  build prokect and "$in"
 fi
 
 
-declare -a without_errors_folders=("buitin_func"\
+declare -a without_errors_folders=( "buitin_func"\
                                    "if_else"\
-                                   "input"\
                                    "new_errors"\
                                    "nil"\
+                                   "while"\
                                    "write_value"\
-                                   "zero")
+                                   "ondroid"\
+                                   )
+#                                   "nil"\
+#                                   "input"\
+#                                   "ondroid_err"\
 
 if [ "$build_lua" -eq 1 ]; then
     cd without_errors || error_exit
