@@ -191,14 +191,11 @@ bool gen_if_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(3, "jumpifeq $%s$%d$pre_else$ GF@&type1 string@bool" , cnt.func_name.str, queue_if->rear->cnt_if);
-
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_else_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_if->rear->cnt_if);
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_else_false$ GF@&type1 string@nil" , cnt.func_name.str, queue_if->rear->cnt_if);
     PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
     PRINT_FUNC(6, "jump $%s$%d$pre_else$" , cnt.func_name.str, queue_if->rear->cnt_if);
-
-    PRINT_FUNC(7, "label $%s$%d$pre_else_zero$" , cnt.func_name.str, queue_if->rear->cnt_if);
+    PRINT_FUNC(7, "label $%s$%d$pre_else_false$" , cnt.func_name.str, queue_if->rear->cnt_if);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
-
     PRINT_FUNC(9, "label $%s$%d$pre_else$" , cnt.func_name.str, queue_if->rear->cnt_if);
     PRINT_FUNC(10, "jumpifeq $%s$%d$else$ GF@&var1 bool@false" , cnt.func_name.str, queue_if->rear->cnt_if);
     return true;
@@ -222,15 +219,15 @@ bool gen_while_eval() {
     PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, queue_while->rear->cnt_while);
 
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_while->rear->cnt_while);
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_false$ GF@&type1 string@nil" , cnt.func_name.str, queue_while->rear->cnt_while);
     PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
     PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, queue_while->rear->cnt_while);
-
-    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, queue_while->rear->cnt_while);
+    PRINT_FUNC(7, "label $%s$%d$pre_while_false$" , cnt.func_name.str, queue_while->rear->cnt_while);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
-
     PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, queue_while->rear->cnt_while);
     PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, queue_while->rear->cnt_while);
+
+
     return true;
 }
 

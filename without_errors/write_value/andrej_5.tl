@@ -1,31 +1,49 @@
 require "ifj21"
 
-function fn(): integer, number, string
+function sqrt(n: number, eps: number): number
+-- The current approximation
+local x: number = n
+
+if n == nil then
+return nil
+else
+end
+
+if n < 0 then
+return nil
+else
+end
+
+while 1 do
+-- Calculate next iteration to get a bit closer
+local root: number = 0.5 * (x + n/x)
+
+-- Creative way to check if abs(root - x) < eps
+if ((root - x) < eps) then
+if ((0 - eps) < (root - x)) then
+return x
+else
+end
+else
+end
+
+-- Update the approximation
+x = root
+end
 end
 
 function main()
-local a: integer = 1
-local b: number = 1
-local c: string = "hello"
+write ("Type your number: ")
 
-a, b, c = fn()
+local n: number = readn()
+local eps: number = 0.000001
 
-if a == nil then
-write("yes\n")
+local result: number = sqrt(n, eps)
+
+if nil then
+write(result, "\n")
 else
-write("no\n")
-end
-
-if b == nil then
-write("yes\n")
-else
-write("no\n")
-end
-
-if c == nil then
-write("yes\n")
-else
-write("no\n")
+write("Could not calculate\n")
 end
 end
 
