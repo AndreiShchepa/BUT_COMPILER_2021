@@ -39,8 +39,10 @@ void queue_dispose(Queue *queue) {
 }
 
 void queue_free(Queue *queue){
-    queue_dispose(queue);
-    free(queue);
+    if(queue){
+        queue_dispose(queue);
+        free(queue);
+    }
 }
 
 bool queue_isEmpty(Queue *queue){

@@ -64,10 +64,6 @@ bool alloc_cnt() {
         !str_init(&cnt.func_call, IFJ_CODE_START_LEN)) {
         return false;
     }
-
-    if(!(queue_if = queue_init()) && !(queue_while = queue_init())){
-        return false;
-    }
     return true;
 }
 
@@ -92,6 +88,9 @@ bool gen_init() {
         !alloc_cnt()        ||
         !init_cnt()) {
         return ((err = INTERNAL_ERR) == NO_ERR);
+    }
+    if(!(queue_if = queue_init()) && !(queue_while = queue_init())){
+        return false;
     }
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
     PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
