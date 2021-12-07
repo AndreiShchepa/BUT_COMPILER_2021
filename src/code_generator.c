@@ -257,6 +257,14 @@ bool gen_func_start(char *id) {
     return true;
 }
 
+bool gen_return() {
+    DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"return alone" 	NON_VAR, EMPTY_STR);
+    PRINT_FUNC(2,   "popframe" 	        NON_VAR,  EMPTY_STR);
+    PRINT_FUNC(3,   "return"   	        NON_VAR,  EMPTY_STR);
+    DEBUG_PRINT_INSTR(4, FUNCTIONS,	DEVIDER NON_VAR, EMPTY_STR);
+    return true;
+}
+
 bool gen_func_end() {
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"end" 	NON_VAR, EMPTY_STR);
     PRINT_FUNC(2,   "popframe" 	        NON_VAR,  EMPTY_STR);

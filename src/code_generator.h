@@ -312,6 +312,9 @@ bool gen_func_start(char *id);
  */
 bool gen_func_end();
 
+
+bool gen_return();
+
 /**
  * @brief handle taking parameters for function
  * @return On success True, otherwise False

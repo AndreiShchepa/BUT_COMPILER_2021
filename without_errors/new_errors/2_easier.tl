@@ -1,13 +1,13 @@
 require "ifj21"
 
-function main()
+function main():integer, integer
 	local x: integer = 4
 
 	while 1 do
 		x=x*2
 		if x > 8 then
 			write(x)
-			return
+			return x
 		else
 		end
 	end
