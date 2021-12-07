@@ -776,11 +776,9 @@ end_expr:
     postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
-
-        ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT    ? 'I':
-                                       list->lastElement->element_token.type == T_STRING ? 'S':
-                                       list->lastElement->element_token.type == T_FLOAT  ? 'F':
-                                                                                           'N');
+//        printf("Koncim s typom: %d\n", list->lastElement->element_token.type);
+        ret = str_add_char(&tps_right, list->lastElement->type);
+//        printf("Do tps_right sa zapisalo: %c\n", list->lastElement->type);
         CHECK_INTERNAL_ERR(!ret, false);
         Deallocate(list);
 
