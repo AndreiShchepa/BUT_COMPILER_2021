@@ -3,7 +3,7 @@
 function tointeger(f : number) : integer
   local _ : number
   local ret : integer
-  if type(f) == "number" or type(f) == "integer" then 
+  if type(f) == "number" or type(f) == "integer" then
     ret, _ = math.modf(f)
   end
   return ret
@@ -11,7 +11,7 @@ end
 
 function readi() : integer
   local ret : string
-  local _ : string 
+  local _ : string
   local rest : string
   ret, _ = io.read("*n")
   rest, _ = io.read("*l")   -- hack pro nacteni zbytku radku vcetne EOL
@@ -23,10 +23,10 @@ end
 
 function readn() : number
   local ret : string
-  local _ : string 
-  local rest : string  
+  local _ : string
+  local rest : string
   ret, _ = io.read("*n")
-  rest, _ = io.read("*l")   -- hack pro nacteni zbytku radku vcetne EOL  
+  rest, _ = io.read("*l")   -- hack pro nacteni zbytku radku vcetne EOL
   if string.match(rest, "%g") ~= nil then  -- overeni zbytku radku
     return nil
   end
@@ -35,7 +35,7 @@ end
 
 function reads() : string
   local ret : string
-  local _ : string 
+  local _ : string
   ret, _ = io.read("*l")
   return ret   -- do not convert nil into string (as 'tostring(ret)' did)
 end
@@ -46,17 +46,17 @@ function write(... : string | integer | number | boolean)  -- podpora boolean pr
     local x = va[i]
     --io.write("Debug: ", tostring(x), " is ", type(x), "\n")
     if type(x) == "number" then
-      if (pcall(function () string.format("%i", x) end)) then  -- cislo lze reprezentovat celym cislem 
+      if (pcall(function () string.format("%i", x) end)) then  -- cislo lze reprezentovat celym cislem
         if string.find(tostring(x),".",1,true) == nil then -- cislo je bez desetinne tecky
           io.write(string.format("%i", x))  -- vypis jako integer
         else
           io.write(string.format("%a", x)) -- vypis jako hexdecimalni float (integer s nulovou, ale neprazdnou desetinnou casti)
         end
-      else 
+      else
         io.write(string.format("%a", x)) -- vypis jako hexdecimalni float
       end
     elseif type(x) == "integer" then  -- tato podminka pravdepodobne nikdy neuspeje
-      io.write(string.format("%i", x))  -- vypis jako integer 
+      io.write(string.format("%i", x))  -- vypis jako integer
     else
       io.write(tostring(x))  -- vypis jako string nebo boolean
     end
@@ -86,7 +86,7 @@ end
 function chr(i : integer) : string
   if i == nil then
     error("ERROR 8: Unexpected nil value in the parameter.")
-  end 
+  end
   if i < 0 or i > 255 then
     return nil
   end

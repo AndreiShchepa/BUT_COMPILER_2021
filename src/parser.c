@@ -147,6 +147,16 @@ Queue* queue_expr;
         ret = str_copy_str(DST, COND ? SRC_1 : SRC_2); \
         CHECK_INTERNAL_ERR(!ret, false)
 
+#define CHECK_COUNT_OF_ARGS() \
+        do { \
+            if (str_get_len(&tps_left) != str_get_len(&tps_right) && \
+                !tmp_func->data.func->func_write) \
+            { \
+                err = SEM_FUNC_ERR; \
+                return false; \
+            } \
+        } while(0)
+
 
 bool type_compatibility() {
     if (tmp_func != NULL && tmp_func->data.func->func_write) {
@@ -187,7 +197,12 @@ bool prolog() {
         print_rule("1.  <prolog> -> require t_string <prog>");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
+        EXPECTED_TOKEN(token.type == T_STRING);
+        if (str_cmp_const_str(&token.attr.id, "ifj21")) {
+            err = SEM_OTHER_ERR;
+            return false;
+        }
+
         NEXT_TOKEN();
 
         CODE_GEN(gen_init);
@@ -339,6 +354,7 @@ add_func_def:
         // after args() in tps_left are expected types of arguments
         // in tps_right we have real types of arguments
         // do comparing of to arrays and then clear string
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -751,6 +767,8 @@ bool one_assign() {
         NEXT_TOKEN();
 
         NEXT_NONTERM(param());
+
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         // create new variable in a local table of symbols
@@ -934,6 +952,7 @@ bool fork_id() {
 
             NEXT_NONTERM(param());
 
+            CHECK_COUNT_OF_ARGS();
             CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -1033,6 +1052,9 @@ bool mult_assign() {
         NEXT_TOKEN();
 
         NEXT_NONTERM(param());
+
+
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);

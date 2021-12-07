@@ -1,3 +1,5 @@
-require "if\x0Aj21"
+require "ifj21"
+
+require "ifj21"
 
 main()
