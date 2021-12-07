@@ -14,13 +14,14 @@ error_exit() {
     exit 1
 }
 
-declare -a without_errors_folders=( "buitin_func"\
+declare -a without_errors_folders=( \
+                                    "buitin_func"\
                                    "if_else"\
                                    "new_errors"\
-                                   "nil"\
                                    "while"\
                                    "write_value"\
                                    )
+#                                   "nil"\
 #                                   "ondroid"\
 #                                   "ondroid_err"\
 #                                   "ifj21.tl"\
@@ -108,6 +109,7 @@ if [ "$code_generator" -eq 1 ]; then
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
 
+#            echo "${i}/${file}"
             ret_val_lua=$(${lua_cmd})
             ret_val_ifjcode=$(${ifjcode_cmd})
 
