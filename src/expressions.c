@@ -301,11 +301,13 @@ bool Insert(List * list, char * data) {
     // We check if malloc was successful
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
     if (TempElement_first == NULL) {
+        err = INTERNAL_ERR;
         Deallocate(list);
         return false;
     }
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_second == NULL) {
+        err = INTERNAL_ERR;
         free(TempElement_first);
         Deallocate(list);
         return false;
@@ -353,6 +355,12 @@ bool Insert(List * list, char * data) {
         // If we are dealing with variable we also save the name of the variable to be able to look into symtab
         // or we are saving the string of variable of type T_STRING
         if (token.type == T_ID || token.type == T_STRING) {
+
+            if (token.type == T_ID) {
+                var = find_id_symtbs(&local_symtbs, token.attr.id.str);
+                CHECK_SEM_DEF_ERR(!var);
+            }
+
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             CHECK_INTERNAL_ERR(!ret, false);
 
@@ -712,8 +720,7 @@ start_expr:
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             if(!Insert(list, data)){
-                list = NULL; // TODO: is it useful? Change to CHECK_INTERNAL_ERR
-                err = INTERNAL_ERR;
+                list = NULL;
                 goto err_expr;
             }
         }
@@ -734,7 +741,7 @@ start_expr:
             // We just copy the data onto the stack
             if(!Push(list, token.attr.id.str)){
                 err = INTERNAL_ERR;
-                list = NULL; // TODO: is it useful? Change to CHECK_INTERNAL_ERR
+                list = NULL;
                 goto err_expr;
             }
             print_stack_expr(list);
