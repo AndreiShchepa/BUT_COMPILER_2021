@@ -94,7 +94,6 @@ if [ "$code_generator" -eq 1 ]; then
 
         cd "${i}" || error_exit
         for file in *.tl; do
-            echo ""
             if [ "${file%.*}" == "ifj21" ]; then continue; fi
 
             lua_cmd="lua ${file%.*}.lua"
@@ -104,13 +103,15 @@ if [ "$code_generator" -eq 1 ]; then
             ret_val_ifjcode=$(${ifjcode_cmd}) || ret_val_ifjcode=""
 
             if [ "${ret_val_lua}" != "${ret_val_ifjcode}" ];then
-                err_count=$(())
+                echo ""
+                err_gen_code=$((err_gen_code+1))
                 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
                 printf "$file ${RED}ERROR${NC} \n"
                 echo "LUA: ${ret_val_lua}"
                 echo "IFJCODE: ${ret_val_ifjcode}"
                 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 #            else
+#                echo ""
 #                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 #                printf "$file ${GREEN}OK${NC} \n"
 #                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -118,37 +119,7 @@ if [ "$code_generator" -eq 1 ]; then
         done
         cd .. || error_exit
     done
-    exit 0
-
-    for file in *.tl; do
-        [[ "$run_lua"     -eq 1 ]] && ret_val_lua=$(${lua_cmd})       || ret_val_lua=""
-        [[ "$run_ifjcode" -eq 1 ]] && ret_val_ifjcode=$($ifjcode_cmd) || ret_val_ifjcode=""
-
-
-        if [ "$only_names" -eq 1 ]; then
-            if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                echo "${file}"
-            fi
-        else
-            if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
-                    echo ""
-                    echo "#############################################################################"
-                    echo "${file}"
-                    echo "LUA:"
-                    eval "${lua_cmd}"
-                    echo "-----------------------------------------------------------------------------"
-                    echo "IFJCODE:"
-                    eval "${ifjcode_cmd}"
-                    echo "#############################################################################"
-                    echo ""
-                fi
-            fi
-        fi
-    done
-    cd .. || error_exit
-
-    cd .. || error_exit
+    printf "${RED}ERRORS:  ${NC} ${err_gen_code} \n"
     exit 0
 fi
 
