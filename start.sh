@@ -1,6 +1,10 @@
 #!/bin/bash
 complete -c timedatectl -s h -l help -d 'Print a short help text and exit'
 
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+
 set_dbg_cmake() {
     params="$params -DDEBUG_$1=ON"
 }
@@ -104,6 +108,9 @@ while [ "$#" -gt 0 ]; do
     "--run_compiler")
         run_compiler=1
         ;;
+    "--run_lua")
+        run_lua=1
+        ;;
     "--run_ifjcode")
         run_ifjcode=1
         ;;
@@ -162,11 +169,14 @@ if [ "$build" -eq 1 ]; then          # build project or  build prokect and "$in"
 fi
 
 
-declare -a without_errors_folders=("input" \
-                                   "buitin_func" \
-                                   "nil" \
-                                   "write_value"  \
+declare -a without_errors_folders=("buitin_func"\
+                                   "if_else"\
+                                   "input"\
+                                   "new_errors"\
+                                   "nil"\
+                                   "write_value"\
                                    "zero")
+
 if [ "$build_lua" -eq 1 ]; then
     cd without_errors || error_exit
     ## all folders in withotu_errors
@@ -195,17 +205,23 @@ if [ "$build_ifjcode" -eq 1 ]; then
     for i in "${without_errors_folders[@]}"; do
         cd "${i}" || error_exit
         for name in *.tl; do
-            compile_cmd="../../build/compiler <${name} >${name%.*}.ifjcode"
+            compile_cmd="../../build/compiler <${name} >${name%.*}.ifjcode 2>tmp.txt"
             eval "$compile_cmd"
+            OUT1=$(cat tmp.txt | grep -h "err")
+            if [[ "${OUT1}" != *"No error"* ]];then
+                printf "${i}/${name} ${RED}ERROR${NC}\n"
+            fi
         done
         cd .. || error_exit
     done
 
     ## all files in folder without errors
     for name in *.tl; do
-            compile_cmd="../build/compiler <${name} >${name%.*}.ifjcode"
-            eval "$compile_cmd"
+        compile_cmd="../build/compiler <${name} >${name%.*}.ifjcode"
+        eval "$compile_cmd"
     done
+
+    printf "ALL BUILD\n"
     cd .. || error_exit
 fi
 
@@ -222,11 +238,19 @@ if [ "$run_compiler" -eq 1 ] && [ "$in" != "" ];then
 fi
 
 
+if [ "$run_lua" -eq 1 ]; then
+    cd "$(dirname "${in}")" || error_exit
+    run_cmd="./lua $(basename "$in" .tl).lua"
+    eval "$run_cmd"
+    cd .. || error_exit
+fi
+
+
 if [ "$run_ifjcode" -eq 1 ]; then
-    cd "$(dirname "${in}")" || exit 1
+    cd "$(dirname "${in}")" || error_exit
     run_cmd="./ic21int $(basename "$in" .tl).ifjcode"
     eval "$run_cmd"
-    cd .. || exit 1
+    cd .. || error_exit
 fi
 
 
