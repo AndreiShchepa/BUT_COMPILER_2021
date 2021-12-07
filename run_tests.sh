@@ -90,7 +90,7 @@ if [ "$code_generator" -eq 1 ]; then
     cd without_errors || error_exit
 
     for i in "${without_errors_folders[@]}"; do
-        if [ "${i}" == "input" ]; then continue ;fi
+        if [ "${i}" == "input" ] || [ "${i}" == "zero" ] || [ "${i}" == "nil" ]; then continue ;fi
 
         cd "${i}" || error_exit
         for file in *.tl; do
@@ -109,10 +109,10 @@ if [ "$code_generator" -eq 1 ]; then
                 echo "LUA: ${ret_val_lua}"
                 echo "IFJCODE: ${ret_val_ifjcode}"
                 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-            else
-                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-                printf "$file ${GREEN}OK${NC} \n"
-                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+#            else
+#                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+#                printf "$file ${GREEN}OK${NC} \n"
+#                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             fi
         done
         cd .. || error_exit

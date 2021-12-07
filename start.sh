@@ -189,16 +189,24 @@ fi
 
 
 if [ "$build_ifjcode" -eq 1 ]; then
-    cd build || exit 1
-    for file in ../without_errors/*.tl; do
-#        echo $file
-        if [ "$file" != "../without_errors/ifj21.tl" ]; then
-            echo "${file}"
-            compile_cmd="./compiler <${file} >${file%.*}.ifjcode"
-            eval "$compile_cmd" || exit 1
-        fi
+    cd without_errors || error_exit
+
+    ## all folders in withotu_errors
+    for i in "${without_errors_folders[@]}"; do
+        cd "${i}" || error_exit
+        for name in *.tl; do
+            compile_cmd="../../build/compiler <${name} >${name%.*}.ifjcode"
+            eval "$compile_cmd"
+        done
+        cd .. || error_exit
     done
-    cd .. || exit 1
+
+    ## all files in folder without errors
+    for name in *.tl; do
+            compile_cmd="../build/compiler <${name} >${name%.*}.ifjcode"
+            eval "$compile_cmd"
+    done
+    cd .. || error_exit
 fi
 
 
