@@ -535,9 +535,9 @@ bool stmt() {
         NEXT_NONTERM(expr(true, false));
 
         // GEN_CODE //
-        CODE_GEN(gen_expression); // todo Andrej
-        CODE_GEN(gen_if_eval); // todo Andrej
-        CODE_GEN(gen_if_start); // todo Andrej
+        CODE_GEN(gen_expression);
+        CODE_GEN(gen_if_eval);
+        CODE_GEN(gen_if_start);
         //////////////
 
         // we dont need final type of expr in conditions
@@ -552,7 +552,7 @@ bool stmt() {
         NEXT_TOKEN();
         NEXT_NONTERM(stmt());
 
-        CODE_GEN(gen_if_end_jump); // todo Andrej
+        CODE_GEN(gen_if_end_jump);
 
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
 
@@ -565,12 +565,12 @@ bool stmt() {
 
         NEXT_TOKEN();
 
-        CODE_GEN(gen_if_else); // todo Andrej
+        CODE_GEN(gen_if_else);
         deep++;
 
         NEXT_NONTERM(stmt());
 
-        CODE_GEN(gen_if_end); // todo Andrej
+        CODE_GEN(gen_if_end);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -728,14 +728,14 @@ bool def_var() {
 	CHECK_INTERNAL_ERR(!ret, false);
 
 	//////////////////////////////
-	QUEUE_ADD_ID(tmp_var); //todo Andrej
-	CODE_GEN(gen_def_var); // todo Andrej
+	QUEUE_ADD_ID(tmp_var);
+	CODE_GEN(gen_def_var);
 	//////////////////////////////
 
     str_clear(&tps_left);
 
     print_rule("29. <def_var> -> e");
-    queue_remove_rear(queue_id); //todo Andrej mozno front
+    queue_remove_rear(queue_id);
     return true;
 }
 
@@ -786,9 +786,9 @@ bool one_assign() {
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
         }
-        QUEUE_ADD_ID(tmp_var);      // todo Andrej
-        CODE_GEN(gen_def_var);      // todo Andrej
-        while(!queue_isEmpty(queue_id)){ // todo andrej
+        QUEUE_ADD_ID(tmp_var);
+        CODE_GEN(gen_def_var);
+        while(!queue_isEmpty(queue_id)){
             CODE_GEN(gen_init_var);
         }
 		//////////////
@@ -799,17 +799,17 @@ bool one_assign() {
     print_rule("31. <one_assign> -> <expr>");
     NEXT_NONTERM(expr(false, false));
 
-    CODE_GEN(gen_expression);     // todo Andrej
+    CODE_GEN(gen_expression);
 
     // add new declare variable to local table of symbols
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
 
     // GEN_CODE //
-    QUEUE_ADD_ID(tmp_var);      // todo Andrej
+    QUEUE_ADD_ID(tmp_var);
     cnt.in_while = false;
-    CODE_GEN(gen_def_var);      // todo Andrej
+    CODE_GEN(gen_def_var);
     cnt.in_while = (cnt.while_cnt_deep == 0) ? false : true;
-    CODE_GEN(gen_init_var);     // todo Andrej
+    CODE_GEN(gen_init_var);
     //////////////
 
     // fill type of new declare variable
@@ -910,7 +910,7 @@ bool next_expr() {
 
 		///////////////////
         cnt.ret_vals++;
-        CODE_GEN(gen_expression); //todo Andrej
+        CODE_GEN(gen_expression);
 		///////////////////
 
         return next_expr();
@@ -964,7 +964,7 @@ bool fork_id() {
             //////////////
 
             NEXT_TOKEN();
-            str_clear(&cnt.func_call); // TODO - via CODE_GEN
+            str_clear(&cnt.func_call);
 
             return true;
         }
@@ -983,7 +983,7 @@ bool fork_id() {
     CHECK_INTERNAL_ERR(!ret, false);
 
 	/////////////////////////
-    QUEUE_ADD_ID(tmp_var); // todo Andrej
+    QUEUE_ADD_ID(tmp_var);
     /////////////////////////
 
     NEXT_NONTERM(next_id());
@@ -1005,7 +1005,7 @@ bool next_id() {
         CHECK_INTERNAL_ERR(!ret, false);
 
         ///////////////////////
-        QUEUE_ADD_ID(tmp_var); // todo Andrej
+        QUEUE_ADD_ID(tmp_var);
         ///////////////////////
 
         NEXT_TOKEN();
@@ -1082,7 +1082,7 @@ bool mult_assign() {
     NEXT_NONTERM(expr(false, false));
 
     // CODE_GEN //
-    CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression);
     //////////////
 
     NEXT_NONTERM(next_expr());
