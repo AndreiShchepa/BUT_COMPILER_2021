@@ -89,7 +89,9 @@ bool gen_init() {
         !init_cnt()) {
         return ((err = INTERNAL_ERR) == NO_ERR);
     }
-    if(!(queue_if = queue_init()) && !(queue_while = queue_init())){
+    queue_if = queue_init();
+    queue_while = queue_init();
+    if(!(queue_if) && !(queue_while)){
         return false;
     }
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
@@ -209,32 +211,32 @@ bool gen_if_end_jump() {
 
 bool gen_while_label() {
     queue_add_rear(queue_while);
-    queue_if->rear->cnt_while = ++cnt.while_cnt_max;
+    queue_while->rear->cnt_while = ++cnt.while_cnt_max;
     DEBUG_PRINT_INSTR(1, FUNCTIONS, EOL DEVIDER_2"while" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(2, "label "FORMAT_WHILE , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(2, "label "FORMAT_WHILE , cnt.func_name.str, queue_while->rear->cnt_while);
     return true;
 }
 
 bool gen_while_eval() {
     PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
     PRINT_FUNC(2, "type GF@&type1  GF@&var1" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(3, "jumpifeq $%s$%d$pre_while$ GF@&type1 string@bool" , cnt.func_name.str, queue_while->rear->cnt_while);
 
-    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(4, "jumpifeq $%s$%d$pre_while_zero$ GF@&var1 int@0" , cnt.func_name.str, queue_while->rear->cnt_while);
     PRINT_FUNC(5, "move  GF@&var1 bool@true" NON_VAR , EMPTY_STR);
-    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(6, "jump $%s$%d$pre_while$" , cnt.func_name.str, queue_while->rear->cnt_while);
 
-    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(7, "label $%s$%d$pre_while_zero$" , cnt.func_name.str, queue_while->rear->cnt_while);
     PRINT_FUNC(8, "move  GF@&var1 bool@false" NON_VAR , EMPTY_STR);
 
-    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, queue_if->rear->cnt_while);
-    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(9, "label $%s$%d$pre_while$" , cnt.func_name.str, queue_while->rear->cnt_while);
+    PRINT_FUNC(10, "jumpifeq $%s$%d$while_end$ GF@&var1 bool@false" , cnt.func_name.str, queue_while->rear->cnt_while);
     return true;
 }
 
 bool gen_while_end() {
-    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, queue_if->rear->cnt_while);
-    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, queue_if->rear->cnt_while);
+    PRINT_FUNC(1, "jump  "FORMAT_WHILE      , cnt.func_name.str, queue_while->rear->cnt_while);
+    PRINT_FUNC(2, "label "FORMAT_WHILE_END  , cnt.func_name.str, queue_while->rear->cnt_while);
     DEBUG_PRINT_INSTR(3, FUNCTIONS, NON_VAR , EMPTY_STR);
     queue_remove_rear(queue_while);
     return true;
@@ -469,7 +471,6 @@ bool gen_expression() {
                 PRINT_FUNC(26, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(27, "pushs GF@&var2" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(28, "eqs" NON_VAR , EMPTY_STR);
-
                 PRINT_FUNC(29, "ors" NON_VAR , EMPTY_STR);
                 break;
             case T_GE:
@@ -482,7 +483,6 @@ bool gen_expression() {
                 PRINT_FUNC(36, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(37, "pushs GF@&var2" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(434, "eqs" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(441, "nots" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(39, "ors" NON_VAR , EMPTY_STR);
                 break;
             case T_EQ:
