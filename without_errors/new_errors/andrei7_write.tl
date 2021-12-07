@@ -6,5 +6,5 @@ function foo(i : integer) : integer
 	write(a, "\n") 
 end
 
-foo()
+foo(1)
 

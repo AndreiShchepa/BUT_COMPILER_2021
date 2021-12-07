@@ -19,7 +19,7 @@ usage() {
     echo "in=""                       # input_filename take last .tl file"
     echo ""
     echo "run_compiler=0              # build || build and execute"
-    echo "run_lua=0                   # run lua code"
+    echo "run_lua=0                   # run lua"
     echo "run_ifjcode=0               # run ifjcode"
     echo ""
     echo "stdout=0                    # if 1 to stdout else to in.ifjcode"
@@ -47,7 +47,7 @@ params=""                   # params for cmake
 in=""                       # input_filename take last .tl file
 
 run_compiler=0              # build || build and execute
-run_lua=0                   # run lua code
+run_lua=0                   # run lua
 run_ifjcode=0               # run ifjcode
 
 stdout=0                    # if 1 to stdout else to in.ifjcode
@@ -205,11 +205,15 @@ if [ "$build_ifjcode" -eq 1 ]; then
     for i in "${without_errors_folders[@]}"; do
         cd "${i}" || error_exit
         for name in *.tl; do
+            if [ "${name}" == "ifj21.tl" ];then continue; fi
+
             compile_cmd="../../build/compiler <${name} >${name%.*}.ifjcode 2>tmp.txt"
             eval "$compile_cmd"
             OUT1=$(cat tmp.txt | grep -h "err")
             if [[ "${OUT1}" != *"No error"* ]];then
                 printf "${i}/${name} ${RED}ERROR${NC}\n"
+            else
+                printf "${i}/${name} ${GREEN}OK${NC}\n"
             fi
         done
         cd .. || error_exit
