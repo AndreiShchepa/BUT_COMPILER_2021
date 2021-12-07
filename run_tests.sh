@@ -79,12 +79,6 @@ if [ "$name" == "teal_ok" ];then
 fi
 
 if [ "$code_generator" -eq 1 ]; then
-    eval "./start.sh --compile"
-        eval "./start.sh --compile_to_ifjcode"
-    if [ $(uname) == "Darwin" ];then
-        eval "./start.sh --clean --compile_to_lua"
-    fi
-
     if [ $(uname) != "Darwin" ];then
         cd without_errors || error_exit
         for file in *.tl; do
@@ -206,21 +200,21 @@ if [ "${valgrind}" -eq 1 ]; then
         for name in without_errors/${i}/*.tl; do
             if [[ -f "${name}" ]]; then
                 valgrind --log-file="tmp.txt" build/compiler <$name 2>/dev/null 1>/dev/null
-                ret_val=$?
                 OUT1=$(cat tmp.txt | grep -h 'in use at exit:')
                 OUT2=$(cat tmp.txt | grep -h 'errors from')
                 if [[ "$OUT1" == *"0 bytes in 0 blocks"* ]]; then
                     if [[ "$OUT2" != *"0 errors from 0 contexts"* ]]; then
                         err_memory=$((err_memory+1))
-                        printf "$file ${RED}ERROR${NC} with memory\n"
+                        printf "$name ${RED}ERROR${NC} with memory\n"
                         echo ""
+                    else
+                        printf "$name ${GREEN}OK${NC} \n"
                     fi
                 else
                     err_memory=$((err_memory+1))
-                    printf "$file ${RED}ERROR${NC} with memory\n"
+                    printf "$name ${RED}ERROR${NC} with memory\n"
                     echo ""
                 fi
-
                 rm tmp.txt
             fi
         done
