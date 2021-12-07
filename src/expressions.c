@@ -17,10 +17,6 @@
 #include "symtable.h"
 #include "queue.h"
 #include "symstack.h"
-char postfix[500] = {0};
-
-#define DEBUG_ANDREJ 0
-#define DEBUG_RISO 0
 
 extern int err;
 extern string_t tps_right;
@@ -81,7 +77,6 @@ char Rules[][LENGTH_OF_RULES] = {
         {"E>=E"}, {"E==E"}, {"E~=E"}, {"E..E"}
 };
 
-
 #define ASSIGN_TYPE_FROM_TOKEN()                                                    \
         do {                                                                        \
             TempElement_second->type =  token.type == T_INT          ? 'I' :        \
@@ -93,7 +88,7 @@ char Rules[][LENGTH_OF_RULES] = {
 #define GET_TYPE_ID(IDX, KEY)                           \
         do {                                            \
             var = find_id_symtbs(&local_symtbs, (KEY)); \
-            CHECK_SEM_DEF_ERR(!var);             \
+            CHECK_SEM_DEF_ERR(!var);                    \
             types_E[IDX] = var->data.var->type.str[0];  \
         } while(0)
 
@@ -140,7 +135,6 @@ char Rules[][LENGTH_OF_RULES] = {
                 find->type = 'F';                                                \
             }                                                                    \
         } while(0)
-
 
 #define CHECK_CONC_LENGTH()                                         \
         do {                                                        \
@@ -301,11 +295,13 @@ bool Insert(List * list, char * data) {
     // We check if malloc was successful
     ElementPtr TempElement_first = malloc(sizeof(struct Element));
     if (TempElement_first == NULL) {
+        err = INTERNAL_ERR;
         Deallocate(list);
         return false;
     }
     ElementPtr TempElement_second = malloc(sizeof(struct Element));
     if (TempElement_second == NULL) {
+        err = INTERNAL_ERR;
         free(TempElement_first);
         Deallocate(list);
         return false;
@@ -353,6 +349,12 @@ bool Insert(List * list, char * data) {
         // If we are dealing with variable we also save the name of the variable to be able to look into symtab
         // or we are saving the string of variable of type T_STRING
         if (token.type == T_ID || token.type == T_STRING) {
+
+            if (token.type == T_ID) {
+                var = find_id_symtbs(&local_symtbs, token.attr.id.str);
+                CHECK_SEM_DEF_ERR(!var);
+            }
+
             ret = str_init(&TempElement_second->element_token.attr.id, 20);
             CHECK_INTERNAL_ERR(!ret, false);
 
@@ -438,14 +440,10 @@ bool Close(List * list) {
             GET_TYPE_ID(1, Ej->element_token.attr.id.str);
             // Change type from X (ID) into float / int / string
             Ej->type = var->data.var->type.str[0];
-            //printf("1:Funkcia mi vratila typ %c\n", types_E[1]);
         }
         else {
             GET_TYPE_TERM(1);
         }
-    }
-    else {
-        // else <i>
     }
 
     // We check against rules
@@ -516,20 +514,6 @@ bool Close(List * list) {
             find->nextElement = NULL;
             // The resulting expression is combination of 2 other expressions
             list->lastElement = find;
-
-#if DEBUG_ANDREJ
-            QueueElementPtr *tmp = queue_expr->front;
-            while (tmp != NULL) {
-                if (queue_expr->front->token->type == T_ID)
-                    printf("%s", queue_expr->front->token->attr.id.str);
-                if (queue_expr->front->token->type == T_INT)
-                    printf("%llu", queue_expr->front->token->attr.num_i);
-                if (queue_expr->front->token->type == T_FLOAT)
-                    printf("%f", queue_expr->front->token->attr.num_f);
-                tmp = tmp->previous_element;
-            }
-#endif
-
             return true;
         }
     }
@@ -588,9 +572,9 @@ bool Check_Correct_Closure(List * list) {
     if (list != NULL) {
         // We just forcefully check if first element on stack
         // is $ and the second one E
-        if ((strcmp(list->firstElement->data, "$") == 0) &&
-            list->firstElement->nextElement != NULL &&
-           (strcmp(list->firstElement->nextElement->data, "E") == 0))
+        if ((strcmp(list->firstElement->data, "$") == 0)    &&
+                    list->firstElement->nextElement != NULL &&
+            (strcmp(list->firstElement->nextElement->data, "E") == 0))
         {
             return true;
         }
@@ -604,25 +588,14 @@ bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule) {
     token_t * Token_Operator = NULL;
 
     if (rule == 0) {
-            if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
-                return false;
-            }
-
-#if DEBUG_RISO
-            printf("Add_queue: Ei:%d\n", Token_Ei->type);
-#endif
-
-            queue_add_token_rear(queue_expr, Token_Ei);
-
+        if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
+            return false;
+        }
+        queue_add_token_rear(queue_expr, Token_Ei);
     } else if (rule != 1) {
         if ((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL) {
             return false;
         }
-
-#if DEBUG_RISO
-            printf("Add_queue: Operator:%d\n", Token_Operator->type);
-#endif
-
         queue_add_token_rear(queue_expr, Token_Operator);
     }
 
@@ -667,12 +640,23 @@ bool expr(bool bool_condition, bool bool_empty) {
 
     char precedence;
 
+    /*
+     * If expression is called, but is empty, check 2 cases:
+     * 1. Expression can be empty, no error (assigning, argument, etc.)
+     * 2. Expression cant be empty, syntax error (if, while)
+     */
     if (FIRST_SYMBOL_NO_IN_EXPR) {
         Deallocate(list);
         return bool_empty == true ? true : false;
     }
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
+        /*
+         * If expression get at least one from these symbols:
+         * <, >, <=, >=, ==, ~=, check 2 cases:
+         * 1. Expression can contain this symbol, no error (if, while)
+         * 2. Expression cant contain this symbol, the 6th error (assigning, ret_val, etc.)
+         */
         if (!bool_condition) {
             if (SYMBOLS_FOR_CONDITION) {
                 err = SEM_TYPE_COMPAT_ERR;
@@ -712,8 +696,7 @@ start_expr:
             // We copy the character from the token with << added
             // infront of E $<<E+ or $<<E+<<( (+, -, <= etc.)
             if(!Insert(list, data)){
-                list = NULL; // TODO: is it useful? Change to CHECK_INTERNAL_ERR
-                err = INTERNAL_ERR;
+                list = NULL;
                 goto err_expr;
             }
         }
@@ -734,7 +717,7 @@ start_expr:
             // We just copy the data onto the stack
             if(!Push(list, token.attr.id.str)){
                 err = INTERNAL_ERR;
-                list = NULL; // TODO: is it useful? Change to CHECK_INTERNAL_ERR
+                list = NULL;
                 goto err_expr;
             }
             print_stack_expr(list);
@@ -769,18 +752,9 @@ end_expr:
         print_stack_expr(list);
     }
 
-#if DEBUG_RISO
-    printf("\nPostfix:%s\n", postfix);
-#endif
-
-    postfix[0]='\0';
     // If we were successful in reducing the expression and there wasn't any error
     if (Check_Correct_Closure(list) && err == NO_ERR) {
-
-        ret = str_add_char(&tps_right, list->lastElement->element_token.type == T_INT    ? 'I':
-                                       list->lastElement->element_token.type == T_STRING ? 'S':
-                                       list->lastElement->element_token.type == T_FLOAT  ? 'F':
-                                                                                           'N');
+        ret = str_add_char(&tps_right, list->lastElement->type);
         CHECK_INTERNAL_ERR(!ret, false);
         Deallocate(list);
 

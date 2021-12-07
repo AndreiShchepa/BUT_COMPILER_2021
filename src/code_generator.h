@@ -1,7 +1,13 @@
-/******************************************************************************
- *                                  TODO
-******************************************************************************/
-//
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file code_generator.h
+ *
+ * @brief Implement generation of  IFJcode21
+ *
+ * @author  Andrej Binovsky     <xbinov00>
+ *          Zdenek Lapes        <xlapes02>
+ */
 
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
@@ -14,6 +20,8 @@
 #include "str.h"
 #include "queue.h"
 #include "symtable.h"
+#include "symstack.h"
+#include "parser.h"
 
 
 /******************************************************************************
@@ -26,7 +34,7 @@
 
 #define DEBUG_INSTR                 1
 #define DEBUG_BUILT_IN              1
-#define DEBUG_INSTR_WITH_GEN_INFO   1
+#define DEBUG_INSTR_WITH_GEN_INFO   0
 
 #define IFJ_CODE_START_LEN 10000
 #define MAX_LINE_LEN       300
@@ -47,12 +55,13 @@
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
     do {                                                                                    \
+        cnt.instr++;\
         if (!DEBUG_INSTR_WITH_GEN_INFO) {                                                               \
             sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         } else {                                                                            \
-            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
+            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():%d" EOL), __VA_ARGS__,       \
                                     80-snprintf(NULL, 0, (fmt), __VA_ARGS__),           \
-                                    "#", __LINE__, __func__);                               \
+                                    "#", __LINE__, __func__, cnt.instr);                               \
         }                                                                                   \
     } while(0)                                                                              \
 
@@ -61,7 +70,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
         if (!str_concat_str2(&ifj_code[MAIN], instr##num)) {                                \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -70,7 +79,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
         if (!str_concat_str2(&ifj_code[(cnt.in_while) ? WHILE : FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -79,7 +88,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
         if (!str_concat_str2(&ifj_code[WHILE], instr##num)) {                               \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -88,7 +97,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -100,7 +109,7 @@
 			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
 			INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                         \
 			if (!str_concat_str2(&ifj_code[NUM_BLOCK], instr##num)) {               \
-				return false;                                                       \
+                CHECK_INTERNAL_ERR(true, false);                                                \
 			}                                                                       \
 		} while(0)
 #else
@@ -117,30 +126,25 @@
     } while(0)                                  \
 
 
-#define SWITCH_CASE(number)                             \
-        case number:                                    \
-            sprintf(tmp_str, "%d", number);             \
-            if(!str_add_char(&str_out, '\\')){          \
-                return false;                            \
-            }                                           \
-            if(!str_add_char(&str_out, '0')){           \
-                return false;                            \
-            }                                           \
-            if(!str_add_char(&str_out, tmp_str[0])){    \
-                return false;                             \
-            }                                           \
-            if (tmp_str[1] != '\0'){                    \
-                if(!str_add_char(&str_out, tmp_str[1])){      \
-                    return false;                         \
-                }                                       \
-            }                                           \
+#define SWITCH_CASE(number)                                     \
+        case number:                                            \
+            sprintf(tmp_str, "%d", number);                     \
+            CODE_GEN(str_add_char, &str_out, '\\');             \
+            CODE_GEN(str_add_char, &str_out, '0');              \
+            if (tmp_str[1] == '\0'){                            \
+                 CODE_GEN(str_add_char, &str_out, '0');         \
+                 CODE_GEN(str_add_char, &str_out, tmp_str[0]);  \
+            }                                                   \
+            else{                                               \
+                CODE_GEN(str_add_char, &str_out, tmp_str[0]);   \
+                CODE_GEN(str_add_char, &str_out, tmp_str[1]);   \
+            }                                                   \
             break;
 
 #define CODE_GEN(callback, ...)         \
     do {                                \
         if (!(callback)(__VA_ARGS__)) {   \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                           \
     } while(0)                          \
 
@@ -149,16 +153,14 @@
         if (strcmp(cnt.func_call.str, "write") == 0) {              \
                break;                                               \
         } else if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                           \
     } while(0);                                                     \
 
 #define QUEUE_ADD_ARGS(where_is_id_key) \
     do {                              \
         if (!queue_add_id_rear(queue_args, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                             \
-            return false;                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                           \
     } while(0);                                 \
 
@@ -171,13 +173,14 @@ typedef struct cnts_s {
     string_t func_name;
     string_t func_call;
     unsigned int param_cnt;
-    unsigned int if_cnt;
     unsigned int if_cnt_max;
     unsigned int while_cnt;
     unsigned int while_cnt_max;
     unsigned int while_cnt_deep;
     unsigned int deep;
     unsigned int ret_vals;
+    unsigned int instr;
+    bool 		 in_return;
     bool         in_while;
 } cnts_t;
 
@@ -191,50 +194,197 @@ typedef long long unsigned int llu_t;
 /******************************************************************************
   *									FUNCTIONS
 *****************************************************************************/
-bool alloc_ifj_code();
-bool init_ifj_code();
-
-bool alloc_cnt();
-bool init_cnt();
-
-bool gen_init_built_int();
-
-bool gen_while_label();
-bool gen_while_start();
-bool gen_while_end();
-bool gen_while_eval();
-bool gen_concat_while_functions();
-
-bool gen_params();
-bool gen_param();
-
-bool gen_if_start();
-bool gen_if_else(/*TODO*/);
-bool gen_if_end();
-
-bool gen_func_start(char *id);
-bool gen_func_end();
-bool gen_func_call_write();
-bool gen_func_call_start();
-bool gen_func_call_args_var();
-bool gen_func_call_args_const();
-bool gen_func_call_label();
-
-bool code_gen_print_ifj_code21();
-bool gen_expression();
-bool gen_init();
-bool code_gen();
-bool gen_expression();
-bool gen_if_eval();
-bool gen_if_end_jump();
-bool gen_def_var();
-bool gen_init_var();
-bool dealloc_gen_var();
-bool gen_retval_nil();
+/**
+ * @brief print generated .ifjcode on stdout
+ * @return On success True, otherwise False
+ */
 bool gen_testing_helper();
 
+/**
+ * @brief allocates all strings for generating .ifjcode
+ * @return On success True, otherwise False
+ */
+bool alloc_ifj_code();
+
+/**
+ * @brief clears all dynamic strings
+ * @return On success True, otherwise False
+ */
+bool init_ifj_code();
+
+/**
+ * @brief allocates strings in cnt structure
+ * @return On success True, otherwise False
+ */
+bool alloc_cnt();
+
+/**
+ * @brief initialize cnt structure
+ * @return On success True, otherwise False
+ */
+bool init_cnt();
+
+/**
+ * @brief
+ * @return On success True, otherwise False
+ */
+bool gen_init();
+
+/**
+ * @brief generate all built-in functions into string string fo functions
+ * @return On success True, otherwise False
+ */
+bool gen_init_built_ins();
+
+/**
+ * @brief Generate declaration of variable and initialize it with nil
+ * @return On success True, otherwise False
+ */
+bool gen_def_var();
+
+/**
+ * @brief Generate initialization of variable with value from stack
+ * @return On success True, otherwise False
+ */
+bool gen_init_var();
+
+/**
+ * @brief Generate label if
+ * @return On success True, otherwise False
+ */
+bool gen_if_start();
+
+/**
+ * @brief Generate label else
+ * @return On success True, otherwise False
+ */
+bool gen_if_else();
+
+/**
+ * @brief Generate label end of if else
+ * @return On success True, otherwise False
+ */
+bool gen_if_end();
+
+/**
+ * @brief Generate evaluation of if expression
+ * @return On success True, otherwise False
+ */
+bool gen_if_eval();
+
+/**
+ * @brief Generate if jump based on result of evaluation
+ * @return On success True, otherwise False
+ */
+bool gen_if_end_jump();
+
+/**
+ * @brief generate while label
+ * @param key_id
+ * @return On success True, otherwise False
+ */
+bool gen_while_label();
+
+/*  *
+ * @brief Generate evaluating for condition of while
+ * @param key_id
+ * @return On success True, otherwise False
+ */
+bool gen_while_eval();
+
+/**
+ * @brief generate label where to jump if condition for repeting while cycle is false
+ * @return On success True, otherwise False
+ */
+bool gen_while_end();
+
+/**
+ * @brief concatenate code for variables outside while with while logic
+ * @return On success True, otherwise False
+ */
+bool gen_concat_while_functions();
+
+/**
+ * @brief generate label for function with creating of LF
+ * @param id
+ * @return On success True, otherwise False
+ */
+bool gen_func_start(char *id);
+
+/**
+ * @brief destroy LF and return from function
+ * @return On success True, otherwise False
+ */
+bool gen_func_end();
+
+/**
+ * @brief handle taking parameters for function
+ * @return On success True, otherwise False
+ */
+bool gen_params();
+
+/**
+ * @brief generaet new TF for calling function
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_start();
+
+/**
+ * @brief create arguments for calling function on TF from variable
+ * @param htab_item
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_args_var(htab_item_t *htab_item);
+
+/**
+ * @brief create arguments for calling function on TF from const
+ * @param token
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_args_const(token_t *token);
+
+/**
+ * @brief generate call command for  write function or any other function
+ * @return On success True, otherwise False
+ */
+bool gen_func_call_label();
+
+/**
+ * @brief decide where to print ifjcode (WHILE, MAIN, FUNCTIONS)
+ * @return
+ */
 int where_to_print();
+
+/**
+ * @brief check if is calling funtion write
+ * @return if is write return true, otherwise false
+ */
 bool is_write();
+
+/**
+ * @brief
+ * @param str_in
+ * @return On success True, otherwise False
+ */
+bool convert_str_to_ascii(string_t *str_in);
+
+/**
+ * @brief Generate push value nil on stack
+ * @return On success True, otherwise False
+ */
+bool gen_retval_nil();
+
+/**
+ * @brief Generate expression and result push on stack
+ * @return On success True, otherwise False
+ */
+bool gen_expression();
+
+/**
+ * @brief deallocate all string need for code_generator
+ * @return On success True, otherwise False
+ */
+bool dealloc_gen_var();
 
 
 /******************************************************************************
@@ -254,7 +404,13 @@ bool is_write();
 "\ncreateframe	# new TF"\
 "\ndefvar LF@$tointeger$0p_type"\
 "\npushs LF@%0p"\
-"\ncall $check_is_nil"\
+"\npops GF@&var1"\
+"\ntype GF@&type1 LF@%0p"\
+"\njumpifneq $tointeger$continue GF@&type1 string@nil"\
+"\npushs GF@&var1"\
+"\nreturn"\
+"\nlabel $tointeger$continue"\
+"\npushs GF@&var1"\
 "\nTYPE	LF@$tointeger$0p_type LF@%0p"\
 "\njumpifneq $tointeger$end LF@$tointeger$0p_type string@float"\
 "\nfloat2ints"\
@@ -395,6 +551,13 @@ bool is_write();
 "\ndefvar 		LF@ord$cmp"\
 "\ndefvar 		LF@ord$ret1"\
 "\ndefvar 		LF@ord$len"\
+"\n"\
+"\nmove 		LF@ord$s		nil@nil"\
+"\nmove 		LF@ord$i		nil@nil"\
+"\nmove 		LF@ord$cmp		nil@nil"\
+"\nmove 		LF@ord$ret1		nil@nil"\
+"\nmove 		LF@ord$len		nil@nil"\
+"\n"\
 "\n"\
 "\npushs LF@%0p"\
 "\ncall $check_is_nil"\

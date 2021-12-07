@@ -26,16 +26,23 @@ Queue* queue_init(){
 void queue_dispose(Queue *queue) {
     QueueElementPtr *tmp;
     while (!queue_isEmpty(queue)) {
+        if(queue->front->token){
+            if (queue->front->token->type == T_ID || queue->front->token->type == T_STRING) {
+                str_free(&queue->front->token->attr.id);
+            }
+            free(queue->front->token);
+        }
         tmp = queue->front;
         queue->front = queue->front->previous_element;
         free(tmp);
     }
-
 }
 
 void queue_free(Queue *queue){
-    queue_dispose(queue);
-    free(queue);
+    if(queue){
+        queue_dispose(queue);
+        free(queue);
+    }
 }
 
 bool queue_isEmpty(Queue *queue){

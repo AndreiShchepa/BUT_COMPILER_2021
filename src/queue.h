@@ -17,6 +17,8 @@
 typedef struct QueueElement{
     htab_item_t *id;
     token_t *token;
+    unsigned int cnt_if;
+    unsigned int cnt_while;
     struct QueueElement *previous_element;
     struct QueueElement *next_element;
     bool used;

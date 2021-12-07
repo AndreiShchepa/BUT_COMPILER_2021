@@ -1,5 +1,35 @@
 #!/bin/bash
 
+
+usage() {
+    echo "MACOS"
+    echo "./run_tests.sh --code_generator"
+    echo "UBUNTU"
+    echo "./run_tests.sh --code_generator > without_errors_output.out"
+    exit 0
+}
+
+error_exit() {
+    echo "ERROR"
+    exit 1
+}
+
+declare -a without_errors_folders=( \
+                                    "buitin_func"\
+                                   "if_else"\
+                                   "new_errors"\
+                                   "while"\
+                                   "write_value"\
+                                   )
+#                                   "nil"\
+#                                   "ondroid"\
+#                                   "ondroid_err"\
+#                                   "ifj21.tl"\
+#                                   "ic21int"\
+#                                   "input"\
+#                                   "zero"
+
+
 RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
@@ -15,11 +45,14 @@ err_memory=0
 all_files=0
 run_lua=0
 run_ifjcode=0
+valgrind=0
 help=0
 
 code_generator=0
 only_names=0
 in=""
+[[ "$#" -eq 0 ]] && usage
+
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -38,20 +71,16 @@ while [ "$#" -gt 0 ]; do
     "--run_ifjcode")
         run_ifjcode=1
         ;;
+    "--valgrind")
+        valgrind=1
+        ;;
     "--help")
-        help=1
+        usage
         ;;
     esac
     shift
 done
 
-if [ "${help}" -eq 1 ]; then
-    echo "MACOS"
-    echo "./run_tests.sh --code_generator"
-    echo "UBUNTU"
-    echo "./run_tests.sh --code_generator > without_errors_output.out"
-    exit 1
-fi
 
 if [ "$name" == "teal_ok" ];then
     cd without_errors || exit 1
@@ -64,50 +93,44 @@ if [ "$name" == "teal_ok" ];then
     exit 0
 fi
 
+###############
+#   CODE_GEN
+###############
 if [ "$code_generator" -eq 1 ]; then
-    eval "./start.sh --compile"
-        eval "./start.sh --compile_to_ifjcode"
-    if [ $(uname) == "Darwin" ];then
-        eval "./start.sh --clean --compile_to_lua"
-    fi
+    cd without_errors || error_exit
 
-    if [ $(uname) != "Darwin" ];then
-        cd without_errors || exit 1
+    for i in "${without_errors_folders[@]}"; do
+        if [ "${i}" == "input" ] || [ "${i}" == "zero" ] || [ "${i}" == "nil" ]; then continue ;fi
+
+        cd "${i}" || error_exit
         for file in *.tl; do
+            if [ "${file%.*}" == "ifj21" ]; then continue; fi
+
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
-            [[ "$run_lua"     -eq 1 ]] && ret_val_lua=$(${lua_cmd})       || ret_val_lua=""
-            [[ "$run_ifjcode" -eq 1 ]] && ret_val_ifjcode=$($ifjcode_cmd) || ret_val_ifjcode=""
 
-            if [ "${file}" == "ifj21.tl" ]; then
-                continue
-            fi
+#            echo "${i}/${file}"
+            ret_val_lua=$(${lua_cmd})
+            ret_val_ifjcode=$(${ifjcode_cmd})
 
-            if [ "$only_names" -eq 1 ]; then
-                if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                    echo "${file}"
-                fi
-            else
-                if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                    if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
-                        echo ""
-                        echo "#############################################################################"
-                        echo "${file}"
-                        echo "LUA:"
-                        eval "${lua_cmd}"
-                        echo "-----------------------------------------------------------------------------"
-                        echo "IFJCODE:"
-                        eval "${ifjcode_cmd}"
-                        echo "#############################################################################"
-                        echo ""
-                    fi
-                fi
+            if [ "${ret_val_lua}" != "${ret_val_ifjcode}" ];then
+                err_gen_code=$((err_gen_code+1))
+                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+                printf "${i}/$file ${RED}ERROR${NC} \n"
+                echo "LUA: ${ret_val_lua}"
+                echo "IFJCODE: ${ret_val_ifjcode}"
+                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                echo ""
+#            else
+#                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+#                printf "${i}/$file ${GREEN}OK${NC} \n"
+#                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+#                echo ""
             fi
         done
-        cd .. || exit 1
-    fi
-
-    cd .. || exit 1
+        cd .. || error_exit
+    done
+    printf "${RED}ERRORS:  ${NC} ${err_gen_code} \n"
     exit 0
 fi
 
@@ -180,6 +203,36 @@ elif [[ "$expected_err" -ge "3" ]] && [[ "$expected_err" -le "7" ]]; then
 else
     echo "This script doesnt support this type of error $expected_error"
     exit 1
+fi
+
+###############
+#   CODE_GEN-VALGRIND
+###############
+if [ "${valgrind}" -eq 1 ]; then
+    for i in "${without_errors_folders[@]}"; do
+        for name in without_errors/${i}/*.tl; do
+            if [[ -f "${name}" ]]; then
+                valgrind --log-file="tmp.txt" build/compiler <$name 2>/dev/null 1>/dev/null
+                OUT1=$(cat tmp.txt | grep -h 'in use at exit:')
+                OUT2=$(cat tmp.txt | grep -h 'errors from')
+                if [[ "$OUT1" == *"0 bytes in 0 blocks"* ]]; then
+                    if [[ "$OUT2" != *"0 errors from 0 contexts"* ]]; then
+                        err_memory=$((err_memory+1))
+                        printf "$name ${RED}ERROR${NC} with memory\n"
+                        echo ""
+                    else
+                        printf "$name ${GREEN}OK${NC} \n"
+                    fi
+                else
+                    err_memory=$((err_memory+1))
+                    printf "$name ${RED}ERROR${NC} with memory\n"
+                    echo ""
+                fi
+                rm tmp.txt
+            fi
+        done
+    done
+    exit 0
 fi
 
 for file in ${folder}/${name}*_${expected_err}.tl;

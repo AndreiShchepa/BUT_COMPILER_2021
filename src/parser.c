@@ -52,7 +52,6 @@ string_t tps_right;
 bool working_func;
 
 Queue* queue_id;
-Queue* queue_args;
 Queue* queue_expr;
 
 
@@ -148,6 +147,16 @@ Queue* queue_expr;
         ret = str_copy_str(DST, COND ? SRC_1 : SRC_2); \
         CHECK_INTERNAL_ERR(!ret, false)
 
+#define CHECK_COUNT_OF_ARGS() \
+        do { \
+            if (str_get_len(&tps_left) != str_get_len(&tps_right) && \
+                !tmp_func->data.func->func_write) \
+            { \
+                err = SEM_FUNC_ERR; \
+                return false; \
+            } \
+        } while(0)
+
 
 bool type_compatibility() {
     if (tmp_func != NULL && tmp_func->data.func->func_write) {
@@ -188,7 +197,12 @@ bool prolog() {
         print_rule("1.  <prolog> -> require t_string <prog>");
 
         NEXT_TOKEN();
-        EXPECTED_TOKEN(!str_cmp_const_str(&token.attr.id, "ifj21") && token.type == T_STRING);
+        EXPECTED_TOKEN(token.type == T_STRING);
+        if (str_cmp_const_str(&token.attr.id, "ifj21")) {
+            err = SEM_OTHER_ERR;
+            return false;
+        }
+
         NEXT_TOKEN();
 
         CODE_GEN(gen_init);
@@ -287,6 +301,10 @@ add_func_def:
         NEXT_NONTERM(stmt());
 
         // GEN_CODE //
+        while (cnt.ret_vals > 0 && !cnt.in_return) {
+            CODE_GEN(gen_retval_nil);
+            cnt.ret_vals--;
+        }
         CODE_GEN(init_cnt);
         //////////////
 
@@ -336,6 +354,7 @@ add_func_def:
         // after args() in tps_left are expected types of arguments
         // in tps_right we have real types of arguments
         // do comparing of to arrays and then clear string
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -401,6 +420,8 @@ bool ret_T() {
 
         NEXT_NONTERM(type());
 
+        cnt.ret_vals++;
+
         return next_ret_T();
     }
 
@@ -420,6 +441,7 @@ bool next_ret_T() {
 
         NEXT_NONTERM(type());
 
+        cnt.ret_vals++;
         return next_ret_T();
     }
 
@@ -503,6 +525,7 @@ bool type() {
 }
 
 bool stmt() {
+    cnt.in_return = 0;              // reset - because if multiple_returns in function cancle func earlier.
     if (token.keyword == KW_IF) {
         print_rule("22. <stmt> -> if <expr> then <stmt> else <stmt>"
                 " end <stmt>");
@@ -512,9 +535,9 @@ bool stmt() {
         NEXT_NONTERM(expr(true, false));
 
         // GEN_CODE //
-        CODE_GEN(gen_expression); // todo Andrej
-        CODE_GEN(gen_if_eval); // todo Andrej
-        CODE_GEN(gen_if_start); // todo Andrej
+        CODE_GEN(gen_expression);
+        CODE_GEN(gen_if_eval);
+        CODE_GEN(gen_if_start);
         //////////////
 
         // we dont need final type of expr in conditions
@@ -529,7 +552,7 @@ bool stmt() {
         NEXT_TOKEN();
         NEXT_NONTERM(stmt());
 
-        CODE_GEN(gen_if_end_jump); // todo Andrej
+        CODE_GEN(gen_if_end_jump);
 
         EXPECTED_TOKEN(token.keyword == KW_ELSE);
 
@@ -542,12 +565,12 @@ bool stmt() {
 
         NEXT_TOKEN();
 
-        CODE_GEN(gen_if_else); // todo Andrej
+        CODE_GEN(gen_if_else);
         deep++;
 
         NEXT_NONTERM(stmt());
 
-        CODE_GEN(gen_if_end); // todo Andrej
+        CODE_GEN(gen_if_end);
 
         EXPECTED_TOKEN(token.keyword == KW_END);
 
@@ -637,6 +660,7 @@ bool stmt() {
         return stmt();
     }
     else if (token.keyword == KW_RETURN) {
+        cnt.in_return = true;
         cnt.ret_vals = 0;
 
         print_rule("25. <stmt> -> return <expr> <next_expr> <stmt>");
@@ -704,14 +728,14 @@ bool def_var() {
 	CHECK_INTERNAL_ERR(!ret, false);
 
 	//////////////////////////////
-	QUEUE_ADD_ID(tmp_var); //todo Andrej
-	CODE_GEN(gen_def_var); // todo Andrej
+	QUEUE_ADD_ID(tmp_var);
+	CODE_GEN(gen_def_var);
 	//////////////////////////////
 
     str_clear(&tps_left);
 
     print_rule("29. <def_var> -> e");
-    queue_remove_rear(queue_id); //todo Andrej mozno front
+    queue_remove_rear(queue_id);
     return true;
 }
 
@@ -743,6 +767,8 @@ bool one_assign() {
         NEXT_TOKEN();
 
         NEXT_NONTERM(param());
+
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         // create new variable in a local table of symbols
@@ -760,9 +786,9 @@ bool one_assign() {
         for(int i = num_return - num_var; i > 0; i--){
             PRINT_FUNC(1, "pops GF@&var1" NON_VAR , EMPTY_STR);
         }
-        QUEUE_ADD_ID(tmp_var);      // todo Andrej
-        CODE_GEN(gen_def_var);      // todo Andrej
-        while(!queue_isEmpty(queue_id)){ // todo andrej
+        QUEUE_ADD_ID(tmp_var);
+        CODE_GEN(gen_def_var);
+        while(!queue_isEmpty(queue_id)){
             CODE_GEN(gen_init_var);
         }
 		//////////////
@@ -773,17 +799,17 @@ bool one_assign() {
     print_rule("31. <one_assign> -> <expr>");
     NEXT_NONTERM(expr(false, false));
 
-    CODE_GEN(gen_expression);     // todo Andrej
+    CODE_GEN(gen_expression);
 
     // add new declare variable to local table of symbols
     ALLOC_VAR_IN_SYMTAB(&left_new_var);
 
     // GEN_CODE //
-    QUEUE_ADD_ID(tmp_var);      // todo Andrej
+    QUEUE_ADD_ID(tmp_var);
     cnt.in_while = false;
-    CODE_GEN(gen_def_var);      // todo Andrej
+    CODE_GEN(gen_def_var);
     cnt.in_while = (cnt.while_cnt_deep == 0) ? false : true;
-    CODE_GEN(gen_init_var);     // todo Andrej
+    CODE_GEN(gen_init_var);
     //////////////
 
     // fill type of new declare variable
@@ -880,25 +906,21 @@ bool next_expr() {
 
         NEXT_TOKEN();
 
-        bool is_return = false;
-        if (queue_isEmpty(queue_expr)) { // is return
-            is_return = true;
-        }
-
         NEXT_NONTERM(expr(false, false));
 
+		///////////////////
         cnt.ret_vals++;
-        CODE_GEN(gen_expression); //todo Andrej
-
-        if (!is_return) {
-            CODE_GEN(gen_init_var);  //todo Andrej
-        }
+        CODE_GEN(gen_expression);
+		///////////////////
 
         return next_expr();
     } else if (len > cnt.ret_vals + 1 && len != 0) { //        return  || return 1, 2 (3)
         cnt.ret_vals++;
         gen_retval_nil();
         next_expr();
+    } else {
+        if (cnt.in_return)
+            CODE_GEN(gen_func_end);
     }
 
     print_rule("43. <next_expr> -> e");
@@ -914,6 +936,7 @@ bool fork_id() {
             print_rule("44. <fork_id> -> ( <param> )");
 
             // GEN_CODE //
+            CODE_GEN(gen_func_call_start);
             strcpy(cnt.func_call.str, tmp_func->key_id);
             QUEUE_ADD_ID(tmp_func);
             //////////////
@@ -929,6 +952,7 @@ bool fork_id() {
 
             NEXT_NONTERM(param());
 
+            CHECK_COUNT_OF_ARGS();
             CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
             EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -936,10 +960,11 @@ bool fork_id() {
             // GEN_CODE //
             if (strcmp(cnt.func_call.str, "write") != 0)
                 CODE_GEN(gen_func_call_label);
+            cnt.param_cnt = 0;
             //////////////
 
             NEXT_TOKEN();
-            str_clear(&cnt.func_call); // TODO - via CODE_GEN
+            str_clear(&cnt.func_call);
 
             return true;
         }
@@ -958,7 +983,7 @@ bool fork_id() {
     CHECK_INTERNAL_ERR(!ret, false);
 
 	/////////////////////////
-    QUEUE_ADD_ID(tmp_var); // todo Andrej
+    QUEUE_ADD_ID(tmp_var);
     /////////////////////////
 
     NEXT_NONTERM(next_id());
@@ -980,7 +1005,7 @@ bool next_id() {
         CHECK_INTERNAL_ERR(!ret, false);
 
         ///////////////////////
-        QUEUE_ADD_ID(tmp_var); // todo Andrej
+        QUEUE_ADD_ID(tmp_var);
         ///////////////////////
 
         NEXT_TOKEN();
@@ -1027,6 +1052,9 @@ bool mult_assign() {
         NEXT_TOKEN();
 
         NEXT_NONTERM(param());
+
+
+        CHECK_COUNT_OF_ARGS();
         CHECK_COMPATIBILITY(SEM_FUNC_ERR);
 
         EXPECTED_TOKEN(token.type == T_R_ROUND_BR);
@@ -1054,7 +1082,7 @@ bool mult_assign() {
     NEXT_NONTERM(expr(false, false));
 
     // CODE_GEN //
-    CODE_GEN(gen_expression); //todo Andrej
+    CODE_GEN(gen_expression);
     //////////////
 
     NEXT_NONTERM(next_expr());
@@ -1150,8 +1178,7 @@ int parser() {
     set_source_file(f);
 
     queue_expr = queue_init();
-    queue_id = queue_init();
-    queue_args = queue_init();
+    queue_id   = queue_init();
 
 #ifndef DEBUG_ANDREJ
 // profesionalni debug, master of C language by Andrej Binovsky
@@ -1193,6 +1220,7 @@ end_parser:
     symtab_free(&global_symtab);
     queue_free(queue_expr);
     queue_free(queue_id);
+
 
     return err;
 }
