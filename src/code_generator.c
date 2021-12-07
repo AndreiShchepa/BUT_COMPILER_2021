@@ -47,7 +47,7 @@ bool alloc_ifj_code() {
     if (!str_init(&ifj_code[MAIN]     , IFJ_CODE_START_LEN) ||
         !str_init(&ifj_code[FUNCTIONS], IFJ_CODE_START_LEN) ||
         !str_init(&ifj_code[WHILE]    , IFJ_CODE_START_LEN)) {
-        return false;
+        CHECK_INTERNAL_ERR(true, false);
     }
     return true;
 }
@@ -62,7 +62,7 @@ bool init_ifj_code() {
 bool alloc_cnt() {
     if (!str_init(&cnt.func_name, IFJ_CODE_START_LEN) ||
         !str_init(&cnt.func_call, IFJ_CODE_START_LEN)) {
-        return false;
+        CHECK_INTERNAL_ERR(true, false);
     }
     return true;
 }
@@ -87,12 +87,12 @@ bool gen_init() {
         !init_ifj_code()    ||
         !alloc_cnt()        ||
         !init_cnt()) {
-        return ((err = INTERNAL_ERR) == NO_ERR);
+        CHECK_INTERNAL_ERR(true, false);
     }
     queue_if = queue_init();
     queue_while = queue_init();
     if(!(queue_if) && !(queue_while)){
-        return false;
+        CHECK_INTERNAL_ERR(true, false)
     }
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
     PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
@@ -108,7 +108,7 @@ bool gen_init() {
     PRINT_MAIN(10,  "createframe"       NON_VAR , EMPTY_STR);
 
     if (!gen_init_built_ins()) {
-        return ((err = INTERNAL_ERR) == NO_ERR);
+        CHECK_INTERNAL_ERR(true, false);
     }
 
     DEBUG_PRINT_INSTR(26, FUNCTIONS, NON_VAR , EMPTY_STR); // above will "#" from before call
@@ -405,8 +405,7 @@ bool gen_expression() {
             case T_ID:
                 tmp = find_id_symtbs(&local_symtbs, queue_expr->front->token->attr.id.str);
                 if(!tmp){
-                    err = INTERNAL_ERR;
-                    return false;
+                    CHECK_INTERNAL_ERR(true, false);
                 }
                 PRINT_FUNC(1, "pushs LF@$%s$%llu$%s$" , cnt.func_name.str, (llu_t)tmp->deep, queue_expr->front->token->attr.id.str);
                 str_free(&queue_expr->front->token->attr.id);
@@ -426,8 +425,7 @@ bool gen_expression() {
                 if(queue_expr->front->token->keyword == KW_NIL){
                     PRINT_FUNC(5, "pushs nil@nil" NON_VAR , EMPTY_STR);
                 } else {
-                    err = PARSER_ERR;
-                    return false;
+                    CHECK_INTERNAL_ERR(true, false);
                 }
                 break;
             case T_PLUS:

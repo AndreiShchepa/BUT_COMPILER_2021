@@ -14,6 +14,8 @@
 #include "str.h"
 #include "queue.h"
 #include "symtable.h"
+#include "symstack.h"
+#include "parser.h"
 
 
 /******************************************************************************
@@ -62,7 +64,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
         if (!str_concat_str2(&ifj_code[MAIN], instr##num)) {                                \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -71,7 +73,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                                                                    \
         if (!str_concat_str2(&ifj_code[(cnt.in_while) ? WHILE : FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -80,7 +82,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                             \
         if (!str_concat_str2(&ifj_code[WHILE], instr##num)) {                               \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -89,7 +91,7 @@
         char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];            \
         sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         if (!str_concat_str2(&ifj_code[FUNCTIONS], instr##num)) {                           \
-            return false;                                                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                                                   \
     } while(0)
 
@@ -101,7 +103,7 @@
 			char instr##num[(snprintf(NULL, 0, (fmt), __VA_ARGS__) + MAX_LINE_LEN)];           \
 			INIT_CONCAT_STR(num, fmt, __VA_ARGS__);                                         \
 			if (!str_concat_str2(&ifj_code[NUM_BLOCK], instr##num)) {               \
-				return false;                                                       \
+                CHECK_INTERNAL_ERR(true, false);                                                \
 			}                                                                       \
 		} while(0)
 #else
@@ -136,8 +138,7 @@
 #define CODE_GEN(callback, ...)         \
     do {                                \
         if (!(callback)(__VA_ARGS__)) {   \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                           \
     } while(0)                          \
 
@@ -146,16 +147,14 @@
         if (strcmp(cnt.func_call.str, "write") == 0) {              \
                break;                                               \
         } else if (!queue_add_id_rear(queue_id, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                                     \
-            return false;                                           \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                                                           \
     } while(0);                                                     \
 
 #define QUEUE_ADD_ARGS(where_is_id_key) \
     do {                              \
         if (!queue_add_id_rear(queue_args, (where_is_id_key))) {    \
-            err = INTERNAL_ERR;                             \
-            return false;                                   \
+            CHECK_INTERNAL_ERR(true, false);                                                \
         }                           \
     } while(0);                                 \
 
