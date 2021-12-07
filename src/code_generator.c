@@ -3,7 +3,7 @@
  *
  * @file code_generator.c
  *
- * @brief Implement functions for generating of ifjcode
+ * @brief Implement generation of  IFJcode21
  *
  * @author  Andrej Binovsky     <xbinov00>
  *          Zdenek Lapes        <xlapes02>
