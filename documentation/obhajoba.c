@@ -83,8 +83,35 @@
     •typy operatorov
     •tlač na konci
 /**
- * TODO: opisat funkčnosť gencode
+ *  Generovanie cieloveho kodu IFJcode21 je implementovany ako samostatny modul ktory je riadeny syntaxou. To znamena ze
+ *  komponenty modulu su volane v parseri na základe pravidiel LL-Gramatiky. Cielovy kod sa generuje priamo bez tvorby
+ *  3adresneho kodu, ktory sme nemuseli vytvarat na zaklade neoptimalizacie cieloveho kodu.
+ *
+ *  Na zaistenie vypisania cieloveho kodu len za podmienky bezchybnej analyzy zapisujeme cielovy kod do 2 textovych
+ *  blokov -  definicie funkcii a ich volanie .  Tieto 2 textove bloky po uspesnej analyze skonkatenujeme a
+ *  posleme na standartny vystup.
+ *
+ *  Generovani kodu pro vyrazy je volane ihned po jejich redukci, v prubehu ktere je vyraz zapsan do  obojstranneho radu
+ *  (to znamena stack spojeny s radom - frontou) v postfixovom formate. Jednotlive elementy v rade nesu vsetky potrebne
+ *  informacie na generovanie vyrazu - typ operatora, meno premennej ci hodnotu kontanty. Generator generuje instrukcie
+ *  kodu Ifjcode21 ktore vyuzivaju len zasobnik. To znamena ze hodnoty, medzivysledky a nasledne vysledok vyrazu su
+ *  ulozene na zasobnik.
+ *
+ *  Deklaracie premennych a ich mozny konflikt nazvov (na zaklade vyskytu toho isteho mena v roznych scopoch)
+ *  (?? ramcoch po slovensky??) sme implementovali vdaka obojsmernemu radu v ktorom sa uklada adresa elementu tabulky
+ *  symbolov s prislusnym identifikatorom ktora obsahuje unikatne cislo premennej.
+ *
+ *  Volani funkcii je zajisteno vygenerovanim kodu ktory preda funkcii argumenty pomocou docasneho ramcu, nasledne
+ *  je vygenerovan kod pro zavolani funkce. Pro spravnou funkcnost volane funkce je ihned na zacatku generovan kod,
+ *  ktory z docasneho ramca vytvori lokalni ramec funkce a pro vsechny argumenty ktere byli funkci predane vytvori promenne se
+ *  unikatnym nazvom podle nazvu parametru funkce. Nasledne se generuje kod tela funkce.
+ *
+ *  Pre generovanie podmienok a cyklov pouzivame navestia ktore su taktiez reprezentovane unikatnym cislom a
+ *  identifikatorom funkcie kde sa nachadzaju. Na zabranenie redeklaracie promennych zapisuje kod cyklu do 2 roznych blokov.
+ *  Vyskytnute deklaracie zapisujeme nadalej do bloku definicii funkcii no zvysny kod tela cyklu zapisujeme do 3.
+ *  pomocneho textoveho bloku.  Nasledne po vygerovani celeho cyklu tieto 2 bloky skonkatenujeme.
  */
+
 •prostredie
 /**
  * Programovali sme v prostredí Clionu s aktuálnou verziou gcc na linux mint a ubuntu
