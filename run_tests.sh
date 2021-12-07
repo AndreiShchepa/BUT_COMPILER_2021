@@ -14,11 +14,18 @@ error_exit() {
     exit 1
 }
 
-declare -a without_errors_folders=("input" \
-                                   "buitin_func" \
-                                   "nil" \
-                                   "write_value"  \
-                                   "zero")
+declare -a without_errors_folders=( "buitin_func"\
+                                   "if_else"\
+                                   "new_errors"\
+                                   "nil"\
+                                   "while"\
+                                   "write_value"\
+                                   )
+#                                   "ifj21.tl"\
+#                                   "ic21int"\
+#                                   "input"\
+#                                   "zero"
+
 
 RED='\033[0;31m'
 NC='\033[0m'

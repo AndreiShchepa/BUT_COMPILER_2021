@@ -296,7 +296,7 @@ add_func_def:
         EXPECTED_TOKEN(token.keyword == KW_END);
 
         // GEN_CODE //
-		CODE_GEN(gen_func_end); // TODO  - While repair
+		CODE_GEN(gen_func_end);
         //////////////
 
 		deep--;
@@ -643,6 +643,8 @@ bool stmt() {
         return stmt();
     }
     else if (token.keyword == KW_RETURN) {
+        cnt.in_return = true;
+        cnt.ret_vals = 0;
 
         print_rule("25. <stmt> -> return <expr> <next_expr> <stmt>");
 
@@ -654,11 +656,9 @@ bool stmt() {
         // set to the tps_right final type of expr
         NEXT_NONTERM(expr(false, true));
 
-        //////////// GEN_CODE ////////////
-//        CODE_GEN(gen_expression);
-        cnt.in_return = true;
-        cnt.ret_vals = 0;
-		/////////////////////////////////
+        // GEN_CODE //
+        CODE_GEN(gen_expression);
+        //////////////
 
         NEXT_NONTERM(next_expr());
 
@@ -898,7 +898,6 @@ bool next_expr() {
 
         return next_expr();
     } else if (len > cnt.ret_vals + 1 && len != 0) { //        return  || return 1, 2 (3)
-        // TODO when while return
         cnt.ret_vals++;
         gen_retval_nil();
         next_expr();
