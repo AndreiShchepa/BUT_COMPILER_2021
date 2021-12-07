@@ -632,12 +632,23 @@ bool expression(bool bool_condition, bool bool_empty) {
 
     char precedence;
 
+    /*
+     * If expression is called, but is empty, check 2 cases:
+     * 1. Expression can be empty, no error (assigning, argument, etc.)
+     * 2. Expression cant be empty, syntax error (if, while)
+     */
     if (FIRST_SYMBOL_NO_IN_EXPR) {
         Deallocate(list);
         return bool_empty == true ? true : false;
     }
 
     while ((TOKEN_ID_EXPRESSION()) && (list != NULL)) {
+        /*
+         * If expression get at least one from these symbols:
+         * <, >, <=, >=, ==, ~=, check 2 cases:
+         * 1. Expression can contain this symbol, no error (if, while)
+         * 2. Expression cant contain this symbol, the 6th error (assigning, ret_val, etc.)
+         */
         if (!bool_condition) {
             if (SYMBOLS_FOR_CONDITION) {
                 err = SEM_TYPE_COMPAT_ERR;
