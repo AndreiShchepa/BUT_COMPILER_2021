@@ -906,6 +906,9 @@ bool next_expr() {
         cnt.ret_vals++;
         gen_retval_nil();
         next_expr();
+    } else {
+        if (cnt.in_return)
+            CODE_GEN(gen_func_end);
     }
 
     print_rule("43. <next_expr> -> e");
