@@ -168,23 +168,23 @@ declare -a without_errors_folders=("input" \
                                    "write_value"  \
                                    "zero")
 if [ "$build_lua" -eq 1 ]; then
-    echo "TODO"
-#    cd without_errors || error_exit
-#    for i in "${without_errors_folders[@]}"; do
-#        for name in without_errors/${i}/*.tl; do
-#            echo  $(dirname ${name})
-#            cd $(dirname ${name}) || error_exit
-#            f=$(basename ${name})
-#            echo  ${f}
-#            if [[ -f "${f}" ]] ; then
-#                echo ${f}
-##                compile_cmd="tl gen \"${name}\""
-##                eval "$compile_cmd" || error_exit
-#            fi
-#            cd ../.. || error_exit
-#        done
-#    done
-#    cd .. || error_exit
+    cd without_errors || error_exit
+    ## all folders in withotu_errors
+    for i in "${without_errors_folders[@]}"; do
+        cd "${i}" || error_exit
+        for name in *.tl; do
+            compile_cmd="tl gen \"${name}\""
+            eval "$compile_cmd"
+        done
+        cd .. || error_exit
+    done
+
+    ## all files in folder without errors
+    for name in *.tl; do
+        compile_cmd="tl gen \"${name}\""
+        eval "$compile_cmd" || error_exit
+    done
+    cd .. || error_exit
 fi
 
 
