@@ -18,10 +18,6 @@ function main ()
 
 	b = ord(a, 0)
 	write(b)
-
-	a = nil
-	b = ord(a, 0)
-	write(b)
 end
 
 main()
