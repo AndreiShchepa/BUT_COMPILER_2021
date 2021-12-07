@@ -5,8 +5,7 @@ function main()
 
 	while 1 do
 		x=x*2
-		-- Creative way to check if abs(root - x) < eps
-		if (x>100) then
+		if x > 8 then
 			write(x)
 			return
 		else

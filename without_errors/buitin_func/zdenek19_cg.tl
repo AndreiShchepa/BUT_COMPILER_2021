@@ -5,7 +5,7 @@ function main ()
 	local b : string 
 
 	b = substr(a, 0, 2)
-	write(b)
+	write(b, "\n")
 end
 
 main()

@@ -99,22 +99,22 @@ if [ "$code_generator" -eq 1 ]; then
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
 
-            ret_val_lua=$(${lua_cmd})         || ret_val_lua=""
-            ret_val_ifjcode=$(${ifjcode_cmd}) || ret_val_ifjcode=""
+            ret_val_lua=$(${lua_cmd})
+            ret_val_ifjcode=$(${ifjcode_cmd})
 
             if [ "${ret_val_lua}" != "${ret_val_ifjcode}" ];then
                 echo ""
                 err_gen_code=$((err_gen_code+1))
                 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-                printf "$file ${RED}ERROR${NC} \n"
+                printf "${i}/$file ${RED}ERROR${NC} \n"
                 echo "LUA: ${ret_val_lua}"
                 echo "IFJCODE: ${ret_val_ifjcode}"
                 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-#            else
-#                echo ""
-#                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#                printf "$file ${GREEN}OK${NC} \n"
-#                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            else
+                echo ""
+                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+                printf "${i}/$file ${GREEN}OK${NC} \n"
+                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             fi
         done
         cd .. || error_exit
