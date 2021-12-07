@@ -14,6 +14,11 @@ error_exit() {
     exit 1
 }
 
+declare -a without_errors_folders=("input" \
+                                   "buitin_func" \
+                                   "nil" \
+                                   "write_value"  \
+                                   "zero")
 
 RED='\033[0;31m'
 NC='\033[0m'
@@ -78,42 +83,69 @@ if [ "$name" == "teal_ok" ];then
     exit 0
 fi
 
+###############
+#   CODE_GEN
+###############
 if [ "$code_generator" -eq 1 ]; then
-    if [ $(uname) != "Darwin" ];then
-        cd without_errors || error_exit
+    cd without_errors || error_exit
+
+    for i in "${without_errors_folders[@]}"; do
+        if [ "${i}" == "input" ]; then continue ;fi
+
+        cd "${i}" || error_exit
         for file in *.tl; do
+            echo ""
+            if [ "${file%.*}" == "ifj21" ]; then continue; fi
+
             lua_cmd="lua ${file%.*}.lua"
             ifjcode_cmd="./ic21int ${file%.*}.ifjcode"
-            [[ "$run_lua"     -eq 1 ]] && ret_val_lua=$(${lua_cmd})       || ret_val_lua=""
-            [[ "$run_ifjcode" -eq 1 ]] && ret_val_ifjcode=$($ifjcode_cmd) || ret_val_ifjcode=""
 
-            if [ "${file}" == "ifj21.tl" ]; then
-                continue
-            fi
+            ret_val_lua=$(${lua_cmd})         || ret_val_lua=""
+            ret_val_ifjcode=$(${ifjcode_cmd}) || ret_val_ifjcode=""
 
-            if [ "$only_names" -eq 1 ]; then
-                if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                    echo "${file}"
-                fi
+            if [ "${ret_val_lua}" != "${ret_val_ifjcode}" ];then
+                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+                printf "$file ${RED}ERROR${NC} \n"
+                echo "LUA: ${ret_val_lua}"
+                echo "IFJCODE: ${ret_val_ifjcode}"
+                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             else
-                if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
-                    if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
-                        echo ""
-                        echo "#############################################################################"
-                        echo "${file}"
-                        echo "LUA:"
-                        eval "${lua_cmd}"
-                        echo "-----------------------------------------------------------------------------"
-                        echo "IFJCODE:"
-                        eval "${ifjcode_cmd}"
-                        echo "#############################################################################"
-                        echo ""
-                    fi
-                fi
+                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+                printf "$file ${GREEN}OK${NC} \n"
+                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             fi
         done
         cd .. || error_exit
-    fi
+    done
+    exit 0
+
+    for file in *.tl; do
+        [[ "$run_lua"     -eq 1 ]] && ret_val_lua=$(${lua_cmd})       || ret_val_lua=""
+        [[ "$run_ifjcode" -eq 1 ]] && ret_val_ifjcode=$($ifjcode_cmd) || ret_val_ifjcode=""
+
+
+        if [ "$only_names" -eq 1 ]; then
+            if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
+                echo "${file}"
+            fi
+        else
+            if [ "$ret_val_lua" != "$ret_val_ifjcode" ]; then
+                if [ "$(basename "$in")" == "${file}" ] || [ "$in" == "" ];then
+                    echo ""
+                    echo "#############################################################################"
+                    echo "${file}"
+                    echo "LUA:"
+                    eval "${lua_cmd}"
+                    echo "-----------------------------------------------------------------------------"
+                    echo "IFJCODE:"
+                    eval "${ifjcode_cmd}"
+                    echo "#############################################################################"
+                    echo ""
+                fi
+            fi
+        fi
+    done
+    cd .. || error_exit
 
     cd .. || error_exit
     exit 0
@@ -190,11 +222,9 @@ else
     exit 1
 fi
 
-declare -a without_errors_folders=("input" \
-                                   "buitin_func" \
-                                   "nil" \
-                                   "write_value"  \
-                                   "zero")
+###############
+#   CODE_GEN-VALGRIND
+###############
 if [ "${valgrind}" -eq 1 ]; then
     for i in "${without_errors_folders[@]}"; do
         for name in without_errors/${i}/*.tl; do
