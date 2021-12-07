@@ -1,12 +1,17 @@
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file code_generator.c
+ *
+ * @brief Implement functions for generating of ifjcode
+ *
+ * @author  Andrej Binovsky     <xbinov00>
+ *          Zdenek Lapes        <xlapes02>
+ */
+
 #include "code_generator.h"
 #include "symstack.h"
 #include <stdlib.h>
-
-/******************************************************************************
- *                                  TODO
- *****************************************************************************/
-// TODO - check vars, params, if, while numbering - tests - redefinition
-// TODO - vypis ERROR 8 and 9 from ifjcode yes/no?
 
 
 /******************************************************************************
@@ -270,15 +275,14 @@ bool gen_params() {
         PRINT_FUNC(2, "defvar "FORMAT_VAR             , cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id);
         PRINT_FUNC(3, "move   "FORMAT_VAR FORMAT_PARAM, cnt.func_name.str, queue_id->rear->id->deep, queue_elem->id->key_id, i);
     }
-    DEBUG_PRINT_INSTR(3, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
-    // TODO - remove one by one
+    DEBUG_PRINT_INSTR(4, FUNCTIONS, EOL DEVIDER_2"logic"NON_VAR , EMPTY_STR);
     queue_dispose(queue_id);
     return true;
 }
 
 bool gen_func_call_start() {
     DEBUG_PRINT_INSTR(1, where_to_print(), EOL DEVIDER_2"call_func" NON_VAR , EMPTY_STR);
-    PRINT_WHERE(1, "createframe" NON_VAR, EMPTY_STR);
+    PRINT_WHERE(2, "createframe" NON_VAR, EMPTY_STR);
     return true;
 }
 
@@ -292,13 +296,13 @@ bool gen_func_call_args_var(htab_item_t *htab_item) {
 	return true;
 }
 
-bool gen_func_call_args_const(token_t *token) {
+bool gen_func_call_args_const(token_t *token_1) {
     PRINT_WHERE(1, "defvar TF@%%%dp" , cnt.param_cnt);
-    switch(token->type) {
-        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " int@%llu" , cnt.param_cnt, (llu_t)token->attr.num_i);  break;
-        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " float@%a" , cnt.param_cnt, token->attr.num_f);         break;
-        case (T_STRING)	: convert_str_to_ascii(&token->attr.id);
-            PRINT_WHERE(2, "move "  FORMAT_ARGS " string@%s", cnt.param_cnt, token->attr.id.str);        break;
+    switch(token_1->type) {
+        case (T_INT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " int@%llu" , cnt.param_cnt, (llu_t)token_1->attr.num_i);  break;
+        case (T_FLOAT)	: PRINT_WHERE(2, "move "  FORMAT_ARGS " float@%a" , cnt.param_cnt, token_1->attr.num_f);         break;
+        case (T_STRING)	: convert_str_to_ascii(&token_1->attr.id);
+            PRINT_WHERE(2, "move "  FORMAT_ARGS " string@%s", cnt.param_cnt, token_1->attr.id.str);        break;
         default       	: PRINT_WHERE(2, "move "  FORMAT_ARGS " nil@nil"  , cnt.param_cnt);                            break;
     }
 
@@ -313,7 +317,7 @@ bool gen_func_call_label() {
         return true;
     }
 
-    PRINT_WHERE(1, "call $%s" , queue_id->rear->id->key_id);
+    PRINT_WHERE(2, "call $%s" , queue_id->rear->id->key_id);
     queue_remove_rear(queue_id);
     return true;
 }
@@ -469,38 +473,38 @@ bool gen_expression() {
                 PRINT_FUNC(29, "ors" NON_VAR , EMPTY_STR);
                 break;
             case T_GE:
-                PRINT_FUNC(30, "call $check_op" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(31, "pops GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(32, "pops GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(33, "pushs GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(34, "pushs GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(35, "gts" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(36, "pushs GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(37, "pushs GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(434, "eqs" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(39, "ors" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(31, "call $check_op" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(32, "pops GF@&var2" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(33, "pops GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(34, "pushs GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(35, "pushs GF@&var2" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(36, "gts" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(37, "pushs GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(38, "pushs GF@&var2" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(39,  "eqs" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(40, "ors" NON_VAR , EMPTY_STR);
                 break;
             case T_EQ:
-                PRINT_FUNC(40, "call $check_comp" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(41, "eqs" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(51, "call $check_comp" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(52, "eqs" NON_VAR , EMPTY_STR);
                 break;
             case T_NEQ:
-                PRINT_FUNC(42, "call $check_comp" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(43, "eqs" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(44, "nots" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(53, "call $check_comp" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(54, "eqs" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(55, "nots" NON_VAR , EMPTY_STR);
                 break;
             case T_LENGTH:
-                PRINT_FUNC(100, "call $check_is_nil" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(45, "pops GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(46, "strlen GF@&var1 GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(47, "pushs GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(56,  "call $check_is_nil" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(57, "pops GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(58, "strlen GF@&var1 GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(59, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 break;
             case T_CONCAT:
-                PRINT_FUNC(48, "pops GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(49, "pops GF@&var1" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(100, "call $check_is_nil_concat" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(50, "concat GF@&var1 GF@&var1 GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(51, "pushs GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(60, "pops GF@&var2" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(61, "pops GF@&var1" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(62,  "call $check_is_nil_concat" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(63, "concat GF@&var1 GF@&var1 GF@&var2" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(64, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 break;
             default:
                 break;

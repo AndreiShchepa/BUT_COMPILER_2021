@@ -1,7 +1,13 @@
-/******************************************************************************
- *                                  TODO
-******************************************************************************/
-//
+/**
+ * Project: Compiler IFJ21
+ *
+ * @file code_generator.h
+ *
+ * @brief Implement functions for generating of ifjcode
+ *
+ * @author  Andrej Binovsky     <xbinov00>
+ *          Zdenek Lapes        <xlapes02>
+ */
 
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
