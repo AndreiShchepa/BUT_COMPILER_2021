@@ -902,18 +902,10 @@ bool next_expr() {
         cnt.ret_vals++;
         gen_retval_nil();
         next_expr();
-	} else {
-        if (cnt.in_return) {
-            ///////////////////
-            cnt.ret_vals++;
-            while (!queue_isEmpty(queue_expr)) {
-                CODE_GEN(gen_expression);
-            }
-            CODE_GEN(gen_func_end); // TODO  - While repair
-        }
-		///////////////////
-	}
-
+    } else {
+        if (cnt.in_return)
+            CODE_GEN(gen_func_end);
+    }
 
     print_rule("43. <next_expr> -> e");
     return true;

@@ -1,6 +1,6 @@
 require "ifj21"
 
-function main():integer, integer
+function main() : integer, integer
 	local x: integer = 4
 
 	while 1 do
