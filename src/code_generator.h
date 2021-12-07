@@ -117,23 +117,19 @@
     } while(0)                                  \
 
 
-#define SWITCH_CASE(number)                             \
-        case number:                                    \
-            sprintf(tmp_str, "%d", number);             \
-            if(!str_add_char(&str_out, '\\')){          \
-                return false;                            \
-            }                                           \
-            if(!str_add_char(&str_out, '0')){           \
-                return false;                            \
-            }                                           \
-            if(!str_add_char(&str_out, tmp_str[0])){    \
-                return false;                             \
-            }                                           \
-            if (tmp_str[1] != '\0'){                    \
-                if(!str_add_char(&str_out, tmp_str[1])){      \
-                    return false;                         \
-                }                                       \
-            }                                           \
+#define SWITCH_CASE(number)                                     \
+        case number:                                            \
+            sprintf(tmp_str, "%d", number);                     \
+            CODE_GEN(str_add_char, &str_out, '\\');             \
+            CODE_GEN(str_add_char, &str_out, '0');              \
+            if (tmp_str[1] == '\0'){                            \
+                 CODE_GEN(str_add_char, &str_out, '0');         \
+                 CODE_GEN(str_add_char, &str_out, tmp_str[0]);  \
+            }                                                   \
+            else{                                               \
+                CODE_GEN(str_add_char, &str_out, tmp_str[0]);   \
+                CODE_GEN(str_add_char, &str_out, tmp_str[1]);   \
+            }                                                   \
             break;
 
 #define CODE_GEN(callback, ...)         \

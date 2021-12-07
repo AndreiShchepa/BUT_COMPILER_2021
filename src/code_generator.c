@@ -371,7 +371,7 @@ bool convert_str_to_ascii(string_t *str_in) {
             SWITCH_CASE(32);
 
             SWITCH_CASE(35);
-            SWITCH_CASE(96);
+            SWITCH_CASE(92);
 
             default:
                 CODE_GEN(str_add_char, &str_out, input_char);
@@ -474,7 +474,8 @@ bool gen_expression() {
                 PRINT_FUNC(35, "gts" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(36, "pushs GF@&var1" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(37, "pushs GF@&var2" NON_VAR , EMPTY_STR);
-                PRINT_FUNC(38, "neqs" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(434, "eqs" NON_VAR , EMPTY_STR);
+                PRINT_FUNC(441, "nots" NON_VAR , EMPTY_STR);
                 PRINT_FUNC(39, "ors" NON_VAR , EMPTY_STR);
                 break;
             case T_EQ:
