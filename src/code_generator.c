@@ -71,10 +71,13 @@ bool init_cnt() {
 
     cnt.param_cnt       = 0;
     cnt.if_cnt          = 0;
+    cnt.else_cnt        = 0;
     cnt.if_cnt_max      = 0;
     cnt.while_cnt       = 0;
     cnt.while_cnt_max   = 0;
     cnt.deep            = 0;
+    cnt.instr           = 0;
+    cnt.in_return       = false;
     cnt.in_while        = false;
     return true;
 }
@@ -172,7 +175,7 @@ bool gen_if_else() {
 }
 
 bool gen_if_end() {
-    PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, cnt.if_cnt);
+    PRINT_FUNC(3, "label " FORMAT_IF_END , cnt.func_name.str, cnt.if_cnt); // TODO - richard23_0.tl 433,465 same label (label  $najvacsi_numb$2$if_end$)
     cnt.if_cnt--;
     return true;
 }

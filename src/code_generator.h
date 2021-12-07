@@ -47,12 +47,13 @@
 
 #define INIT_CONCAT_STR(num, fmt, ...)                                                      \
     do {                                                                                    \
+        cnt.instr++;\
         if (!DEBUG_INSTR_WITH_GEN_INFO) {                                                               \
             sprintf(instr##num, (fmt EOL), __VA_ARGS__);                                    \
         } else {                                                                            \
-            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():" EOL), __VA_ARGS__,       \
+            snprintf(instr##num, MAX_LINE_LEN, (fmt "%*s:%d:%s():%d" EOL), __VA_ARGS__,       \
                                     80-snprintf(NULL, 0, (fmt), __VA_ARGS__),           \
-                                    "#", __LINE__, __func__);                               \
+                                    "#", __LINE__, __func__, cnt.instr);                               \
         }                                                                                   \
     } while(0)                                                                              \
 
@@ -168,12 +169,14 @@ typedef struct cnts_s {
     string_t func_call;
     unsigned int param_cnt;
     unsigned int if_cnt;
+    unsigned int else_cnt;
     unsigned int if_cnt_max;
     unsigned int while_cnt;
     unsigned int while_cnt_max;
     unsigned int while_cnt_deep;
     unsigned int deep;
     unsigned int ret_vals;
+    unsigned int instr;
     bool 		 in_return;
     bool         in_while;
 } cnts_t;

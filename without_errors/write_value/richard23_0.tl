@@ -22,6 +22,7 @@ function main ()
 	local c : number = 10
 	local najvacsi : number = 0
 	najvacsi = najvacsi_numb(a, b, c)
+	write(najvacsi)
 end
 
 main()

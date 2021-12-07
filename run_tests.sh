@@ -104,15 +104,16 @@ if [ "$code_generator" -eq 1 ]; then
             ret_val_ifjcode=$(${ifjcode_cmd}) || ret_val_ifjcode=""
 
             if [ "${ret_val_lua}" != "${ret_val_ifjcode}" ];then
+                err_count=$(())
                 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
                 printf "$file ${RED}ERROR${NC} \n"
                 echo "LUA: ${ret_val_lua}"
                 echo "IFJCODE: ${ret_val_ifjcode}"
                 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-#            else
-#                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#                printf "$file ${GREEN}OK${NC} \n"
-#                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            else
+                echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+                printf "$file ${GREEN}OK${NC} \n"
+                echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             fi
         done
         cd .. || error_exit
