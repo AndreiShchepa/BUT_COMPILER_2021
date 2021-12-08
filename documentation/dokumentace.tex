@@ -94,7 +94,9 @@
     \setcounter{page}{1}
 
     \section{Úvod}
-
+    Cieľom projektu bolo vytvoriť funkčný prekladač napísaný v jazyku \texttt{C}, ktorý bude prekladať zdrojové kódy jazyka
+    \texttt{Teal} do cielového jazyka \texttt{IFJcode21}, ktorý následne spracováva internet.
+    Program musí prijímať zdrojový program zo štandardného vstupu a vypisovať skompilovaný program na štandardný výstup.
 
 
 
@@ -109,14 +111,13 @@
     tokenu na základe koncového stavu sa vyplnia nasledujúce informácie v štruktúre \texttt{token\_t}:
     \begin{itemize}
         \item \texttt{type}  --  typ načítaného tokenu
-        \item \texttt{keyword} -- keď typ je \texttt{T\_KW}, do premennej keyword sa uloží odpovedajúca hodnota
-        \item \texttt{attr} -- hodnota tokenu
-        \item \texttt{attr.num\_i} -- integer number
-        \item \texttt{attr.num\_f} -- double number
+        \item \texttt{keyword} -- keď typ je \texttt{T\_KEYWORD}, do premennej keyword sa uloží odpovedajúca hodnota
+        \item \texttt{attr.num\_i} -- číslo \texttt{integer}d
+        \item \texttt{attr.num\_f} -- číslo \texttt{double}
         \item \texttt{attr.id} -- ostatné tokeny
     \end{itemize}
-    V prípade že sa narazí na komentár je celý textový blok, ktorý je podľa správnej
-    lexikálnej štruktúry chápaný ako komentár ignorovaný.
+    V prípade že sa narazí na blok, ktorý označuje komentár je časť kódu ignorovaná a lexikálna analýza pokračuje
+    až dalším tokenom mimo spomenutý blok.
 
     \subsection{Syntaktická analýza}
     Parser je hlavným modulom prekladača, protože komunikuje se všetkými ostatnými modulmi a riadi celú funkčnosť
@@ -131,32 +132,28 @@
 
     \subsection{Spracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
     Precedenčná syntaktická analýza je modul ktorý zaisťuje spracovanie výrazov metódou zdola hore.
-    Vo svojom rozhraní obsahuje \texttt{expression()}, ktorú volá parser, keď chce precedenčnej analýze predať
+    Vo svojom rozhraní obsahuje \texttt{expr()}, ktorú volá parser, keď chce precedenčnej analýze predať
     riadenie vo chvíli, kedy očakáva výraz.
     \subsubsection{Implementácia precedenčnej tabuľky}
     Postupne precedenčná analýza spracováva tokeny a pomocou precedenčnej tabuľky symbolov
-    určuje precedenciu. Na základe tejto precedencie môže nastať 5 stavov:
+    určuje precedenciu. Na základe tejto precedencie môže nastať päť stavov:
     \begin{enumerate}
         \item Pri precedencii \texttt{<} pridávame na zásobník načítaný token spolu so znakom precedencie.
         \item Pri precedencii \texttt{>} redukujeme dva výrazy na jeden a ukladáme ich typ podľa pravidla.
         \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
-        \item Pri precedencii \texttt{c} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
+        \item Pri precedencii \texttt{e} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
         \item Pri precedencii \texttt{s} sme narazili na dva identifikátory, redukujeme zvyšok výrazu a vraciame parseru riadenie a výsledný typ.
     \end{enumerate}
     \subsection{Sémantická analýza}
 
-    \begin{itemize}
-        \item Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
-        argumentov do funkcií sa detekujú pomocou dvoch polí (ľavá strana typu a pravá strana typu). Po spracovaní
-        určitého pravidla sa vykoná porovnanie podľa sémantiky jazyka IFJ21.
-
-        \item Kompatibilita typu vo výraze sa detekuje tým istým spôsobom, ale je použitý dve premenné typu char.
-
-        \item Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
+        Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
+        argumentov do funkcií sa detekujú pomocou dvoch polí \texttt{tps\_left} a \texttt{tps\_right}. Po spracovaní
+        určitého pravidla sa vykoná porovnanie podľa sémantiky jazyka \texttt{IFJ21}.
+        Kompatibilita typu vo výraze sa detekuje tým istým spôsobom s rozdielom použitia dvoch premenných typu \texttt{char}.
+        Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
         symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
         tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
         rôznych rámcoch.
-    \end{itemize}
 
 
 
@@ -223,14 +220,15 @@
     Túto dátovú štruktúru sme si zvolili vďaka časovej zložitosti
     (je reprezentovaná medzi \texttt{O(1)} až \texttt{O(n)}). Taktiež nám pomohli znalosti štruktúry z
     predmetov \texttt{IAL} a \texttt{IJC}. Veľkosť tabuľky jsme zvolili 101.
-    Ako unikátny kľúč pre prístup k dátam v tabulke slúži názov identifikátoru a názvy funkcií.
+    Ako unikátny kľúč pre prístup k dátam v tabuľke slúži názov premennej alebo funkcie.
     Každý záznam v tabuľke obsahuje informácie o identifikátore. U premenných je uchovávaná aj informácia
     o hĺbke (redefinícia v zanorenejšom rámci kódu). Modul je implementovaný v súboroch
     \texttt{symtable.h} a \texttt{symtable.c}.
 
 
     \subsection{Pole rozptýlených tabuliek}
-    TODO
+    Táto dátová štruktúra reprezentuje pole ktoré obsahuje tabuľky s~rozptýlenými položkami. Každá tabuľka reprezentuje
+    iný logický rámec.
     Modul je implementovaný v súboroch \texttt{symstack.c} a \texttt{symstack.h}
 
     \subsection{Obojsmerný rad}
@@ -240,11 +238,15 @@
     identifikátorov. Taktiež obsahuje informáciách o parametroch, argumentoch a návratových hodnatách funkcií.
     Modul je implementovaný v súboroch \texttt{queue.c} a \texttt{queue.h}.
 
+    \subsection{Obojsmerný zoznam}
+    Táto dátová štruktúra je využitá pre spracovávanie výrazu v súbore \texttt{expressions.c}. Taktiež k štruktúre boli
+    implementované funkcie pre jej obsluhu. Zložitosť je reprezentovaná ako \texttt{O(n)} pre vyhľadávanie a \texttt{O(1)}
+    pre vkladanie na začiatok zoznamu.
 
     \subsection{Dynamický reťazec}
     Pre uchovanie vygenerovaného kódu počas prekladu a prácu s identifikátormi sme vytvorili štruktúru \texttt{string\_t}.
     Pre obsluhu štruktúry sme vytvorili pomocné funkcie ako alokácia/dealokácia štruktúry,
-    odstraňovanie, pridávanie a konkatenacia reťazcov.
+    odstraňovanie, pridávanie a konkatenácia reťazcov.
     Modul je implementovaný v súboroch \texttt{str.c} a \texttt{str.h}.
 
 
@@ -535,13 +537,13 @@
         \end{adjustwidth}
     \end{center}
 
-    LEGENDA: \\
-    $<$  \space-\space insert to stack with shift \\
-    $>$  \space-\space reduction \\
-    =    \space-\space insert to stack \\
-    e    \space-\space error \\
-    s    \space-\space special case (end of expression)\\
-
-
+    \textbf{Legenda:}
+    \begin{itemize}
+        \item \texttt{<}  \space--\space Pridanie terminálu do zásobníka
+        \item \texttt{>}  \space--\space Redukcia
+        \item \texttt{=}  \space--\space Pridanie terminálu do zásobníka
+        \item \texttt{e}  \space--\space Chyba
+        \item \texttt{s}  \space--\space Špeciálny prípad -- koniec výrazu
+    \end{itemize}
 \end{document}
 
