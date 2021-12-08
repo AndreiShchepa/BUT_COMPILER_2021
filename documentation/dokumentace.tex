@@ -142,6 +142,7 @@
         \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
         \item Pri precedencii \texttt{e} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
         \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak '\texttt{)}' a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
+        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak '\texttt{)}' a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
     \end{enumerate}
     \subsection{Sémantická analýza}
 
@@ -166,7 +167,7 @@
     blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze\\ skonkatenujeme a
     vypíšeme na štandardný výstup.
 
-    \subsubsection{Generovanie -- Deklarácie premenných}
+    \subsubsection{Generovanie -- deklarácie premenných}
     Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v rôznych rámcoch)
     sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabulky
     symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
