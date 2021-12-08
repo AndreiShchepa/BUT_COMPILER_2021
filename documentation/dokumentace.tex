@@ -5,12 +5,11 @@
 
 
 \documentclass[a4paper, 11pt]{article}
-
-
+\usepackage[unicode]{hyperref}
+\usepackage[utf8x]{inputenc}
+\usepackage[IL2]{fontenc}
 \usepackage[slovak]{babel}
-\usepackage[utf8]{inputenc}
 \usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
-\usepackage{times}
 \usepackage{verbatim}
 \usepackage{enumitem}
 \usepackage{graphicx} % vkladanie obrazkov
@@ -72,9 +71,9 @@
             \Large
             \begin{tabular}{l l l}
                 \textbf{Andrei Shchapaniak} & \textbf{(xshcha00)} & \quad 25\,\% \\
-                Andrej Binovsky & (xbinov00) & \quad 25\,\% \\
-                Zdenek Lapes & (xlapes02) & \quad 25\,\% \\
-                Richard Gajdosik & (xgajdo33) & \quad 25\,\% \\
+                Andrej Bínovský & (xbinov00) & \quad 25\,\% \\
+                Zdenek Lapeš & (xlapes02) & \quad 25\,\% \\
+                Richard Gajdošík & (xgajdo33) & \quad 25\,\% \\
             \end{tabular}
         \end{minipage}
     \end{titlepage}
@@ -94,7 +93,9 @@
     \setcounter{page}{1}
 
     \section{Úvod}
-
+    Cieľom projektu bolo vytvoriť funkčný prekladač napísaný v~jazyku \texttt{C}, ktorý bude prekladať zdrojové kódy jazyka
+    \texttt{Teal} do cielového jazyka \texttt{IFJcode21}, ktorý následne spracováva interpret.
+    Program musí prijímať zdrojový program zo štandardného vstupu a vypisovať skompilovaný program na štandardný výstup.
 
 
 
@@ -103,93 +104,88 @@
     \section{Návrh a~implementácia}
 
     \subsection{Lexikálna analýza}
-    \texttt{Scanner} slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
-    prichádzajúce tokeny. Uchováva informácie o tom či sa jedná o komentár, identifikátor, textové bloky, relačné
-    operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikálna chyba 1. V~prípade validného
-    tokenu na základe koncového stavu sa vyplnia nasledujúce informácie v štruktúre \texttt{token\_t}:
+    \texttt{Scanner} slúži pre lexikálnu analýzu. Je implementovaný ako \hyperref[sec: automat]{deterministický konečný automat}, ktorý rozpoznáva všetky
+    prichádzajúce tokeny. Uchováva informácie o~tom či sa jedná o~komentár, identifikátor, textové bloky, relačné
+    operátory alebo iné validné, poprípade nevalidné tokeny u~ktorých nastane lexikálna chyba 1. V~prípade validného
+    tokenu na základe koncového stavu sa vyplnia nasledujúce informácie v~štruktúre \texttt{token\_t}:
     \begin{itemize}
         \item \texttt{type}  --  typ načítaného tokenu
-        \item \texttt{keyword} -- keď typ je \texttt{T\_KW}, do premennej keyword sa uloží odpovedajúca hodnota
-        \item \texttt{attr} -- hodnota tokenu
-        \item \texttt{attr.num\_i} -- integer number
-        \item \texttt{attr.num\_f} -- double number
+        \item \texttt{keyword} -- keď typ je \texttt{T\_KEYWORD}, do premennej \texttt{keyword} sa uloží odpovedajúca hodnota
+        \item \texttt{attr.num\_i} -- číslo \texttt{integer}
+        \item \texttt{attr.num\_f} -- číslo \texttt{double}
         \item \texttt{attr.id} -- ostatné tokeny
     \end{itemize}
-    V prípade že sa narazí na komentár je celý textový blok, ktorý je podľa správnej
-    lexikálnej štruktúry chápaný ako komentár ignorovaný.
+    V~prípade že sa narazí na blok, ktorý označuje komentár je časť kódu ignorovaná a lexikálna analýza pokračuje
+    až dalším tokenom mimo spomenutý blok.
 
     \subsection{Syntaktická analýza}
     Parser je hlavným modulom prekladača, protože komunikuje se všetkými ostatnými modulmi a riadi celú funkčnosť
     prekladača. Syntaktická analýza sa vykonáva zhora dolu metódou rekurzivného zostupu.
     Syntaktická analýza dostáva postupne od lexikálneho analyzátoru tokeny, ktoré následne musia spĺňať presnú
-    syntaktickú štruktúru a postupnosť podla pravidiel \texttt{LL-gramatiky}.
-    V prípade porušenia pravidla (typ prichádzajúceho tokenu se líší od očakávaného) sa vyhodí syntaktická chyba 2.
-    V priebehu syntaktickej analýzy sú volané funkcie z modulu pre generovanie kódu, ktoré vygenerujú cielový kód z
-    jazyka \texttt{Teal} do \texttt{IFJcode21}, ktorý nasledné spracováva interpret.
-
+    syntaktickú štruktúru a postupnosť podla pravidiel \hyperref[sec: LL-gramatika]{\texttt{LL-gramatiky}}.
+    V~prípade porušenia pravidla (typ prichádzajúceho tokenu se líší od očakávaného) sa vyhodí syntaktická chyba 2.
+    V~priebehu syntaktickej analýzy sú volané funkcie z~modulu pre generovanie kódu, ktoré vygenerujú cielový kód
+    z~jazyka \texttt{Teal} do \texttt{IFJcode21}, ktorý nasledné spracováva interpret.
 
 
     \subsection{Spracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
     Precedenčná syntaktická analýza je modul ktorý zaisťuje spracovanie výrazov metódou zdola hore.
-    Vo svojom rozhraní obsahuje \texttt{expression()}, ktorú volá parser, keď chce precedenčnej analýze predať
+    Vo svojom rozhraní obsahuje \texttt{expr()}, ktorú volá parser, keď chce precedenčnej analýze predať
     riadenie vo chvíli, kedy očakáva výraz.
+    \newpage
     \subsubsection{Implementácia precedenčnej tabuľky}
-    Postupne precedenčná analýza spracováva tokeny a pomocou precedenčnej tabuľky symbolov
-    určuje precedenciu. Na základe tejto precedencie môže nastať 5 stavov:
+    Postupne precedenčná analýza spracováva tokeny a pomocou \hyperref[sec: prec-tabulka]{precedenčnej tabuľky} symbolov
+    určuje precedenciu. Na základe tejto precedencie môže nastať päť stavov:
     \begin{enumerate}
         \item Pri precedencii \texttt{<} pridávame na zásobník načítaný token spolu so znakom precedencie.
         \item Pri precedencii \texttt{>} redukujeme dva výrazy na jeden a ukladáme ich typ podľa pravidla.
-        \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
-        \item Pri precedencii \texttt{c} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
-        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory, redukujeme zvyšok výrazu a vraciame parseru riadenie a výsledný typ.
+        \item Pri precedencii \texttt{=} zapíšeme načítaný znak z~tokenu na zásobník.
+        \item Pri precedencii \texttt{e} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
+        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak '\texttt{)}' a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
     \end{enumerate}
     \subsection{Sémantická analýza}
 
-    \begin{itemize}
-        \item Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
-        argumentov do funkcií sa detekujú pomocou dvoch polí (ľavá strana typu a pravá strana typu). Po spracovaní
-        určitého pravidla sa vykoná porovnanie podľa sémantiky jazyka IFJ21.
-
-        \item Kompatibilita typu vo výraze sa detekuje tým istým spôsobom, ale je použitý dve premenné typu char.
-
-        \item Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
-        symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
-        tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
-        rôznych rámcoch.
-    \end{itemize}
+    Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
+    argumentov do funkcií sa detekujú pomocou dvoch polí \texttt{tps\_left} a \texttt{tps\_right}. Po spracovaní
+    určitého pravidla sa vykoná porovnanie podľa sémantiky jazyka \texttt{IFJ21}.
+    Kompatibilita typu vo výraze sa detekuje tým istým spôsobom s~rozdielom použitia dvoch premenných typu \texttt{char}.
+    Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabuľka
+    symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
+    tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s~totožnými názvami premenných
+    v~rôznych rámcoch.
 
 
 
     \subsection{Generovanie cielového kódu}
     Generovanie cieľového kódu \texttt{IFJcode21} je implementovaný ako samostatný modul, ktorý je riadený syntaxou.
-    Komponenty modulu sú volané v parseri na základe pravidiel \texttt{LL-gramatiky}. Z dôvodu neoptimalizácie sa cieľový kód
+    Komponenty modulu sú volané v~parseri na základe pravidiel \hyperref[sec: LL-gramatika]{\texttt{LL-gramatiky}}. Z~dôvodu neoptimalizácie sa cieľový kód
     generuje priamo bez tvorby trojadresného kódu.
 
     \subsubsection{Implementácia výpisu cieľového kódu}
     Na zaistenie výpisu cieľového kódu len za podmienky bezchybnej analýzy zapisujeme cieľový kód do dvoch textových
-    blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze\\ skonkatenujeme a
+    blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze skonkatenujeme a
     vypíšeme na štandardný výstup.
 
-    \subsubsection{Generovanie -- Deklarácie premenných}
-    Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v rôznych rámcoch)
-    sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabulky
-    symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
+    \subsubsection{Deklarácie premenných}
+    Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v~rôznych rámcoch)
+    sme implementovali vďaka obojsmernému radu v~ktorom sa ukladá adresa elementu tabuľky
+    symbolov s~príslušným identifikátorom. Element tabuľky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
     názvu premennej.
 
-    \subsubsection{Generovanie -- funkcie}
+    \subsubsection{Funkcie}
     Volanie funkcií je zaistené vygenerovaním kódu, ktorý predá funkcii argumenty pomocou dočasného rámcu. Následne
     je vygenerovaný kód pre zavolanie funkcie. Pre správnu funkčnosť volanej funkcie je ihneď na začiatku generovaný kód,
-    ktorý z dočasného rámca vytvori lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvori
-    promenné s názvami podľa parametrov funkcie. Následne sa generuje kód tela funkcie.
+    ktorý z~dočasného rámca vytvori lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvori
+    promenné s~názvami podľa parametrov funkcie. Následne sa generuje kód tela funkcie.
 
-    \subsubsection{Generovanie -- výrazy}
-    Generovanie kódu pre výraz sa začne vykonávať ihned po jeho redukcii. V priebehu redukcii je výraz zapísaný do obojstranného radu
-    v postfixovom formáte. Jednotlivé elementy v rade nesú všetky potrebné
+    \subsubsection{Výrazy}
+    Generovanie kódu pre výraz sa začne vykonávať ihned po jeho redukcii. V~priebehu redukcii je výraz zapísaný do obojstranného radu
+    v~postfixovom formáte. Jednotlivé elementy v~rade nesú všetky potrebné
     informácie na generovanie výrazu - typ operátora, názov premennej či hodnotu konštanty. Generátor generuje len inštrukcie
     kódu \texttt{Ifjcode21} ktoré využívajú zásobník. To znamená že hodnoty, medzivýsledky a následne výsledok výrazu sú
     uložené na zásobník.
 
-    \subsubsection{Generovanie -- podmienky a cykly}
+    \subsubsection{Podmienky a cykly}
     Pre generovanie podmienok a cyklov využívame náveštia, ktoré sú taktiež reprezentované unikátnym číslom a
     názvom funkcie kde sa nachádzajú. Na zabránenie redeklarácie premenných sa telo cyklu zapisuje do dvoch rôznych textových
     blokov. Vyskytnuté deklarácie zapisujeme naďalej do bloku definícií funkcií. No zvyšný kód tela cyklu zapisujeme do
@@ -198,18 +194,18 @@
     \subsection{Prekladový systém}
     \subsubsection{CMake}
     \texttt{CMake} je multiplatformný nástroj na preklad zdrojových kódov. Nástroj sme vybrali na základe preferencií všetkých
-    členov tímu. \texttt{CMake} nám predovšetkým pomáhal kompilovať a testovať výsledný program. Pravidlá pre preklad sú napísané v súbore
+    členov tímu. \texttt{CMake} nám predovšetkým pomáhal kompilovať a testovať výsledný program. Pravidlá pre preklad sú napísané v~súbore
     \texttt{CMakeLists.txt} a po spustení nastroja \texttt{CMake} je automaticky vygenerovaný súbor \texttt{Makefile}.
     Na testovanie sme používali \texttt{google testy}, ktoré sme prekladali výhradne pomocou \texttt{CMaku}.
 
     \subsubsection{Skripty}
     Pre účely testovania boli vytvorené shellovské skripty. Jeden rozsiahly skript, ktorý uľahčoval a automatizoval
-    testovanie všetkých častí projektu. Taktiež sme vytvorili sript pre preklad projektu a čistenie prebytočných súborov
-    vzniknutých v dôsledku kompilácie projektu či testovacích suborov.
+    testovanie všetkých častí projektu. Taktiež sme vytvorili skript pre preklad projektu a čistenie prebytočných súborov
+    vzniknutých v~dôsledku kompilácie projektu či testovacích súborov.
 
     \subsubsection{GNU Make}
-    Zo zadania bolo požadované aby odovzdaný projekt obsahoval \texttt{Makefile}, ktorý s príkazom
-    \texttt{make} preloží zdrojové súbory projektu a s príkazom \texttt{make clean} zmazal prebytočné súbory vzniknuté v dôsledku kompilácie.
+    Zo zadania bolo požadované aby odovzdaný projekt obsahoval \texttt{Makefile}, ktorý s~príkazom
+    \texttt{make} preloží zdrojové súbory projektu a s~príkazom \texttt{make clean} zmazal prebytočné súbory vzniknuté v~dôsledku kompilácie.
     Tento nástroj nám taktiež pomáhal zabaliť celý projekt do jedného archívu \texttt{zip}.
 
 
@@ -221,54 +217,59 @@
 
     \subsection{Tabuľka s~rozptýlenými položkami}
     Túto dátovú štruktúru sme si zvolili vďaka časovej zložitosti
-    (je reprezentovaná medzi \texttt{O(1)} až \texttt{O(n)}). Taktiež nám pomohli znalosti štruktúry z
-    predmetov \texttt{IAL} a \texttt{IJC}. Veľkosť tabuľky jsme zvolili 101.
-    Ako unikátny kľúč pre prístup k dátam v tabulke slúži názov identifikátoru a názvy funkcií.
-    Každý záznam v tabuľke obsahuje informácie o identifikátore. U premenných je uchovávaná aj informácia
-    o hĺbke (redefinícia v zanorenejšom rámci kódu). Modul je implementovaný v súboroch
+    (je reprezentovaná medzi \texttt{O(1)} až \texttt{O(n)}). Taktiež nám pomohli znalosti štruktúry
+    z~predmetov \texttt{IAL} a \texttt{IJC}. Veľkosť tabuľky jsme zvolili 101.
+    Ako unikátny kľúč pre prístup k~dátam v~tabuľke slúži názov premennej alebo funkcie.
+    Každý záznam v~tabuľke obsahuje informácie o~identifikátore. U~premenných je uchovávaná aj informácia
+    o~hĺbke (redefinícia v~zanorenejšom rámci kódu). Modul je implementovaný v~súboroch
     \texttt{symtable.h} a \texttt{symtable.c}.
 
 
     \subsection{Pole rozptýlených tabuliek}
-    TODO
-    Modul je implementovaný v súboroch \texttt{symstack.c} a \texttt{symstack.h}
+    Táto dátová štruktúra reprezentuje pole ktoré obsahuje tabuľky s~rozptýlenými položkami. Každá tabuľka reprezentuje
+    iný logický rámec.
+    Modul je implementovaný v~súboroch \texttt{symstack.c} a \texttt{symstack.h}
 
     \subsection{Obojsmerný rad}
-    Obojsmerný rad je kombinácia zásobníka a radu. Je možné do neho vkladať aj odoberať dáta z oboch strán.
+    Obojsmerný rad je kombinácia zásobníka a radu. Je možné do neho vkladať aj odoberať dáta z~oboch strán.
     Implementovali sme ho ako samostatný modul pre viac častí projektu.
-    Je využívaný najmä v generovaní kódu, kde slúži na uchovávanie postfixového výrazu či
-    identifikátorov. Taktiež obsahuje informáciách o parametroch, argumentoch a návratových hodnatách funkcií.
-    Modul je implementovaný v súboroch \texttt{queue.c} a \texttt{queue.h}.
+    Je využívaný najmä v~generovaní kódu, kde slúži na uchovávanie postfixového výrazu či
+    identifikátorov. Taktiež obsahuje informáciách o~parametroch, argumentoch a návratových hodnatách funkcií.
+    Modul je implementovaný v~súboroch \texttt{queue.c} a \texttt{queue.h}.
 
+    \subsection{Obojsmerný zoznam}
+    Táto dátová štruktúra je využitá pre spracovávanie výrazu v~súbore \texttt{expressions.c}. Taktiež k~štruktúre boli
+    implementované funkcie pre jej obsluhu. Zložitosť je reprezentovaná ako \texttt{O(n)} pre vyhľadávanie a \texttt{O(1)}
+    pre vkladanie na začiatok zoznamu.
 
     \subsection{Dynamický reťazec}
-    Pre uchovanie vygenerovaného kódu počas prekladu a prácu s identifikátormi sme vytvorili štruktúru \texttt{string\_t}.
+    Pre uchovanie vygenerovaného kódu počas prekladu a prácu s~identifikátormi sme vytvorili štruktúru \texttt{string\_t}.
     Pre obsluhu štruktúry sme vytvorili pomocné funkcie ako alokácia/dealokácia štruktúry,
-    odstraňovanie, pridávanie a konkatenacia reťazcov.
-    Modul je implementovaný v súboroch \texttt{str.c} a \texttt{str.h}.
+    odstraňovanie, pridávanie a konkatenácia reťazcov.
+    Modul je implementovaný v~súboroch \texttt{str.c} a \texttt{str.h}.
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Práce v týmu %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \section{Práca v~týmu}
     Ihneď pri skladaní tímu sme si všetci uvedomovali, že sa
     očakáva pravidelná a skorá práca na projekte, čo sa nám nakoniec aj podarilo.
-    Každý na projekte pracoval vždy s predstihom a darilo sa nam dodržiavať termíny,
+    Každý na projekte pracoval vždy s~predstihom a darilo sa nam dodržiavať termíny,
     ktoré sme si stanovili.
 
 
-    \subsubsection{Komunikácia a spôsob práce v tíme}
+    \subsubsection{Komunikácia a spôsob práce v~tíme}
     Pre komunikáciu sme používali výhradne komunikačnú platformu \texttt{Discord}. Funguje na
     rovnakom princípe ako platforma \texttt{Slack}, ktorá sa používa profesionálne účely.
     Na danej platforme boli vytvorené komunikačné vlákna
-    v ktorých boli založené \texttt{TODO} či \texttt{error} listy. Taktiež tam prebiehala bežná komunikácia či hlasové rozhovory s
-    možnosťou zdieľania obrazovky, vďaka čomu sme mohli vyriešiť mnoho problémov
+    v~ktorých boli založené \texttt{TODO} či \texttt{error} listy. Taktiež tam prebiehala bežná komunikácia či hlasové rozhovory
+    s~možnosťou zdieľania obrazovky, vďaka čomu sme mohli vyriešiť mnoho problémov
     digitálne a tým aj veľmi rýchlo. Avšak aj napriek
     dobrej digitálnej komunikácii sme sa snažili mať čo najviac
     osobných stretnutí.
 
     \subsubsection{Verzovací systém a vývojové prostredie}
     Ako vývojové prostredie sme využili \texttt{Clion} a \texttt{Vim}. Vývoj prebiehal na platformách \texttt{MacOs}, \texttt{Linux} a \texttt{Windows}. No
-    testovanie prebiehalo len na operačnom systému \texttt{Linux}. Ako verzovací systém sme použili \texttt{git} spolu s portálom
+    testovanie prebiehalo len na operačnom systému \texttt{Linux}. Ako verzovací systém sme použili \texttt{git} spolu s~portálom
     \texttt{GitHub}.
 
     \subsection{Rozdelenie práce medzi členmi tímu}
@@ -277,12 +278,12 @@
     \begin{itemize}
         \item  Lexikálna, sémantická a obecná syntaktická analýza
         \item  Organizácia a kontrola práce nad projektom
-        \item  Tabulka symbolov
+        \item  Tabuľka symbolov
     \end{itemize}\leavevmode\newline
     \textbf{Richard:}
     \begin{itemize}
         \item  Syntaktická a sémantická analýza pre výrazy
-        \item  Precedenčná tabulka
+        \item  \hyperref[sec: prec-tabulka]{Precedenčná tabuľka}
         \item  Prezentácia
     \end{itemize}\leavevmode\newline
     \textbf{Zdenek a Andrej:}
@@ -298,15 +299,15 @@
     \section{Záver}
     Projekt bol zadaný začiatkom semestra, ešte skôr, než boli prebraté všetky potrebné znalosti pre
     úspešné splnenie projektu . Boli sme si ale vedomí zložitosti a obsiahlosti projektu,
-    a preto sme čerpali informácie aj zo záznamov prednášok z minulých rokov. To nám dalo potrebné informácie do
-    štartu projektu a tým sme mohli začať s implementáciou s dostatočne veľkým predstihom.
-    Už začiatkom semestra sme mali zostavený tím. Taktiež sme sa dohodli na komunikačných kanáloch a rozdelení práce. Takže s
-    komunikáciou neboli žiadne problémy a každý vedel, čo sa od neho očakáva.
+    a preto sme čerpali informácie aj zo záznamov prednášok z~minulých rokov. To nám dalo potrebné informácie do
+    štartu projektu a tým sme mohli začať s~implementáciou s~dostatočne veľkým predstihom.
+    Už začiatkom semestra sme mali zostavený tím. Taktiež sme sa dohodli na komunikačných kanáloch a rozdelení práce. Takže
+    s~komunikáciou neboli žiadne problémy a každý vedel, čo sa od neho očakáva.
     Ak sme mali nejaké nejasnosti so zadaním, tak všetko sme si vyjasnili buď pomocou diskusného fóra alebo
-    neoficiálneho komunikačného kanála študentov. V implementácii projektu sme používali sadu testov
-    (vlastných aj zdieľaných s kolegami).
+    neoficiálneho komunikačného kanála študentov. V~implementácii projektu sme používali sadu testov
+    (vlastných aj zdieľaných s~kolegami).
     Tieto testy nam veľmi dobre poslúžili na detekovanie chýb a urýchlenie práce nad projektom.
-    Projekt bol pre nás veľmi prínosná skúsenosť. Priamo v praxi sme si objasnili veľa problémov ohľadom prekladačov a naučili sme sa ako fungujú.
+    Projekt bol pre nás veľmi prínosná skúsenosť. Priamo v~praxi sme si objasnili veľa problémov ohľadom prekladačov a naučili sme sa ako fungujú.
     Zároveň sme ako tím zvládli pracovať veľmi pekným tempom. Tímová pomoc bola samozrejmosťou.
 
 
@@ -326,16 +327,20 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Diagram konečného automatu %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     \section*{Diagram konečného automatu specifikujúceho lexikálny analyzátor}
+    \addcontentsline{toc}{section}{\protect\numberline{}Diagram konečného automatu špecifikujúceho lexikálny analyzátor}
+    \label{sec: automat}
     \begin{figure}[!ht]
         \centering
         \vspace{-1.2cm}
         \includegraphics[width=0.95\linewidth]{src/FSM_PDF.pdf}
-        \caption{Diagram konečného automatu specifikující lexikální analyzátor}
+        \caption{Diagram konečného automatu špecifikujúceho lexikálny analyzátor}
         \label{figure:fa_graph}
     \end{figure}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LL -- gramatika %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \section*{LL -- gramatika}
+    \addcontentsline{toc}{section}{\protect\numberline{}LL -- gramatika}
+    \label{sec: LL-gramatika}
     \begin{enumerate}[label=\textcolor{red}{\arabic*.}]
         \item \nonterm{prolog} \arrow{} \term{require} \term{t\unsc{}string} \nonterm{prog}
 
@@ -421,8 +426,9 @@
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LL -- tabulka %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \newpage
-    \section*{LL -- tabulka}
-
+    \section*{LL -- tabuľka}
+    \addcontentsline{toc}{section}{\protect\numberline{}LL -- tabuľka}
+    \label{sec: LL-tabulka}
     \begin{table}[htb]
         \begin{adjustwidth}{-0.2cm}{}
             \begin{tabular}{!{\vrule width 2pt}>{\columncolor{LightCyan}}P{2.3cm}!{\vrule width 2pt}P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}!{\vrule width 2pt}}
@@ -479,6 +485,8 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PRECEDENCNI TABULKA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \newpage
     \section*{Precedenčná tabuľka}
+    \addcontentsline{toc}{section}{\protect\numberline{}Precedenčná tabuľka}
+    \label{sec: prec-tabulka}
     \newcommand{\bE}{\textbf{E}}
     \begin{table}[!htbp]
         \centering
@@ -525,9 +533,9 @@
                 \hline
                 \textbf{(}       & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $=$ & $<$ &  e  \\ [0.5ex]
                 \hline
-                \textbf{)}       & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &  e  & $>$ &  s  & $>$ \\ [0.5ex]
+                \textbf{)}       & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &  e  & $>$ &  s~& $>$ \\ [0.5ex]
                 \hline
-                \textbf{i}       &  e  & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &  e  & $>$ &  s  & $>$ \\ [0.5ex]
+                \textbf{i}       &  e  & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &  e  & $>$ &  s~& $>$ \\ [0.5ex]
                 \hline
                 \textbf{\$}      & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ &  e  & $<$ &  e  \\ [0.5ex]
                 \Xhline{5\arrayrulewidth}
@@ -535,13 +543,12 @@
         \end{adjustwidth}
     \end{center}
 
-    LEGENDA: \\
-    $<$  \space-\space insert to stack with shift \\
-    $>$  \space-\space reduction \\
-    =    \space-\space insert to stack \\
-    e    \space-\space error \\
-    s    \space-\space special case (end of expression)\\
-
-
+    \textbf{Legenda:}
+    \begin{itemize}
+        \item \texttt{<}  \space--\space Pridanie terminálu do zásobníka
+        \item \texttt{>}  \space--\space Redukcia
+        \item \texttt{=}  \space--\space Pridanie terminálu do zásobníka
+        \item \texttt{e}  \space--\space Chyba
+        \item \texttt{s}  \space--\space Špeciálny prípad -- koniec výrazu
+    \end{itemize}
 \end{document}
-
