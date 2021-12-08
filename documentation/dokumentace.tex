@@ -59,7 +59,7 @@
             \vspace{\stretch{0.382}}
 
             \Huge{Projektová dokumentácia} \\
-            \LARGE{\textbf{Implementácia prekladača imperativného jazyka IFJ21}} \\
+            \LARGE{\textbf{Implementácia prekladača imperatívneho jazyka IFJ21}} \\
             \Large{Tým 082, varianta \RNum{2}}
             \vspace{\stretch{0.618}}
         \end{center}
@@ -105,10 +105,10 @@
     \subsection{Lexikálna analýza}
     Scanner slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
     prichádzajúce tokeny. Uchováva informácie o tom či se jedná o komentár, identifikátor, textové bloky, relačné
-    operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikalna chyba 1. V prípade validného
+    operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikálna chyba 1. V prípade validného
     tokenu na zaklade koncového stavu se vyplnia nasledujúce informácie v štruktúre token\_t:
     \begin{itemize}
-        \item type  --  typ načitaného tokenu
+        \item type  --  typ načítaného tokenu
         \item keyword -- keď typ je T\_KW, do premennej keyword sa uloží odpovedajúca hodnota
         \item attr -- hodnota tokenu
         \item attr.num\_i -- integer number
@@ -126,7 +126,7 @@
     Syntaktická analýza dostava od lexikálneho analyzátoru postupne tokeny, ktoré následne musia
     mať presnú syntaktickú štruktúru a postupnosť podla pravidiel LL-gramatiky.
 
-    \subsubsection{Zpracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
+    \subsubsection{Spracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
 
 
     \subsection{Sémantická analýza}
@@ -134,15 +134,15 @@
 
     \begin{itemize}
         \item Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
-        argumentov do funkcií se detekujú pomocou dvoch polí (ľavá strana typu a pravá strana typu). Po zpracovaní
+        argumentov do funkcií se detekujú pomocou dvoch polí (ľavá strana typu a pravá strana typu). Po spracovaní
         určitého pravidla se vykoná porovnanie podľa sémantiky jazyka IFJ21.
 
-        \item Kompatibilita typu vo výraze sa detekuje tým istým spôsobom, ale je použitý dve premenne typu char.
+        \item Kompatibilita typu vo výraze sa detekuje tým istým spôsobom, ale je použitý dve premenné typu char.
 
         \item Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
-            symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
-            tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
-            rôznych rámcoch.
+        symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
+        tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
+        rôznych rámcoch.
     \end{itemize}
 
 
@@ -156,28 +156,28 @@
 
 
     \subsection{Generovanie cielového kódu}
-    Generovanie cielového kódu IFJcode21 je implementovaný ako samostatný modul, ktorý je riadený syntaxou.
-    Komponenty modulu su volané v parseri na základe pravidiel LL-gramatiky. Cielový kód sa generuje
-    priamo bez tvorby trojadresného kódu, ktorý sme nevytvárali na základe neoptimalizácie cielového kódu.
+    Generovanie cieľového kódu IFJcode21 je implementovaný ako samostatný modul, ktorý je riadený syntaxou.
+    Komponenty modulu su volané v parseri na základe pravidiel LL-gramatiky. Cieľový kód sa generuje
+    priamo bez tvorby trojadresného kódu, ktorý sme nevytvárali na základe neoptimalizácie cieľového kódu.
 
-    \subsubsection{Implementácia výpisu cielového kódu}
-    Na zaistenie výpisu cielového kódu len za podmienky bezchybnej analýzy zapisujeme cielový kód do dvoch textových
+    \subsubsection{Implementácia výpisu cieľového kódu}
+    Na zaistenie výpisu cieľového kódu len za podmienky bezchybnej analýzy zapisujeme cieľový kód do dvoch textových
     blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze\\ skonkatenujeme a
     vypíšeme na štandardný výstup.
 
     \subsubsection{Generovanie -- Deklarácie premenných}
     Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v rôznych rámcoch)
     sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabulky
-    symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaistuje jedinečnosť
+    symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
     názvu premennej.
 
     \subsubsection{Generovanie -- funkcie}
     Volanie funkcií je zaistené vygenerovaním kódu, ktorý predá funkcii argumenty pomocou dočasného rámcu, následne
-    je vygenerovaný kód pre zavolanie funkcie. Pre správnu funkčnosť volanej funkcie je ihned na začiatku generovaný kód,
-    ktorý z dočasného rámca vytvôri lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvôri
+    je vygenerovaný kód pre zavolanie funkcie. Pre správnu funkčnosť volanej funkcie je ihneď na začiatku generovaný kód,
+    ktorý z dočasného rámca vytvôri lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvori
     promenné s názvami podľa parametrov funkcie. Následne se generuje kód tela funkcie.
 
-    \subsubsection{Generovánie -- výrazy}
+    \subsubsection{Generovanie -- výrazy}
     Generovanie kódu pre výraz sa začne vykonávať ihned po jeho redukcii. V priebehu redukcii je výraz zapísaný do obojstranného radu
     v postfixovom formáte. Jednotlivé elementy v rade nesú všetky potrebné
     informácie na generovanie výrazu - typ operátora, názov premennej či hodnotu konštanty. Generátor generuje len inštrukcie
@@ -187,23 +187,23 @@
     \subsubsection{Generovanie -- podmienky a cykly}
     Pre generovanie podmienok a cyklov využívame náveštia, ktoré sú taktiež reprezentované unikátnym číslom a
     názvom funkcie kde sa nachádzajú. Na zabránenie redeklarácie premenných sa telo cyklu zapisuje do dvoch rôznych textových
-    blokov. Vyskytnuté deklarácie zapisujeme nadalej do bloku definicií funkcií. No zvyšný kód tela cyklu zapisujeme do
-    tretieho pomocného textového bloku. Následne po vygerovaní celého cyklu tieto dva bloky skonkatenujeme.
+    blokov. Vyskytnuté deklarácie zapisujeme naďalej do bloku definícií funkcií. No zvyšný kód tela cyklu zapisujeme do
+    tretieho pomocného textového bloku. Následne po vygenerovaní celého cyklu tieto dva bloky skonkatenujeme.
 
     \subsection{Prekladový systém}
     \subsubsection{CMake}
-    CMake je multiplatformný nástroj na preklad zdrojových kódov. Nástroj sme vybrali na základe preferencii všetkých
+    CMake je multiplatformný nástroj na preklad zdrojových kódov. Nástroj sme vybrali na základe preferencií všetkých
     členov tímu. CMake nám predovšetkým pomáhal kompilovať a testovať výsledný program. Pravidlá pre preklad sú napísané v súbore
     CMakeLists.txt a po spustení nastroja CMake je automaticky vygenerovaný súbor Makefile.
     Na testovanie sme používali google testy, ktoré sme prekladali výhradne pomocou CMaku.
 
     \subsubsection{Skripty}
-    Pre účely testovania boli vytvorené shellovské scripty. Jeden rozsiahly script, ktorý uľahčoval a automatizoval
+    Pre účely testovania boli vytvorené shellovské skripty. Jeden rozsiahly script, ktorý uľahčoval a automatizoval
     testovanie všetkých častí projektu. Taktiež sme vytvorili script pre preklad projektu a čistenie prebytočných súborov
     vzniknutých v dôsledku kompilácie projektu či testovacích suborov.
 
     \subsubsection{GNU Make}
-    Zo zadania bolo vyžadované aby odovzdaný projekt obsahoval Makefile, ktorý s príkazom
+    Zo zadania bolo požadované aby odovzdaný projekt obsahoval Makefile, ktorý s príkazom
     “make” preloží zdrojové súbory projektu a s “make clean” zmazal prebytočné súbory vzniknuté v dôsledku kompilácie.
     Tento nástroj nám taktiež pomáhal zabaliť celý projekt do jedného archívu zip.
 
@@ -217,14 +217,14 @@
     \subsection{Tabuľka s~rozptýlenými položkami}
     Túto dátovú štruktúru sme si zvolili vďaka časovej zložitosti
     (je reprezentovaná medzi O(1) až O(n)) a so skúsenosti štruktúry z
-    predmetov IAL a IJC. Veľkosť tabulky jsme zvolili 101.
-    Ako unikátny klúč pre prístup k dátam v tabulke slúži názov identifikátoru a názvy funkcií.
-    Každý záznam v tabulke obsahovuje informácie o identifikátore. U premenných je uchovávaná aj informácia
+    predmetov IAL a IJC. Veľkosť tabuľky jsme zvolili 101.
+    Ako unikátny kľúč pre prístup k dátam v tabulke slúži názov identifikátoru a názvy funkcií.
+    Každý záznam v tabuľke obsahuje informácie o identifikátore. U premenných je uchovávaná aj informácia
     o hĺbke (redefinícia v zanorenejšom rámci kódu). Modul je implementovaný v súboroch
     symtable.h a symtable.c.
 
 
-    \subsection{Pole rozptýlenych tabuliek}
+    \subsection{Pole rozptýlených tabuliek}
     TODO
     Modul je implementovaný v súboroch symstack.c a symstack.h
 
@@ -237,7 +237,7 @@
 
 
     \subsection{Dynamický reťazec}
-    Pre uchovánie vygerovaného kódu počas prekladu a prácu s identifikátormi sme vytvorili štruktúru strint\_t.
+    Pre uchovanie vygenerovaného kódu počas prekladu a prácu s identifikátormi sme vytvorili štruktúru string\_t.
     Pre obsluhu štruktúry sme vytvorili pomocné funkcie ako alokácia/dealokácia štruktúry,
     odstraňovanie, pridávanie a konkatenacia reťazcov.
     Modul je implementovaný v súboroch str.c a str.h.
@@ -256,17 +256,17 @@
     rovnakom princípe ako platforma Slack, ktorá sa používa profesionálne účely.
     Na danej platforme boli vytvorené komunikačné vlákna
     v ktorých boli založené "TODO” či error listy. Taktiež tam prebiehala bežná komunikácia či hlasové rozhovory s
-    možnosťou zdielania obrazovky vďaka čomu sme mohli vyriešiť mnoho problémov
-    digitálne a tým aj velmi rýchlo. Avšak aj napriek
+    možnosťou zdieľania obrazovky vďaka čomu sme mohli vyriešiť mnoho problémov
+    digitálne a tým aj veľmi rýchlo. Avšak aj napriek
     dobrej digitálnej komunikácii sme sa snažili mať čo najviac
     osobných stretnutí.
 
     \subsubsection{Verzovací systém a vývojové prostredie}
     Ako vývojové prostredie sme využili Clion a Vim. Vývoj prebiehal na platformách MacOs, Linux, Windows, no
-    testovananie prebiehalo len na operačnom systému Linux. Ako verzovací systém sme použili git spolu s portálom
+    testovanie prebiehalo len na operačnom systému Linux. Ako verzovací systém sme použili git spolu s portálom
     GitHub.
 
-    \subsection{Rozdelenie práce mezi členmi týmu}
+    \subsection{Rozdelenie práce medzi členmi tímu}
 
     \textbf{Andrei:}
     \begin{itemize}
@@ -531,3 +531,4 @@
 
 
 \end{document}
+
