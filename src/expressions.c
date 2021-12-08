@@ -278,15 +278,15 @@ bool Insert(List * list, char * data) {
     int flag = 0;
 
     ElementPtr find = list->lastElement;
-    // If stack contains for example $E and data contains +,
-    // we skip to previous element until we find one of
-    // our chars(+, -, <= etc.) and
-    // connect the element in a way to create $<<E+,
-
-    // otherwise if there is no E on top of stack,
-    // for example $<<E+, we just copy our << with data,
-    // $<<E+ -> $<<E+<<(
-    // Whether there is E on top of the stack we check with int flag
+    /* If stack contains for example $E and data contains +,
+    * we skip to previous element until we find one of
+    * our chars(+, -, <= etc.) and
+    * connect the element in a way to create $<<E+,
+    * otherwise if there is no E on top of stack,
+    * for example $<<E+, we just copy our << with data,
+    * $<<E+ -> $<<E+<<(
+    * Whether there is E on top of the stack we check with int flag
+    */
     while ((strcmp(find->data, "E") == 0) && find->previousElement != NULL) {
         find = find->previousElement;
         flag = 1;
@@ -318,9 +318,9 @@ bool Insert(List * list, char * data) {
         TempElement_first->nextElement = TempElement_second;
 
         TempElement_second->previousElement = TempElement_first;
-        // If we found E on stack, means we are copying
-        // << before E and data after E
     }
+    // If we found E on stack, means we are copying
+    // << before E and data after E
     else {
         ElementPtr Element_With_E = find->nextElement;
 
@@ -370,9 +370,9 @@ bool Insert(List * list, char * data) {
 
         strcpy(TempElement_second->data, data);
         TempElement_second->already_reduced = 0;
-        // else we just set type to T_NONE so we can
-        // differentiate between an expression and a character
     }
+    // else we just set type to T_NONE so we can
+    // differentiate between an expression and a character
     else {
         TempElement_second->type = 'N';
         TempElement_second->element_token.type = token.type;
@@ -400,9 +400,6 @@ bool Close(List * list) {
     // We copy into our array until we dont find closing <<
     while ((strcmp(find->data, "<<") != 0) && find->previousElement != NULL) {
         // We found Expression and the expression isn't in the form of "i" but "E" on stack
-        // because we dont care about rule <i>
-        // Also because stack is other way around
-        // we firstly start pointing with Ej and then with Ei
         if ((strcmp(find->data, "E")) == 0) {
             if (Ej == NULL)
                 Ej = find;
@@ -422,7 +419,6 @@ bool Close(List * list) {
     if (Ej != NULL) {
         // Special case with rule #E or <i> where there is only one expression
         // so Ei will stay NULL, we make sure Ei isn't NULL
-        // so we can work without passing null pointer
         if (Ei == NULL) {
             Ei = Ej;
         }
@@ -456,8 +452,8 @@ bool Close(List * list) {
             // found the expressions are also strings
             if (rule == 7 || rule == 14) {
                 CHECK_CONC_LENGTH();
-                // If we are doing comparison rules
             }
+            // If we are doing comparison rules
             else if (rule >= 8 && rule <= 13) {
                 // Special case where we only allow value nil with comparison == and ~=
                 if(rule != 12 && rule != 13 && (Ei->type == 'N' || Ej->type == 'N')){
@@ -465,13 +461,9 @@ bool Close(List * list) {
                     return false;
                 }
                 CHECK_COMPARISON();
-                // If we found any other rules other than
-                // i = 0, (E) = 1 operations where it doesn't matter
-                // of what type the expression is
-                // #E = 7, E..E = 14 string operations
-                // and the type is string, that means we are trying
-                // to do number operation with strings
             }
+            // If we found any other rule other than
+            // i = 0, (E) = 1, #E, E..E or comparisons
             else if (rule != 0 && rule != 1){
                 CHECK_NUMBER();
                 // Special case where we are trying to divide with rule
@@ -559,9 +551,6 @@ bool Push(List * list, char * data) {
     list->lastElement = TempElement;
 
     // Copy onto the stack and we also copy T_NONE into token
-    // because there will never be situation
-    // where we just arbitrary copy i onto the stack because
-    // there doesnt exist precedence rule "=" with expressions, only with characters
     TempElement->type = 'N';
     TempElement->element_token.type = token.type;
     strcpy(TempElement->data, data);
@@ -570,8 +559,7 @@ bool Push(List * list, char * data) {
 
 bool Check_Correct_Closure(List * list) {
     if (list != NULL) {
-        // We just forcefully check if first element on stack
-        // is $ and the second one E
+        // We check if first element on stack s $ and the second one E
         if ((strcmp(list->firstElement->data, "$") == 0)    &&
                     list->firstElement->nextElement != NULL &&
             (strcmp(list->firstElement->nextElement->data, "E") == 0))
@@ -586,12 +574,13 @@ bool Check_Correct_Closure(List * list) {
 bool Add_Tokens_To_Queue(ElementPtr Ei, ElementPtr operator, int rule) {
     token_t * Token_Ei = NULL;
     token_t * Token_Operator = NULL;
-
+    // We are copying operand
     if (rule == 0) {
         if ((Token_Ei = Copy_Values_From_Token(Token_Ei, &Ei->element_token)) == NULL) {
             return false;
         }
         queue_add_token_rear(queue_expr, Token_Ei);
+    // We are copying operator excluding rule (E)
     } else if (rule != 1) {
         if ((Token_Operator = Copy_Values_From_Token(Token_Operator, &operator->element_token)) == NULL) {
             return false;
@@ -683,13 +672,12 @@ start_expr:
                     data, token.attr.id.str, precedence);
 
         if (precedence == '<') {
-            // If token is a variable or a string we put i on the stack instead
-            // of copying the whole name of the variable or whole string
+            // If identificator, copy i onto stack
             if (GET_ID(token.attr.id.str) == INDEX_OF_IDENTIFICATOR) {
                 strcpy(data, "i");
             }
+            // else copy operator
             else {
-                // else we copy the character from the token (+, -, <= etc.)
                 strcpy(data, token.attr.id.str);
             }
 
@@ -701,16 +689,13 @@ start_expr:
             }
         }
         else if (precedence == '>') {
-            // We find the first << from the top of the stack to the bottom
-            // and check it against the rules, if we didnt find a rule
-            // we return false as expression is wrong
+            // If we didnt find a rule we return false as expression is wrong
             if (!Close(list)) {
                 goto err_expr;
             }
 
             print_stack_expr(list);
-            // If we found a rule, we check the precedence of the new created stack
-            // by returning to the start of the while cycle
+            // If we found a rule, we load next token
             goto start_expr;
         }
         else if (precedence == '=') {
@@ -723,9 +708,11 @@ start_expr:
             print_stack_expr(list);
         }
         else if (precedence == 's') {
-            // Special incident with finding identificator after identificator,
-            // which means the expression has ended and we close our stack
-            // and check against the rules
+            /*
+             * Special incident with finding identificator after identificator,
+             * which means the expression has ended and we close our stack
+             * and check against the rules
+             */
             goto end_expr;
         }
         else if (precedence == 'c') {
@@ -736,23 +723,20 @@ start_expr:
     }
 
     // If there is internal error such as failure to allocate,
-    // list will free itself which means none of the functions
-    // will do anything and eventually we will learn
-
-    // that if list is empty and we never did combination of return true
-    // false with deallocation of list that there was an error along the way
+    // list will free itself so if list is empty there was an error along the way
     CHECK_INTERNAL_ERR(!list, false);
 
     print_dbg_msg_single("reduction:\n");
     print_stack_expr(list);
 
 end_expr:
-    // We are reducing the expression by using our rules
+    // We are reducing the expression by using our rules until there is only E left
     while (Close(list)) {
         print_stack_expr(list);
     }
 
     // If we were successful in reducing the expression and there wasn't any error
+    // we save the resulting type
     if (Check_Correct_Closure(list) && err == NO_ERR) {
         ret = str_add_char(&tps_right, list->lastElement->type);
         CHECK_INTERNAL_ERR(!ret, false);

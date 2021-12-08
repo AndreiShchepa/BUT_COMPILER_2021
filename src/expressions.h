@@ -54,8 +54,6 @@
                               token.type    == T_CONCAT
 
 typedef struct Element {
-    // T_NONE will be used with everything else other than expressions
-    // and thus making use of token different than in the rest of the program
     token_t element_token;
     bool already_reduced;
     char type;
