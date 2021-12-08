@@ -127,7 +127,7 @@
     V prípade porušenia pravidla (typ prichádzajúceho tokenu se líší od očakávaného) sa vyhodí syntaktická chyba 2.
     V priebehu syntaktickej analýzy sú volané funkcie z modulu pre generovanie kódu, ktoré vygenerujú cielový kód z
     jazyka \texttt{Teal} do \texttt{IFJcode21}, ktorý nasledné spracováva interpret.
-    
+
 
     \subsection{Spracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
     Precedenčná syntaktická analýza je modul ktorý zaisťuje spracovanie výrazov metódou zdola hore.
@@ -141,8 +141,7 @@
         \item Pri precedencii \texttt{>} redukujeme dva výrazy na jeden a ukladáme ich typ podľa pravidla.
         \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
         \item Pri precedencii \texttt{e} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
-        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory, redukujeme zvyšok výrazu a vraciame parseru riadenie a výsledný typ.
-        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo identifikátor a znak "(", redukujeme zvyšok výrazu a vraciame parseru riadenie a výsledný typ.
+        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak ")" a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
     \end{enumerate}
     \subsection{Sémantická analýza}
 
