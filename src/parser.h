@@ -27,47 +27,47 @@
 #endif
 
 #define CHECK_INTERNAL_ERR(COND, ret) \
-        do { \
-            if (COND) { \
-                err = INTERNAL_ERR; \
-                return ret; \
-            } \
-        } while(0);
+        do {                          \
+            if (COND) {               \
+                err = INTERNAL_ERR;   \
+                return ret;           \
+            }                         \
+        } while(0)
 
-#define CHECK_SEM_DEF_ERR(COND) \
-        do { \
-            if (COND) { \
+#define CHECK_SEM_DEF_ERR(COND)    \
+        do {                       \
+            if (COND) {            \
                 err = SEM_DEF_ERR; \
-                return false; \
-            } \
-        } while(0);
+                return false;      \
+            }                      \
+        } while(0)
 
 // Get next token and check for INTERNAL/SCANNER error
-#define NEXT_TOKEN() \
+#define NEXT_TOKEN()                  \
         err = get_next_token(&token); \
-        if (err != NO_ERR) { \
-            return false; \
+        if (err != NO_ERR) {          \
+            return false;             \
         }
 
 // If condition is false, PARSER error
 #define EXPECTED_TOKEN(cond) \
-        if (!(cond)) { \
-            return false; \
+        if (!(cond)) {       \
+            return false;    \
         }
 
 // Call function for expected nonterminal,
 // in case of error return false
 #define NEXT_NONTERM(nonterm) \
-        ret = (nonterm); \
-        if (!ret) { \
-            return false; \
+        ret = (nonterm);      \
+        if (!ret) {           \
+            return false;     \
         }
 
 // Get the first token from code
-#define FIRST_TOKEN() \
+#define FIRST_TOKEN()                 \
         err = get_next_token(&token); \
-        if (err != NO_ERR) { \
-            goto end_parser; \
+        if (err != NO_ERR) {          \
+            goto end_parser;          \
         }
 
 // Check if type of token is id or some term

@@ -84,8 +84,9 @@ bool gen_init() {
     queue_if = queue_init();
     queue_while = queue_init();
     if(!(queue_if) && !(queue_while)){
-        CHECK_INTERNAL_ERR(true, false)
+        CHECK_INTERNAL_ERR(true, false);
     }
+
     PRINT_FUNC(1, ".IFJcode21" NON_VAR, EMPTY_STR);
     PRINT_FUNC(2,   "defvar GF@&type1"  NON_VAR , EMPTY_STR);
     PRINT_FUNC(3,   "defvar GF@&type2"  NON_VAR , EMPTY_STR);

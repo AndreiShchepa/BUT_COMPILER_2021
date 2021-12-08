@@ -147,14 +147,14 @@ Queue* queue_expr;
         ret = str_copy_str(DST, COND ? SRC_1 : SRC_2); \
         CHECK_INTERNAL_ERR(!ret, false)
 
-#define CHECK_COUNT_OF_ARGS() \
-        do { \
+#define CHECK_COUNT_OF_ARGS()                                        \
+        do {                                                         \
             if (str_get_len(&tps_left) != str_get_len(&tps_right) && \
-                !tmp_func->data.func->func_write) \
-            { \
-                err = SEM_FUNC_ERR; \
-                return false; \
-            } \
+                !tmp_func->data.func->func_write)                    \
+            {                                                        \
+                err = SEM_FUNC_ERR;                                  \
+                return false;                                        \
+            }                                                        \
         } while(0)
 
 
