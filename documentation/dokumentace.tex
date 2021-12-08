@@ -102,90 +102,194 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Návrh a implementace %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \section{Návrh a~implementácia}
 
-
-
-
     \subsection{Lexikálna analýza}
-
-
+    Scanner slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
+    prichádzajúce tokeny. Uchováva informácie o tom či se jedná o komentár, identifikátor, textové bloky, relačné
+    operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikalna chyba 1. V prípade validného
+    tokenu na zaklade koncového stavu se vyplnia nasledujúce informácie v štruktúre token\_t:
+    \begin{itemize}
+        \item type  --  typ načitaného tokenu
+        \item keyword -- keď typ je T\_KW, do premennej keyword sa uloží odpovedajúca hodnota
+        \item attr -- hodnota tokenu
+        \item attr.num\_i -- integer number
+        \item attr.num\_f -- double number
+        \item attr.id -- ostatné tokeny
+    \end{itemize}
+    V prípade že sa narazí na komentár je celý textový blok, ktorý je podľa správnej
+    lexikálnej štruktúry chápaný ako komentár zahodený.
 
 
     \subsection{Syntaktická analýza}
-
-
+    Parser je hlavným modulom prekladača, protože komunikuje se všetkými ostatnými modulmi
+    a riadi celú funkčnosť prekladača. Syntaktická analýza sa vykonáva zhora dolu metódou
+    rekurzivného zostupu.
+    Syntaktická analýza dostava od lexikálneho analyzátoru postupne tokeny, ktoré následne musia
+    mať presnú syntaktickú štruktúru a postupnosť podla pravidiel LL-gramatiky.
 
     \subsubsection{Zpracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
-
-
 
 
     \subsection{Sémantická analýza}
 
 
+    \begin{itemize}
+        \item Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
+        argumentov do funkcií se detekujú pomocou dvoch polí (ľavá strana typu a pravá strana typu). Po zpracovaní
+        určitého pravidla se vykoná porovnanie podľa sémantiky jazyka IFJ21.
+
+        \item Kompatibilita typu vo výraze sa detekuje tým istým spôsobom, ale je použitý dve premenne typu char.
+
+        \item Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
+            symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
+            tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
+            rôznych rámcoch.
+    \end{itemize}
+
+
+
+
+
+
+
+
+
 
 
     \subsection{Generovanie cielového kódu}
+    Generovanie cielového kódu IFJcode21 je implementovaný ako samostatný modul, ktorý je riadený syntaxou.
+    Komponenty modulu su volané v parseri na základe pravidiel LL-gramatiky. Cielový kód sa generuje
+    priamo bez tvorby trojadresného kódu, ktorý sme nevytvárali na základe neoptimalizácie cielového kódu.
 
+    \subsubsection{Implementácia výpisu cielového kódu}
+    Na zaistenie výpisu cielového kódu len za podmienky bezchybnej analýzy zapisujeme cielový kód do dvoch textových
+    blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze\\ skonkatenujeme a
+    vypíšeme na štandardný výstup.
 
-    \subsubsection{Začiatok generovania}
-    Pro generovanie kodu slouzi soubor gen
-
+    \subsubsection{Generovanie -- Deklarácie premenných}
+    Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v rôznych rámcoch)
+    sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabulky
+    symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaistuje jedinečnosť
+    názvu premennej.
 
     \subsubsection{Generovanie -- funkcie}
-
+    Volanie funkcií je zaistené vygenerovaním kódu, ktorý predá funkcii argumenty pomocou dočasného rámcu, následne
+    je vygenerovaný kód pre zavolanie funkcie. Pre správnu funkčnosť volanej funkcie je ihned na začiatku generovaný kód,
+    ktorý z dočasného rámca vytvôri lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvôri
+    promenné s názvami podľa parametrov funkcie. Následne se generuje kód tela funkcie.
 
     \subsubsection{Generovánie -- výrazy}
-
+    Generovanie kódu pre výraz sa začne vykonávať ihned po jeho redukcii. V priebehu redukcii je výraz zapísaný do obojstranného radu
+    v postfixovom formáte. Jednotlivé elementy v rade nesú všetky potrebné
+    informácie na generovanie výrazu - typ operátora, názov premennej či hodnotu konštanty. Generátor generuje len inštrukcie
+    kódu Ifjcode21 ktoré využívajú zásobník. To znamená že hodnoty, medzivýsledky a následne výsledok výrazu sú
+    uložené na zásobník.
 
     \subsubsection{Generovanie -- podmienky a cykly}
-
-
-
+    Pre generovanie podmienok a cyklov využívame náveštia, ktoré sú taktiež reprezentované unikátnym číslom a
+    názvom funkcie kde sa nachádzajú. Na zabránenie redeklarácie premenných sa telo cyklu zapisuje do dvoch rôznych textových
+    blokov. Vyskytnuté deklarácie zapisujeme nadalej do bloku definicií funkcií. No zvyšný kód tela cyklu zapisujeme do
+    tretieho pomocného textového bloku. Následne po vygerovaní celého cyklu tieto dva bloky skonkatenujeme.
 
     \subsection{Prekladový systém}
-
-
     \subsubsection{CMake}
+    CMake je multiplatformný nástroj na preklad zdrojových kódov. Nástroj sme vybrali na základe preferencii všetkých
+    členov tímu. CMake nám predovšetkým pomáhal kompilovať a testovať výsledný program. Pravidlá pre preklad sú napísané v súbore
+    CMakeLists.txt a po spustení nastroja CMake je automaticky vygenerovaný súbor Makefile.
+    Na testovanie sme používali google testy, ktoré sme prekladali výhradne pomocou CMaku.
 
-
+    \subsubsection{Skripty}
+    Pre účely testovania boli vytvorené shellovské scripty. Jeden rozsiahly script, ktorý uľahčoval a automatizoval
+    testovanie všetkých častí projektu. Taktiež sme vytvorili script pre preklad projektu a čistenie prebytočných súborov
+    vzniknutých v dôsledku kompilácie projektu či testovacích suborov.
 
     \subsubsection{GNU Make}
+    Zo zadania bolo vyžadované aby odovzdaný projekt obsahoval Makefile, ktorý s príkazom
+    “make” preloží zdrojové súbory projektu a s “make clean” zmazal prebytočné súbory vzniknuté v dôsledku kompilácie.
+    Tento nástroj nám taktiež pomáhal zabaliť celý projekt do jedného archívu zip.
+
 
 
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Speciální algoritmy a datové struktury %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \section{Speciálne algoritmy a~dátové štruktúry}
+    \section{Špeciálne algoritmy a~dátové štruktúry}
 
     \subsection{Tabuľka s~rozptýlenými položkami}
+    Túto dátovú štruktúru sme si zvolili vďaka časovej zložitosti
+    (je reprezentovaná medzi O(1) až O(n)) a so skúsenosti štruktúry z
+    predmetov IAL a IJC. Veľkosť tabulky jsme zvolili 101.
+    Ako unikátny klúč pre prístup k dátam v tabulke slúži názov identifikátoru a názvy funkcií.
+    Každý záznam v tabulke obsahovuje informácie o identifikátore. U premenných je uchovávaná aj informácia
+    o hĺbke (redefinícia v zanorenejšom rámci kódu). Modul je implementovaný v súboroch
+    symtable.h a symtable.c.
+
+
+    \subsection{Pole rozptýlenych tabuliek}
+    TODO
+    Modul je implementovaný v súboroch symstack.c a symstack.h
 
     \subsection{Obojsmerný rad}
+    Obojsmerný rad je kombinácia zásobníka a radu. Je možné do neho vkladať aj odoberať dáta z oboch strán.
+    Implementovali sme ho ako samostatný modul pre viac častí projektu.
+    Je využívaný v generovaní kódu, kde slúži na uchovávanie postfixového výrazu či
+    identifikátorov. Taktiež obsahuje informáciách o parametroch, argumentoch a navratovych hodnatách funkcií.
+    Modul je implementovaný v súboroch queue.c a queue.h.
 
-    \subsection{Zásobník}
 
-
-
+    \subsection{Dynamický reťazec}
+    Pre uchovánie vygerovaného kódu počas prekladu a prácu s identifikátormi sme vytvorili štruktúru strint\_t.
+    Pre obsluhu štruktúry sme vytvorili pomocné funkcie ako alokácia/dealokácia štruktúry,
+    odstraňovanie, pridávanie a konkatenacia reťazcov.
+    Modul je implementovaný v súboroch str.c a str.h.
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Práce v týmu %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \section{Práca v~týmu}
-
-    \subsection{Zpôsob práce v~týmu}
-
-
-
-    \subsubsection{Verzovací systém}
+    Ihneď pri skladaní tímu sme všetci rozumeli že sa
+    očakáva pravidelná a skorá práca na projekte čo sa nám nakoniec aj podarilo.
+    Každý na projekte pracoval vždy s predstihom a darilo sa nam dodržiavať deadliny,
+    ktoré sme si stanovili.
 
 
+    \subsubsection{Komunikácia a spôsob práce v tíme}
+    Pre komunikáciu sme používali výhradne komunikačnú platformu Discord, ktorý funguje na
+    rovnakom princípe ako platforma Slack, ktorá sa používa profesionálne účely.
+    Na danej platforme boli vytvorené komunikačné vlákna
+    v ktorých boli založené "TODO” či error listy. Taktiež tam prebiehala bežná komunikácia či hlasové rozhovory s
+    možnosťou zdielania obrazovky vďaka čomu sme mohli vyriešiť mnoho problémov
+    digitálne a tým aj velmi rýchlo. Avšak aj napriek
+    dobrej digitálnej komunikácii sme sa snažili mať čo najviac
+    osobných stretnutí.
 
-    \subsubsection{Komunikácia}
-
-
-
+    \subsubsection{Verzovací systém a vývojové prostredie}
+    Ako vývojové prostredie sme využili Clion a Vim. Vývoj prebiehal na platformách MacOs, Linux, Windows, no
+    testovananie prebiehalo len na operačnom systému Linux. Ako verzovací systém sme použili git spolu s portálom
+    GitHub.
 
     \subsection{Rozdelenie práce mezi členmi týmu}
 
+    \textbf{Andrei:}
+    \begin{itemize}
+        \item  Lexikálna, sémantická a obecná syntaktická analýza
+        \item  Organizácia a kontrola práce nad projektom
+        \item  Tabulka symbolov
+    \end{itemize}
 
+
+    \textbf{Richard:}
+    \begin{itemize}
+        \item  Syntaktická a sémantická analýza pre výrazy
+        \item  Precedenčná tabulka
+        \item  Prezentácia
+    \end{itemize}
+
+    \textbf{Zdenek a Andrej:}
+    \begin{itemize}
+        \item  Generovanie kódu
+        \item  Automatizácia testovania
+        \item  Google testy, tvorba testov
+        \item  Dokumentácia
+    \end{itemize}
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Závěr %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
