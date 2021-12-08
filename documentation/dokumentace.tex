@@ -103,7 +103,7 @@
     \section{Návrh a~implementácia}
 
     \subsection{Lexikálna analýza}
-    Scanner slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
+    \texttt{Scanner} slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
     prichádzajúce tokeny. Uchováva informácie o tom či sa jedná o komentár, identifikátor, textové bloky, relačné
     operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikálna chyba 1. V~prípade validného
     tokenu na základe koncového stavu sa vyplnia nasledujúce informácie v štruktúre \texttt{token\_t}:
