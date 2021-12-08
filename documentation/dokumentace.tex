@@ -5,12 +5,11 @@
 
 
 \documentclass[a4paper, 11pt]{article}
-
-
+\usepackage[unicode]{hyperref}
+\usepackage[utf8x]{inputenc}
+\usepackage[IL2]{fontenc}
 \usepackage[slovak]{babel}
-\usepackage[utf8]{inputenc}
 \usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
-\usepackage{times}
 \usepackage{verbatim}
 \usepackage{enumitem}
 \usepackage{graphicx} % vkladanie obrazkov
@@ -72,9 +71,9 @@
             \Large
             \begin{tabular}{l l l}
                 \textbf{Andrei Shchapaniak} & \textbf{(xshcha00)} & \quad 25\,\% \\
-                Andrej Binovsky & (xbinov00) & \quad 25\,\% \\
-                Zdenek Lapes & (xlapes02) & \quad 25\,\% \\
-                Richard Gajdosik & (xgajdo33) & \quad 25\,\% \\
+                Andrej Bínovský & (xbinov00) & \quad 25\,\% \\
+                Zdenek Lapeš & (xlapes02) & \quad 25\,\% \\
+                Richard Gajdošík & (xgajdo33) & \quad 25\,\% \\
             \end{tabular}
         \end{minipage}
     \end{titlepage}
@@ -105,14 +104,14 @@
     \section{Návrh a~implementácia}
 
     \subsection{Lexikálna analýza}
-    \texttt{Scanner} slúži pre lexikálnu analýzu. Je implementovaný ako deterministický konečný automat, ktorý rozpoznáva všetky
+    \texttt{Scanner} slúži pre lexikálnu analýzu. Je implementovaný ako \hyperref[sec: automat]{deterministický konečný automat}, ktorý rozpoznáva všetky
     prichádzajúce tokeny. Uchováva informácie o tom či sa jedná o komentár, identifikátor, textové bloky, relačné
     operátory alebo iné validné, poprípade nevalidné tokeny u ktorých nastane lexikálna chyba 1. V~prípade validného
     tokenu na základe koncového stavu sa vyplnia nasledujúce informácie v štruktúre \texttt{token\_t}:
     \begin{itemize}
         \item \texttt{type}  --  typ načítaného tokenu
         \item \texttt{keyword} -- keď typ je \texttt{T\_KEYWORD}, do premennej keyword sa uloží odpovedajúca hodnota
-        \item \texttt{attr.num\_i} -- číslo \texttt{integer}d
+        \item \texttt{attr.num\_i} -- číslo \texttt{integer}
         \item \texttt{attr.num\_f} -- číslo \texttt{double}
         \item \texttt{attr.id} -- ostatné tokeny
     \end{itemize}
@@ -123,7 +122,7 @@
     Parser je hlavným modulom prekladača, protože komunikuje se všetkými ostatnými modulmi a riadi celú funkčnosť
     prekladača. Syntaktická analýza sa vykonáva zhora dolu metódou rekurzivného zostupu.
     Syntaktická analýza dostáva postupne od lexikálneho analyzátoru tokeny, ktoré následne musia spĺňať presnú
-    syntaktickú štruktúru a postupnosť podla pravidiel \texttt{LL-gramatiky}.
+    syntaktickú štruktúru a postupnosť podla pravidiel \hyperref[sec: LL-gramatika]{\texttt{LL-gramatiky}}.
     V prípade porušenia pravidla (typ prichádzajúceho tokenu se líší od očakávaného) sa vyhodí syntaktická chyba 2.
     V priebehu syntaktickej analýzy sú volané funkcie z modulu pre generovanie kódu, ktoré vygenerujú cielový kód z
     jazyka \texttt{Teal} do \texttt{IFJcode21}, ktorý nasledné spracováva interpret.
@@ -134,14 +133,13 @@
     Vo svojom rozhraní obsahuje \texttt{expr()}, ktorú volá parser, keď chce precedenčnej analýze predať
     riadenie vo chvíli, kedy očakáva výraz.
     \subsubsection{Implementácia precedenčnej tabuľky}
-    Postupne precedenčná analýza spracováva tokeny a pomocou precedenčnej tabuľky symbolov
+    Postupne precedenčná analýza spracováva tokeny a pomocou \hyperref[sec: prec-tabulka]{precedenčnej tabuľky} symbolov
     určuje precedenciu. Na základe tejto precedencie môže nastať päť stavov:
     \begin{enumerate}
         \item Pri precedencii \texttt{<} pridávame na zásobník načítaný token spolu so znakom precedencie.
         \item Pri precedencii \texttt{>} redukujeme dva výrazy na jeden a ukladáme ich typ podľa pravidla.
         \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
         \item Pri precedencii \texttt{e} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
-        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak '\texttt{)}' a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
         \item Pri precedencii \texttt{s} sme narazili na dva identifikátory alebo znak '\texttt{)}' a identifikátor. Následne redukujeme zvyšok výrazu a vraciame parseru riadenie.
     \end{enumerate}
     \subsection{Sémantická analýza}
@@ -150,7 +148,7 @@
         argumentov do funkcií sa detekujú pomocou dvoch polí \texttt{tps\_left} a \texttt{tps\_right}. Po spracovaní
         určitého pravidla sa vykoná porovnanie podľa sémantiky jazyka \texttt{IFJ21}.
         Kompatibilita typu vo výraze sa detekuje tým istým spôsobom s rozdielom použitia dvoch premenných typu \texttt{char}.
-        Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabulka
+        Sémantické chyby pre nedefiníciu, redefiníciu sa detekujú pomocou tabuliek symbolov. Globálna tabuľka
         symbolov je určená pre názvy funkcií. Pre názvy premenných je vytvorený zásobník
         tabuliek symbolov. Dôvodom implementácie zásobníka je riešenie problému s totožnými názvami premenných v
         rôznych rámcoch.
@@ -159,7 +157,7 @@
 
     \subsection{Generovanie cielového kódu}
     Generovanie cieľového kódu \texttt{IFJcode21} je implementovaný ako samostatný modul, ktorý je riadený syntaxou.
-    Komponenty modulu sú volané v parseri na základe pravidiel \texttt{LL-gramatiky}. Z dôvodu neoptimalizácie sa cieľový kód
+    Komponenty modulu sú volané v parseri na základe pravidiel \hyperref[sec: LL-gramatika]{\texttt{LL-gramatiky}}. Z dôvodu neoptimalizácie sa cieľový kód
     generuje priamo bez tvorby trojadresného kódu.
 
     \subsubsection{Implementácia výpisu cieľového kódu}
@@ -167,26 +165,26 @@
     blokov -- definície funkcií a volanie funkcií. Tieto dva textové bloky po úspešnej analýze\\ skonkatenujeme a
     vypíšeme na štandardný výstup.
 
-    \subsubsection{Generovanie -- deklarácie premenných}
+    \subsubsection{Deklarácie premenných}
     Deklarácie premenných a ich možný konflikt názvov (na základe výskytu toho istého názvu v rôznych rámcoch)
-    sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabulky
-    symbolov s príslušným identifikátorom. Element tabulky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
+    sme implementovali vďaka obojsmernému radu v ktorom sa ukladá adresa elementu tabuľky
+    symbolov s príslušným identifikátorom. Element tabuľky obsahuje unikátne číslo premennej, ktorý zaisťuje jedinečnosť
     názvu premennej.
 
-    \subsubsection{Generovanie -- funkcie}
+    \subsubsection{Funkcie}
     Volanie funkcií je zaistené vygenerovaním kódu, ktorý predá funkcii argumenty pomocou dočasného rámcu. Následne
     je vygenerovaný kód pre zavolanie funkcie. Pre správnu funkčnosť volanej funkcie je ihneď na začiatku generovaný kód,
     ktorý z dočasného rámca vytvori lokálny rámec funkcie a pre všetky argumenty ktoré boli funkcii predané vytvori
     promenné s názvami podľa parametrov funkcie. Následne sa generuje kód tela funkcie.
 
-    \subsubsection{Generovanie -- výrazy}
+    \subsubsection{Výrazy}
     Generovanie kódu pre výraz sa začne vykonávať ihned po jeho redukcii. V priebehu redukcii je výraz zapísaný do obojstranného radu
     v postfixovom formáte. Jednotlivé elementy v rade nesú všetky potrebné
     informácie na generovanie výrazu - typ operátora, názov premennej či hodnotu konštanty. Generátor generuje len inštrukcie
     kódu \texttt{Ifjcode21} ktoré využívajú zásobník. To znamená že hodnoty, medzivýsledky a následne výsledok výrazu sú
     uložené na zásobník.
 
-    \subsubsection{Generovanie -- podmienky a cykly}
+    \subsubsection{Podmienky a cykly}
     Pre generovanie podmienok a cyklov využívame náveštia, ktoré sú taktiež reprezentované unikátnym číslom a
     názvom funkcie kde sa nachádzajú. Na zabránenie redeklarácie premenných sa telo cyklu zapisuje do dvoch rôznych textových
     blokov. Vyskytnuté deklarácie zapisujeme naďalej do bloku definícií funkcií. No zvyšný kód tela cyklu zapisujeme do
@@ -279,12 +277,12 @@
     \begin{itemize}
         \item  Lexikálna, sémantická a obecná syntaktická analýza
         \item  Organizácia a kontrola práce nad projektom
-        \item  Tabulka symbolov
+        \item  Tabuľka symbolov
     \end{itemize}\leavevmode\newline
     \textbf{Richard:}
     \begin{itemize}
         \item  Syntaktická a sémantická analýza pre výrazy
-        \item  Precedenčná tabulka
+        \item  \hyperref[sec: prec-tabulka]{Precedenčná tabuľka}
         \item  Prezentácia
     \end{itemize}\leavevmode\newline
     \textbf{Zdenek a Andrej:}
@@ -328,16 +326,20 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Diagram konečného automatu %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     \section*{Diagram konečného automatu specifikujúceho lexikálny analyzátor}
+    \addcontentsline{toc}{section}{\protect\numberline{}Diagram konečného automatu špecifikujúceho lexikálny analyzátor}
+    \label{sec: automat}
     \begin{figure}[!ht]
         \centering
         \vspace{-1.2cm}
         \includegraphics[width=0.95\linewidth]{src/FSM_PDF.pdf}
-        \caption{Diagram konečného automatu specifikující lexikální analyzátor}
+        \caption{Diagram konečného automatu špecifikujúceho lexikálny analyzátor}
         \label{figure:fa_graph}
     \end{figure}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LL -- gramatika %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \section*{LL -- gramatika}
+    \addcontentsline{toc}{section}{\protect\numberline{}LL -- gramatika}
+    \label{sec: LL-gramatika}
     \begin{enumerate}[label=\textcolor{red}{\arabic*.}]
         \item \nonterm{prolog} \arrow{} \term{require} \term{t\unsc{}string} \nonterm{prog}
 
@@ -423,8 +425,9 @@
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LL -- tabulka %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \newpage
-    \section*{LL -- tabulka}
-
+    \section*{LL -- tabuľka}
+    \addcontentsline{toc}{section}{\protect\numberline{}LL -- tabuľka}
+    \label{sec: LL-tabulka}
     \begin{table}[htb]
         \begin{adjustwidth}{-0.2cm}{}
             \begin{tabular}{!{\vrule width 2pt}>{\columncolor{LightCyan}}P{2.3cm}!{\vrule width 2pt}P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}|P{2.5mm}!{\vrule width 2pt}}
@@ -481,6 +484,8 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PRECEDENCNI TABULKA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \newpage
     \section*{Precedenčná tabuľka}
+    \addcontentsline{toc}{section}{\protect\numberline{}Precedenčná tabuľka}
+    \label{sec: prec-tabulka}
     \newcommand{\bE}{\textbf{E}}
     \begin{table}[!htbp]
         \centering
