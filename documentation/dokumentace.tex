@@ -128,19 +128,22 @@
     jazyka \texttt{Teal} do \texttt{IFJcode21}, ktorý nasledné spracováva interpret.
 
 
-    \subsection{Zpracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
-    Precedenčná syntaktická analýza je modul, ktorý zaisťuje spracovanie výrazov metódou zdola hore.
+
+    \subsection{Spracovanie výrazov pomocou precedenčnej syntaktickej analýzy}
+    Precedenčná syntaktická analýza je modul ktorý zaisťuje spracovanie výrazov metódou zdola hore.
     Vo svojom rozhraní obsahuje \texttt{expression()}, ktorú volá parser, keď chce precedenčnej analýze predať
-    riadenie vo chvíli, kedy očakáva výraz. Postupne spracováva tokeny a pomocou precedenčnej
-    tabuľky symbolov určuje precedenciu a dané výrazy redukuje podľa pravidiel.
-    Zpracovanie výrazov končí vo chvíli kedy nasledujú po sebe dva identifikátory.
-    Doteraz spracovávaný výraz sa zredukuje a jeho výsledný typ sa vráti do parseru pre
-    sémantickú kontrolu spolu s riadením kde sa rozhodne či v prípade dvoch
-    identifikátoroch po sebe ide o chybu alebo správny syntax.
-
-
+    riadenie vo chvíli, kedy očakáva výraz.
+    \subsubsection{Implementácia precedenčnej tabuľky}
+    Postupne precedenčná analýza spracováva tokeny a pomocou precedenčnej tabuľky symbolov
+    určuje precedenciu. Na základe tejto precedencie môže nastať 5 stavov:
+    \begin{enumerate}
+        \item Pri precedencii \texttt{<} pridávame na zásobník načítaný token spolu so znakom precedencie.
+        \item Pri precedencii \texttt{>} redukujeme dva výrazy na jeden a ukladáme ich typ podľa pravidla.
+        \item Pri precedencii \texttt{=} zapíšeme načítaný znak z tokenu na zásobník.
+        \item Pri precedencii \texttt{c} sme narazili na nesprávne poradie znakov a nastáva sémantická chyba.
+        \item Pri precedencii \texttt{s} sme narazili na dva identifikátory, redukujeme zvyšok výrazu a vraciame parseru riadenie a výsledný typ.
+    \end{enumerate}
     \subsection{Sémantická analýza}
-
 
     \begin{itemize}
         \item Sémantické chyby pre nekompatibilitu typu priradenia, návratových hodnôt a predaných
