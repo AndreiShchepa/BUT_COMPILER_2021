@@ -1,7 +1,7 @@
 =======================OBHAJOBA PROJEKTU IFJ - 10.12.2021=======================
 •predstavenie + zadanie
 /**
- * Dobrý deň, vážená komisia, ja som Richard Gajdošík a toto sú moji kolegovia, Andrei Ščapaniak,
+ * Dobrý deň, vážení členovia komisie, ja som Richard Gajdošík a toto sú moji kolegovia, Andrei Ščapaniak,
  * Zdeněk Lapše a Andrej Bínovský.
  * Sme tím číslo 082 a vybrali sme si variatnu zadania č. 2 - "implementace tabulky symbolov pomocou
  * tabulky s rozptylenymi položkami".
@@ -40,7 +40,7 @@ Terat rozebereme podrobnejšie kazdu z troch akcii pre tokeny, ktore je vidiet n
 Prvou z nich je predanie riadenia precedencnemu syntaktickemu analyzatoru.
 Sluzi pre spracovanie vyrazu zdola hore na zaklade precedencnej tabulky.
 Kvoli specifikacii jazyka IFJ21 jednotlive tokeny a prikazy mozu byt zapisane hned po sobe bez urcitych oddelovacu.
-Tym padom náš tym narazil na dva pripady, ktore boli riesene jednoduchym rozsirenim precedencnej tabulky.
+Tym padom náš tym narazil na dva pripady, ktore sme vyriešili jednoduchym rozsirenim precedencnej tabulky.
 Tieto dva pripady je videt na slajde v tabulke.
 Rozsirenim je pridanie 5. akcie do precedencnej tabulky, ktera bez ukladania tokenu do zasobniku postupne zredukuje a ukonci zpracovanie vyrazu.
 Potom syntakticky analyzator vie vyriesit tieto 2 nedeterminismy.
