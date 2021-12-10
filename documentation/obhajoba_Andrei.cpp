@@ -1,10 +1,10 @@
-Dobry den, vazena komise, jsem Andrei Shchapaniak, vedouci tymu cislo 82.
-Dovolte mi prosim predstavit sve kolegy Andrej Bínovský, Zdeněk Lapeš a Richard Gajdošík. 
+Dobry den, vazene cleny komise, jsem Andrei Shchapaniak, vedouci tymu cislo 82.
+Dovolte mi prosim predstavit sve kolegy Andrej Bínovský, Zdeněk Lapeš a Richard Gajdošík.
 Tema dnesni prezentace je "Implementace prekladace jazyka IFJ21".
 
 ##################### scroll slide #########################
 
-Nasi implementaci lze rozdelit do 5 samostatnych modulu: 
+Nasi implementaci lze rozdelit do 5 samostatnych modulu:
 1. lexikalni analyza,
 2. syntakticka analyza
 3. precedencni syntakticka analyza
@@ -38,8 +38,8 @@ Ted rozebereme podrobneji kazdou ze tri akci pro tokeny, ktere je videt na obraz
 
 Prvni z nich je predani rizeni precedencnimu syntaktickemu analyzatoru.
 Slouzi pro zpracovani vyrazu zdolu nahoru na zaklade precedencni tabulky.
-Kvuli specifikaci jazyka IFJ21 jednotlive tokeny a prikazy muzou byt zapsane hned po sobe bez urcitych oddelovacu. 
-Tim padem nas tym narazil na dva pripady, ktery byl resen jednoduchym rozsirenim precedencni tabulky.
+Kvuli specifikaci jazyka IFJ21 jednotlive tokeny a prikazy muzou byt zapsane hned po sobe bez urcitych oddelovacu.
+Tim padem nas tym narazil na dva pripady, ktere jsme vyresili jednoduchym rozsirenim precedencni tabulky.
 Tyto dva pripady lze videt na slajdu v tabulce.
 Rozsirenim je pridani 5. akce do precedencni tabulky, ktera bez ukladani tokenu do zasobniku postupne ho zredukuje a ukonci zpracovani vyrazu.
 Pak syntakticky analyzator umi vyresit tyto 2 nedeterminismy.
@@ -58,9 +58,9 @@ Po vyskoceni z ramce je tabulka symbolu odstranena z pole.
 ################### scroll slide ###########################
 
 Poslednim modulem v prekladace je generator kodu.
-1. Implementace. 
+1. Implementace.
 Kvuli sekvencnimu pruchodu ciloveho kodu jeho generovani probiha do dvou bloku, ktere se pak konkatenuji.
-V prvnim bloku je napsane volani vsech funkci, v jinem jejich implementace, do kterych skace program v pripade volani. 
+V prvnim bloku je napsane volani vsech funkci, v jinem jejich implementace, do kterych skace program v pripade volani.
 
 2. Deklarace promennych.
 Deklarace promennych a jejich konflikt v pripade while cyklu jsme vyresili rozdelenim bloku pro funkci.
@@ -70,23 +70,23 @@ Redeklarace promennych v cilovem kodu je veresena pomoci vytvoreni unikatniho jm
 (_ - podtrzitko) jmenoFunkce_jmenoPromenne_cisloRamce.
 
 3. Funkce.
-Volani funkci je zajisteno vygenerovanim kodu ktery preda funkci argumenty pomoci docasneho ramce. 
-Nasledne je vygenerovan kod pro zavolani funkce. 
+Volani funkci je zajisteno vygenerovanim kodu ktery preda funkci argumenty pomoci docasneho ramce.
+Nasledne je vygenerovan kod pro zavolani funkce.
 Pro spravnou funkcnost volani funkce je na zacatku generovan kod, ktery z docasneho ramce vytvori lokalni ramec funkce
 a pro vsechny argumenty ktere byly predane funkce vytvori promenne s unikatnim nazvem.
 Nasledne se generuje kod tela funkce.
 
 4. Vyrazy
-Generovni vyrazu je implementovane nasledovne. 
+Generovni vyrazu je implementovane nasledovne.
 Generatoru kodu prijde vyraz v postfixovem formatu, elemnty ktereho obsahuji potrebne atributy.
 Hodnoty, mezivysledky a nasledne vysledek vyrazu se ukladaji na zasobnik.
 
 5. Podminky a cykly.
-Pre generovanie podminek a cyklu pouzivame navesti, ktere maji unikatni jmena reprezentovana cislem ramce a jmenem funkce kde se nachazeji. 
+Pre generovanie podminek a cyklu pouzivame navesti, ktere maji unikatni jmena reprezentovana cislem ramce a jmenem funkce kde se nachazeji.
 
 ###################### scroll slide #########################
 
-Timto obrazkem, ktery reprezentuje nas cely prekladac, bych ukoncil tuto prezentaci. 
+Timto obrazkem, ktery reprezentuje nas cely prekladac, bych ukoncil tuto prezentaci.
 Dekuji Vam za pozornost.
-Pokud mate otazky k cemukoliv, budeme radi na ne odpovedet.
+Pokud mate otazky k cemukoliv, radi na ne odpovime.
 
