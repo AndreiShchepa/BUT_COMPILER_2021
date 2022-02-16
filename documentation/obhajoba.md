@@ -1,5 +1,5 @@
-Dobry den, vazene cleny komise, jsem Andrei Shchapaniak, vedouci tymu cislo 82.
-Dovolte mi prosim predstavit sve kolegy Andrej Bínovský, Zdeněk Lapeš a Richard Gajdošík.
+Dobry den, vazene cleny komise, jsem A S, vedouci tymu cislo XX.
+Dovolte mi prosim predstavit sve kolegy A B, Z L a R G.
 Tema dnesni prezentace je "Implementace prekladace jazyka IFJ21".
 
 ##################### scroll slide #########################
